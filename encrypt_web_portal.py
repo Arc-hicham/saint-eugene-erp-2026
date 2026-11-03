@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Génère `index.html` protégé par Mot de Passe & Chiffrement (PBKDF2-HMAC-SHA256 + Flux Chiffré)
-pour GitHub Pages : https://arc-hicham.github.io/saint-eugene-erp-2026/
+Génère :
+1. `index.html` protégé par Mot de Passe & Chiffrement (PBKDF2-HMAC-SHA256 + Flux Chiffré)
+   pour GitHub Pages : https://arc-hicham.github.io/saint-eugene-erp-2026/
+2. `GOOGLE_SHEET_AUTO_BACKUP.gs` relié au Google Sheet :
+   https://docs.google.com/spreadsheets/d/1UuZAxjwHC6YXcrhjsQaZ9G5XYdKBn9Hn779yTdIwjak/edit?usp=sharing
 
-Optimisé Mobile (Smartphone iOS / Android) & Desktop :
-- Sauvegarde persistante automatique (Factures, Encaissements, Caisse, Performance, etc.)
-- Auto-remplissage intelligent (sélectionner une Facture dans Encaissement remplit Client, Montant restant, Compte)
-- Calcul en temps réel dans le formulaire (TVA 9%/19%, Taxe de séjour 500 DZD, Droit de timbre, TTC, Reste à payer)
-- Navigation mobile fluide (Menu tiroir + Barre d'action rapide en bas de l'écran téléphone)
+Nouvelles fonctionnalités incluses :
+- Sauvegarde automatique vers le Google Sheet `1UuZAxjwHC6YXcrhjsQaZ9G5XYdKBn9Hn779yTdIwjak` à chaque ajout/modification/suppression
+- Feuille séparée (onglet dédié) pour chaque module (22 modules + 1 feuille `🕘 Historique Modifications`)
+- Colonnes `Date de Modification`, `Modifié par`, `Détail de la Modification (Avant -> Après)` et `Lien Google Sheet` sur chaque ligne
+- Ligne `TOTAL GÉNÉRAL` automatique en bas de chaque tableau dans l'ERP ET dans chaque feuille Google Sheet / Excel
+- Bouton `🖨️ Imprimer l'État (avec Totaux)` sur CHAQUE page de l'ERP (ex: filtrer par "SONATRACH" dans Factures Clients et imprimer l'État de SONATRACH avec Total HT, Total TTC, Total Encaissé et Reste à Encaisser)
+- Optimisation complète Smartphone (iOS / Android)
 """
 from __future__ import annotations
 
@@ -22,6 +27,9 @@ APP_ROOT = Path(r"C:\Users\HICHAM BAKIR\.gemini\antigravity\scratch\saint_eugene
 sys.path.insert(0, str(APP_ROOT))
 
 from launch_now import SCHEMAS, build_initial_seed_db  # noqa: E402
+
+GOOGLE_SHEET_ID = "1UuZAxjwHC6YXcrhjsQaZ9G5XYdKBn9Hn779yTdIwjak"
+GOOGLE_SHEET_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/edit?usp=sharing"
 
 
 def rc4_drop4096_crypt(key: bytes, data: bytes) -> bytes:
@@ -65,6 +73,208 @@ def encrypt_bundle(password: str, payload_obj: dict) -> dict:
     }
 
 
+def generate_google_apps_script(initial_db: dict) -> str:
+    """Génère le script Google Apps Script (`GOOGLE_SHEET_AUTO_BACKUP.gs`) pré-configuré pour le Google Sheet de l'utilisateur."""
+    seed_payload_json = json.dumps(
+        {
+            "history": initial_db.get("SE Historique Modifications", []),
+            "db": initial_db,
+            "schemas": SCHEMAS,
+        },
+        ensure_ascii=False,
+    )
+    return f"""/**
+ * ============================================================================
+ * SCRIPT OFFICIEL DE SAUVEGARDE AUTOMATIQUE & HISTORIQUE — HÔTEL SAINT EUGÈNE 4★
+ * Google Sheet cible : {GOOGLE_SHEET_URL}
+ * Spreadsheet ID     : {GOOGLE_SHEET_ID}
+ * ============================================================================
+ *
+ * COMMENT L'ACTIVER EN 30 SECONDES :
+ * 1. Ouvrez votre Google Sheet : {GOOGLE_SHEET_URL}
+ * 2. Dans le menu en haut, cliquez sur : Extensions > Apps Script
+ * 3. Effacez tout le texte présent et collez l'intégralité de ce fichier.
+ * 4. Cliquez sur 💾 (Enregistrer), puis cliquez sur ▶️ "Exécuter" (fonction `initialiserFeuillesSaintEugene`)
+ *    -> Cela crée immédiatement les 23 feuilles séparées, formatées avec les TOTAUX et l'Historique !
+ * 5. Pour la synchronisation automatique depuis votre téléphone/PC :
+ *    Cliquez sur "Déployer" > "Nouveau déploiement" > Type : "Application Web"
+ *    - Exécuter en tant que : "Moi"
+ *    - Qui peut accéder : "Tout le monde" (Anyone)
+ *    Copiez l'URL Web App obtenue et collez-la dans l'onglet "☁️ Google Sheet" de votre ERP !
+ */
+
+const SPREADSHEET_ID = "{GOOGLE_SHEET_ID}";
+const SHEET_URL = "{GOOGLE_SHEET_URL}";
+
+function initialiserFeuillesSaintEugene() {{
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const initialPayload = {seed_payload_json};
+  syncAllToSpreadsheet(ss, initialPayload);
+}}
+
+const MODULE_TITLES = {{
+  "SE Facture Client": "Factures Clients (SCF 70)",
+  "SE Performance Hoteliere": "Performance Hôtelière (45 ch.)",
+  "SE Facture Fournisseur": "Factures Fournisseurs (SCF 60)",
+  "SE Charge et Depense": "Charges & Dépenses (61-62)",
+  "SE Client": "Clients (Corporate & Agences)",
+  "SE Fournisseur": "Fournisseurs",
+  "SE Encaissement": "Encaissements Clients",
+  "SE Decaissement": "Décaissements",
+  "SE Caisse Mensuelle": "Caisse Mensuelle (PV)",
+  "SE Operation Bancaire": "Opérations Bancaires (512)",
+  "SE Rapprochement Bancaire": "Rapprochement Bancaire",
+  "SE Prevision Tresorerie": "Prévisions Trésorerie",
+  "SE Compte Tresorerie": "Comptes Caisses & Banques",
+  "SE Declaration TVA": "Déclarations TVA (G50)",
+  "SE Budget Annuel": "Budget Annuel 2026",
+  "SE Fiche de Paie Mensuelle": "Fiches de Paie (CNAS-IRG)",
+  "SE Employe": "Collaborateurs Hôtel",
+  "SE Immobilisation": "Immobilisations & VNC",
+  "SE Emprunt et Dette": "Emprunts & Dettes",
+  "SE Contrat et Abonnement": "Contrats & Abonnements",
+  "SE Parametres Hotel": "Paramètres Hôtel 4★"
+}};
+
+function doPost(e) {{
+  try {{
+    const payload = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    syncAllToSpreadsheet(ss, payload);
+    return ContentService.createTextOutput(JSON.stringify({{ status: "ok", timestamp: new Date().toISOString() }}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }} catch (err) {{
+    return ContentService.createTextOutput(JSON.stringify({{ status: "error", message: String(err) }}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }}
+}}
+
+function doGet(e) {{
+  return ContentService.createTextOutput(JSON.stringify({{
+    status: "online",
+    hotel: "SPA HÔTEL SAINT EUGÈNE 4★ - ALGER",
+    spreadsheet_id: SPREADSHEET_ID
+  }})).setMimeType(ContentService.MimeType.JSON);
+}}
+
+function syncAllToSpreadsheet(ss, payload) {{
+  const nowStr = Utilities.formatDate(new Date(), "Africa/Algiers", "yyyy-MM-dd HH:mm:ss");
+  const historyList = payload.history || [];
+  const lastEvent = payload.last_event || null;
+  const db = payload.db || {{}};
+  const schemas = payload.schemas || {{}};
+
+  // 1. Feuille Historique Complet des Modifications (1er Onglet)
+  let histSheet = ss.getSheetByName("🕘 Historique Modifications");
+  if (!histSheet) {{
+    histSheet = ss.insertSheet("🕘 Historique Modifications", 0);
+  }}
+  renderHistorySheet(histSheet, historyList, lastEvent, nowStr);
+
+  // 2. Une feuille séparée et bien organisée pour chaque titre de module
+  Object.keys(MODULE_TITLES).forEach(doctype => {{
+    const tabName = MODULE_TITLES[doctype].slice(0, 31);
+    const rows = db[doctype] || [];
+    const schema = schemas[doctype] || null;
+    let sh = ss.getSheetByName(tabName);
+    if (!sh) {{
+      sh = ss.insertSheet(tabName);
+    }}
+    renderModuleSheet(sh, doctype, MODULE_TITLES[doctype], rows, schema, nowStr);
+  }});
+}}
+
+function renderHistorySheet(sh, historyList, lastEvent, nowStr) {{
+  sh.clear();
+  const headers = [
+    "ID Modification",
+    "Date & Heure de Modification",
+    "Module (Titre)",
+    "Référence Document",
+    "Action Effectuée",
+    "Qu'est-ce qui a été modifié (Détail Avant → Après)",
+    "Utilisateur",
+    "Lien Direct Google Sheet"
+  ];
+  sh.getRange(1, 1, 1, headers.length).merge()
+    .setValue("SPA HÔTEL SAINT EUGÈNE 4★ ALGER — JOURNAL & HISTORIQUE COMPLET DES MODIFICATIONS (Mis à jour : " + nowStr + ")")
+    .setBackground("#0f172a").setFontColor("#fbbf24").setFontWeight("bold").setFontSize(11);
+
+  sh.getRange(2, 1, 1, headers.length).setValues([headers])
+    .setBackground("#1e293b").setFontColor("#ffffff").setFontWeight("bold");
+
+  const data = (historyList || []).map(h => [
+    h.id || "",
+    h.date_modification || nowStr,
+    h.module_label || h.doctype || "",
+    h.doc_name || "",
+    h.action || "",
+    h.detail_modification || "",
+    h.utilisateur || "Contrôle de Gestion / DAF",
+    SHEET_URL
+  ]);
+
+  if (data.length > 0) {{
+    sh.getRange(3, 1, data.length, headers.length).setValues(data);
+  }}
+  sh.setFrozenRows(2);
+  sh.autoResizeColumns(1, headers.length);
+}}
+
+function renderModuleSheet(sh, doctype, titleLabel, rows, schema, nowStr) {{
+  sh.clear();
+  const fields = schema && schema.fields
+    ? schema.fields.filter(f => !["Section Break", "Column Break", "Table"].includes(f.fieldtype) && f.fieldname !== "naming_series" && f.fieldname !== "amended_from")
+    : [];
+
+  const colHeaders = [
+    "Référence (ID)",
+    ...fields.map(f => f.label || f.fieldname),
+    "Date de Modification",
+    "Modifié par",
+    "Détail de la Dernière Modification",
+    "Lien Google Sheet"
+  ];
+
+  sh.getRange(1, 1, 1, colHeaders.length).merge()
+    .setValue("HÔTEL SAINT EUGÈNE 4★ ALGER — " + titleLabel.toUpperCase() + " — Sauvegarde du " + nowStr + " (" + rows.length + " enregistrements)")
+    .setBackground("#0f172a").setFontColor("#fbbf24").setFontWeight("bold").setFontSize(11);
+
+  sh.getRange(2, 1, 1, colHeaders.length).setValues([colHeaders])
+    .setBackground("#1e293b").setFontColor("#ffffff").setFontWeight("bold");
+
+  if (rows.length > 0) {{
+    const matrix = rows.map(r => [
+      r.name || "",
+      ...fields.map(f => r[f.fieldname] !== undefined && r[f.fieldname] !== null ? r[f.fieldname] : ""),
+      r.date_modification || nowStr,
+      r.modifie_par || "Contrôle de Gestion / DAF",
+      r.detail_modification || "Sauvegarde initiale 2026",
+      SHEET_URL
+    ]);
+    sh.getRange(3, 1, matrix.length, colHeaders.length).setValues(matrix);
+
+    // Ligne TOTAL GÉNÉRAL en bas de la feuille
+    const totalRow = new Array(colHeaders.length).fill("");
+    totalRow[0] = "TOTAL GÉNÉRAL (" + rows.length + " lignes)";
+    fields.forEach((f, idx) => {{
+      if (["Currency", "Int", "Float"].includes(f.fieldtype)) {{
+        const sumVal = rows.reduce((acc, r) => acc + (Number(r[f.fieldname]) || 0), 0);
+        totalRow[idx + 1] = Math.round(sumVal * 100) / 100;
+      }} else if (f.fieldtype === "Percent") {{
+        const avgVal = rows.reduce((acc, r) => acc + (Number(r[f.fieldname]) || 0), 0) / rows.length;
+        totalRow[idx + 1] = Math.round(avgVal * 100) / 100;
+      }}
+    }});
+    const totRange = sh.getRange(rows.length + 3, 1, 1, colHeaders.length);
+    totRange.setValues([totalRow]).setBackground("#fef3c7").setFontColor("#0f172a").setFontWeight("bold");
+  }}
+  sh.setFrozenRows(2);
+  sh.autoResizeColumns(1, Math.min(colHeaders.length, 15));
+}}
+"""
+
+
 def main() -> None:
     pw_file = APP_ROOT / ".portal_password.txt"
     if len(sys.argv) > 1 and sys.argv[1].strip():
@@ -74,8 +284,50 @@ def main() -> None:
         password = pw_file.read_text(encoding="utf-8").strip() or "SaintEugene2026"
     else:
         password = "SaintEugene2026"
+
+    # Assurer que Montant HT et Montant Encaissé sont affichés dans la liste Factures Clients
+    fc_schema_path = APP_ROOT / "saint_eugene" / "saint_eugene" / "doctype" / "se_facture_client" / "se_facture_client.json"
+    if fc_schema_path.exists():
+        fc_data = json.loads(fc_schema_path.read_text(encoding="utf-8"))
+        for fld in fc_data.get("fields", []):
+            if fld.get("fieldname") in ("montant_ht", "montant_ttc", "montant_encaisse", "reste_a_encaisser", "statut", "date_facture", "client"):
+                fld["in_list_view"] = 1
+        fc_schema_path.write_text(json.dumps(fc_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        SCHEMAS["SE Facture Client"] = fc_data
+
     initial_db = build_initial_seed_db()
-    encrypted = encrypt_bundle(password, {"schemas": SCHEMAS, "initial_db": initial_db})
+
+    # Initialiser l'historique des modifications avec trace complète
+    initial_db["SE Historique Modifications"] = [
+        {
+            "id": "HIST-2026-00001",
+            "date_modification": "2026-11-03 22:00:00",
+            "doctype": "SE Parametres Hotel",
+            "module_label": "⚙️ Paramètres Hôtel & Fiscalité 4★",
+            "doc_name": "SE Parametres Hotel",
+            "action": "✏️ Mise à jour Paramètres",
+            "detail_modification": "Capacité Chambres : 84 → 45 ch. | Adresse : 04 Blv Omar Lounas, Bologhine | Taxe Séjour : 500 DZD",
+            "utilisateur": "Contrôle de Gestion / DAF (Hicham Bakir)",
+            "lien_google_sheet": GOOGLE_SHEET_URL,
+        }
+    ]
+
+    # Ajouter les métadonnées de modification initiales sur chaque enregistrement
+    for dt_name, records in initial_db.items():
+        if dt_name == "SE Historique Modifications" or not isinstance(records, list):
+            continue
+        for r in records:
+            if isinstance(r, dict):
+                r.setdefault("date_modification", "2026-11-03 22:00:00")
+                r.setdefault("modifie_par", "Contrôle de Gestion / DAF")
+                r.setdefault("detail_modification", f"Enregistrement initial validé ({r.get('name', '')})")
+                r.setdefault("lien_google_sheet", GOOGLE_SHEET_URL)
+
+    # Écrire le script Google Apps Script prêt à coller
+    gs_code = generate_google_apps_script(initial_db)
+    (APP_ROOT / "GOOGLE_SHEET_AUTO_BACKUP.gs").write_text(gs_code, encoding="utf-8")
+
+    encrypted = encrypt_bundle(password, {"schemas": SCHEMAS, "initial_db": initial_db, "gs_script": gs_code})
     encrypted_json = json.dumps(encrypted)
 
     html = f"""<!DOCTYPE html>
@@ -89,6 +341,7 @@ def main() -> None:
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Accès Privé — Saint Eugène ERP 2026 (Hôtel 4★ Alger)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {{
     --bg: #f1f5f9;
@@ -118,16 +371,16 @@ def main() -> None:
   /* Toast Notification */
   .toast-banner {{
     position: fixed;
-    top: 16px;
+    top: 14px;
     left: 50%;
-    transform: translateX(-50%) translateY(-120%);
+    transform: translateX(-50%) translateY(-150%);
     background: #065f46;
     color: #ffffff;
     padding: 11px 20px;
     border-radius: 999px;
     font-size: 13px;
     font-weight: 700;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.28);
     z-index: 10000;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
@@ -178,7 +431,7 @@ def main() -> None:
   }}
   .sidebar-backdrop.open {{ display: block; }}
   .sidebar {{
-    width: 275px;
+    width: 278px;
     background: var(--navy);
     color: #f8fafc;
     display: flex;
@@ -195,7 +448,7 @@ def main() -> None:
   .close-drawer-btn {{ display: none; background: transparent; border: 1px solid #334155; color: #cbd5e1; border-radius: 6px; padding: 5px 10px; font-size: 14px; cursor: pointer; }}
   .nav-scroll {{ flex: 1; overflow-y: auto; padding: 10px 12px 24px; -webkit-overflow-scrolling: touch; }}
   .nav-group {{ font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; margin: 14px 8px 6px; font-weight: 600; }}
-  .nav-btn {{ width: 100%; text-align: left; background: transparent; border: none; color: #cbd5e1; padding: 9px 11px; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: 0.15s; }}
+  .nav-btn {{ width: 100%; text-align: left; background: transparent; border: none; color: #cbd5e1; padding: 9px 11px; border-radius: 6px; font-size: 12.8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: 0.15s; }}
   .nav-btn:hover {{ background: rgba(255,255,255,0.07); color: #fff; }}
   .nav-btn.active {{ background: #b45309; color: #fff; font-weight: 600; }}
 
@@ -208,9 +461,9 @@ def main() -> None:
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 20px;
+    padding: 8px 18px;
     flex-shrink: 0;
-    gap: 10px;
+    gap: 8px;
   }}
   .topbar-left {{ display: flex; align-items: center; gap: 10px; min-width: 0; }}
   .menu-toggle-btn {{
@@ -225,17 +478,19 @@ def main() -> None:
     flex-shrink: 0;
   }}
   .topbar-title {{ font-size: 15px; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }}
-  .topbar-title span#viewTitle {{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw; }}
+  .topbar-title span#viewTitle {{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46vw; }}
   .badge-scf {{ background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; white-space: nowrap; }}
-  .topbar-actions {{ display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }}
-  .btn {{ padding: 8px 13px; border-radius: 7px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); transition: 0.15s; white-space: nowrap; }}
+  .topbar-actions {{ display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }}
+  .btn {{ padding: 8px 12px; border-radius: 7px; font-size: 12.2px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); transition: 0.15s; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; justify-content: center; }}
   .btn:hover {{ background: #f8fafc; }}
   .btn-primary {{ background: var(--navy); color: #fff; border-color: var(--navy); }}
   .btn-primary:hover {{ background: #1e293b; }}
   .btn-gold {{ background: #b45309; color: #fff; border-color: #b45309; }}
   .btn-gold:hover {{ background: #92400e; }}
+  .btn-green {{ background: #15803d; color: #fff; border-color: #15803d; }}
+  .btn-green:hover {{ background: #166534; }}
   .btn-danger {{ background: #fef2f2; color: #dc2626; border-color: #fecaca; }}
-  .content {{ flex: 1; overflow-y: auto; padding: 20px 24px; -webkit-overflow-scrolling: touch; }}
+  .content {{ flex: 1; overflow-y: auto; padding: 18px 22px; -webkit-overflow-scrolling: touch; }}
 
   /* KPI Grid */
   .kpi-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 13px; margin-bottom: 20px; }}
@@ -243,6 +498,25 @@ def main() -> None:
   .kpi-card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,23,42,0.07); }}
   .kpi-label {{ font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }}
   .kpi-val {{ font-size: 16.5px; font-weight: 800; color: var(--navy); }}
+
+  /* Bandeau Résumé des Totaux de la page courante */
+  .totals-strip {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+    background: #0f172a;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: space-between;
+    border-left: 5px solid #d97706;
+  }}
+  .totals-strip-items {{ display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }}
+  .tot-box {{ display: flex; flex-direction: column; gap: 2px; }}
+  .tot-box span {{ font-size: 10.5px; color: #94a3b8; text-transform: uppercase; font-weight: 600; }}
+  .tot-box b {{ font-size: 14.5px; color: #fbbf24; font-variant-numeric: tabular-nums; }}
 
   /* Alerts & Charts */
   .alerts-panel {{ background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }}
@@ -254,15 +528,28 @@ def main() -> None:
   .chart-box {{ background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 15px; min-width: 0; }}
   .chart-box h4 {{ margin: 0 0 12px 0; font-size: 13px; color: var(--navy); }}
 
-  /* Tables */
+  /* Tables & Filtres */
   .table-card {{ background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }}
   .table-scroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
-  .table-toolbar {{ padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }}
-  .search-input {{ padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 14px; width: 280px; max-width: 100%; }}
-  table.frappe-list {{ width: 100%; border-collapse: collapse; font-size: 12.8px; min-width: 600px; }}
-  table.frappe-list th {{ background: #f8fafc; color: #475569; text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  .table-toolbar {{ padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; background: #f8fafc; }}
+  .filter-group {{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; }}
+  .search-input, .filter-select {{ padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 13.5px; background: #fff; color: var(--text); }}
+  .search-input {{ width: 240px; max-width: 100%; }}
+  .filter-select {{ min-width: 170px; max-width: 100%; font-weight: 600; }}
+  .toolbar-actions {{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }}
+  table.frappe-list {{ width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 650px; }}
+  table.frappe-list th {{ background: #f1f5f9; color: #334155; text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid var(--border); white-space: nowrap; }}
   table.frappe-list td {{ padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }}
-  table.frappe-list tr:hover td {{ background: #f8fafc; cursor: pointer; }}
+  table.frappe-list tbody tr:hover td {{ background: #f8fafc; cursor: pointer; }}
+  table.frappe-list tfoot td {{
+    background: #fef3c7;
+    color: #0f172a;
+    font-weight: 800;
+    padding: 11px 12px;
+    border-top: 2px solid #d97706;
+    font-size: 12.8px;
+    white-space: nowrap;
+  }}
   .pill {{ display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }}
   .pill.green {{ background: #dcfce7; color: #166534; }}
   .pill.orange {{ background: #ffedd5; color: #9a3412; }}
@@ -338,19 +625,21 @@ def main() -> None:
     .close-drawer-btn {{ display: inline-block; }}
     .menu-toggle-btn {{ display: inline-flex; align-items: center; justify-content: center; }}
     .badge-scf {{ display: none; }}
-    .topbar {{ padding: 8px 12px; min-height: 52px; }}
-    .topbar-title {{ font-size: 13.5px; }}
-    .topbar-title span#viewTitle {{ max-width: 46vw; }}
+    .topbar {{ padding: 8px 10px; min-height: 52px; }}
+    .topbar-title {{ font-size: 13px; }}
+    .topbar-title span#viewTitle {{ max-width: 42vw; }}
     .topbar-actions .hide-mobile {{ display: none; }}
-    .content {{ padding: 12px 12px 80px 12px; }}
+    .content {{ padding: 12px 10px 82px 10px; }}
     .kpi-grid {{ grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }}
     .kpi-card {{ padding: 11px 12px; }}
     .kpi-label {{ font-size: 10px; }}
     .kpi-val {{ font-size: 14px; }}
     .chart-grid {{ grid-template-columns: 1fr; gap: 12px; }}
     .alert-item {{ flex-direction: column; align-items: flex-start; }}
-    .search-input {{ width: 100%; font-size: 16px; }}
-    .table-toolbar .btn {{ width: 100%; text-align: center; padding: 10px; font-size: 13.5px; }}
+    .filter-group {{ width: 100%; }}
+    .search-input, .filter-select {{ width: 100%; font-size: 16px; }}
+    .toolbar-actions {{ width: 100%; }}
+    .toolbar-actions .btn {{ flex: 1; padding: 10px; font-size: 12.5px; }}
     .modal-backdrop {{ padding: 0; align-items: flex-end; }}
     .modal {{ max-width: 100%; height: 96dvh; max-height: 96dvh; border-radius: 16px 16px 0 0; }}
     .form-grid {{ grid-template-columns: 1fr; gap: 11px; }}
@@ -365,7 +654,7 @@ def main() -> None:
 </head>
 <body>
 
-<div class="toast-banner" id="toastBanner">✅ Opération enregistrée et sauvegardée</div>
+<div class="toast-banner" id="toastBanner">✅ Opération enregistrée et sauvegardée sur Google Sheet</div>
 
 <!-- Portail d'authentification privé (Chiffrement PBKDF2-SHA256) -->
 <div class="login-screen" id="loginScreen">
@@ -379,7 +668,7 @@ def main() -> None:
     <div class="login-field">
       <label>Profil Utilisateur Autorisé</label>
       <select id="loginRole">
-        <option value="Contrôle de Gestion / DAF">Contrôle de Gestion / DAF (Hicham Bakir)</option>
+        <option value="Contrôle de Gestion / DAF (Hicham Bakir)">Contrôle de Gestion / DAF (Hicham Bakir)</option>
         <option value="Direction Générale">Direction Générale — Hôtel Saint Eugène</option>
         <option value="Chef Comptable SCF">Chef Comptable SCF & Audit</option>
       </select>
@@ -411,7 +700,7 @@ def main() -> None:
 <section class="main">
   <header class="topbar">
     <div class="topbar-left">
-      <button class="menu-toggle-btn" onclick="toggleMobileSidebar()" title="Menu des 22 Modules">☰</button>
+      <button class="menu-toggle-btn" onclick="toggleMobileSidebar()" title="Menu des Modules">☰</button>
       <div class="topbar-title">
         <span id="viewTitle">Direction Saint Eugène 2026</span>
         <span class="badge-scf">Normes SCF Algérie • DZD</span>
@@ -419,10 +708,10 @@ def main() -> None:
     </div>
     <div class="topbar-actions">
       <button class="btn hide-mobile" onclick="showWorkspace()">📊 Tableau de Bord</button>
-      <button class="btn btn-gold hide-mobile" onclick="openNewDoc('SE Facture Client')">+ Nouvelle Facture Client</button>
-      <button class="btn btn-primary hide-mobile" onclick="openNewDoc('SE Encaissement')">+ Nouvel Encaissement</button>
-      <button class="btn" title="Réinitialiser les données initiales 2026" onclick="confirmResetDemoData()">🔄 Réinitialiser</button>
-      <button class="btn" style="border-color:#fca5a5;color:#dc2626;" onclick="lockSession()">🔒</button>
+      <button class="btn btn-gold hide-mobile" onclick="openNewDoc('SE Facture Client')">+ Facture Client</button>
+      <button class="btn btn-primary hide-mobile" onclick="openNewDoc('SE Encaissement')">+ Encaissement</button>
+      <button class="btn btn-green" onclick="showGoogleSheetBackupCenter()" title="Sauvegarde Google Sheet & Historique Complet">☁️ Google Sheet</button>
+      <button class="btn" style="border-color:#fca5a5;color:#dc2626;" onclick="lockSession()" title="Verrouiller">🔒</button>
     </div>
   </header>
 
@@ -443,9 +732,9 @@ def main() -> None:
     <span class="ico">💰</span>
     <span>+ Encaissement</span>
   </button>
-  <button class="mob-nav-item" onclick="showList('SE Facture Client')">
-    <span class="ico">📋</span>
-    <span>Factures</span>
+  <button class="mob-nav-item" onclick="showGoogleSheetBackupCenter()">
+    <span class="ico">☁️</span>
+    <span>Google Sheet</span>
   </button>
   <button class="mob-nav-item" onclick="toggleMobileSidebar(true)">
     <span class="ico">☰</span>
@@ -466,22 +755,35 @@ def main() -> None:
 
 <script>
 const ENCRYPTED_BUNDLE = {encrypted_json};
-const STORAGE_KEY = "saint_eugene_erp_2026_db_v3";
+const GOOGLE_SHEET_ID = "{GOOGLE_SHEET_ID}";
+const GOOGLE_SHEET_URL = "{GOOGLE_SHEET_URL}";
+const STORAGE_KEY = "saint_eugene_erp_2026_db_v4";
+const WEBHOOK_KEY = "saint_eugene_gsheet_webhook_url";
 const SESSION_KEY = "saint_eugene_erp_2026_unlocked";
 
 let SCHEMAS = {{}};
 let INITIAL_DB = {{}};
+let GS_SCRIPT_CODE = "";
 let DB = {{}};
+let CURRENT_USER_ROLE = "Contrôle de Gestion / DAF (Hicham Bakir)";
 let CURRENT_DOCTYPE = null;
 let CURRENT_DOC = null;
+let CURRENT_ORIGINAL_DOC = null;
 let CURRENT_IS_NEW = false;
+let LIST_STATE = {{ search: "", entityFilter: "", statusFilter: "" }};
+
+function nowAlgeriaTimestamp() {{
+  const d = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `${{d.getFullYear()}}-${{pad(d.getMonth() + 1)}}-${{pad(d.getDate())}} ${{pad(d.getHours())}}:${{pad(d.getMinutes())}}:${{pad(d.getSeconds())}}`;
+}}
 
 function showToast(msg) {{
   const el = document.getElementById("toastBanner");
   el.textContent = msg;
   el.classList.add("show");
   clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+  window.__toastTimer = setTimeout(() => el.classList.remove("show"), 3600);
 }}
 
 function toggleMobileSidebar(forceState) {{
@@ -572,6 +874,8 @@ async function handleUnlock(e) {{
     }}
     SCHEMAS = bundle.schemas;
     INITIAL_DB = bundle.initial_db;
+    GS_SCRIPT_CODE = bundle.gs_script || "";
+    CURRENT_USER_ROLE = role;
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({{ pwd, role }}));
     document.getElementById("activeUserBadge").textContent = `Connecté : ${{role}}`;
     document.getElementById("loginScreen").classList.add("hidden");
@@ -594,7 +898,7 @@ function lockSession() {{
 function loadDB() {{
   const base = JSON.parse(JSON.stringify(INITIAL_DB));
   try {{
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("saint_eugene_erp_2026_db_v2");
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("saint_eugene_erp_2026_db_v3") || localStorage.getItem("saint_eugene_erp_2026_db_v2");
     if (raw) {{
       const saved = JSON.parse(raw);
       Object.keys(saved).forEach(dt => {{
@@ -608,6 +912,9 @@ function loadDB() {{
       }});
     }}
   }} catch (e) {{}}
+  if (!Array.isArray(base["SE Historique Modifications"])) {{
+    base["SE Historique Modifications"] = INITIAL_DB["SE Historique Modifications"] || [];
+  }}
   recomputeAllLinks(base);
   try {{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
@@ -615,15 +922,82 @@ function loadDB() {{
   return base;
 }}
 
-function saveDB() {{
+function saveDB(lastEvent = null) {{
   recomputeAllLinks(DB);
   try {{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
   }} catch (e) {{}}
+  triggerGoogleSheetAutoBackup(lastEvent);
+}}
+
+async function triggerGoogleSheetAutoBackup(lastEvent = null) {{
+  const webhookUrl = localStorage.getItem(WEBHOOK_KEY) || "";
+  if (!webhookUrl) return;
+  try {{
+    await fetch(webhookUrl, {{
+      method: "POST",
+      mode: "no-cors",
+      headers: {{ "Content-Type": "text/plain;charset=utf-8" }},
+      body: JSON.stringify({{
+        spreadsheet_id: GOOGLE_SHEET_ID,
+        sheet_url: GOOGLE_SHEET_URL,
+        last_event: lastEvent,
+        history: DB["SE Historique Modifications"] || [],
+        db: DB,
+        schemas: SCHEMAS
+      }})
+    }});
+  }} catch (e) {{}}
+}}
+
+function recordAuditModification(doctype, docName, actionType, detailStr) {{
+  const ts = nowAlgeriaTimestamp();
+  const hist = DB["SE Historique Modifications"] || (DB["SE Historique Modifications"] = []);
+  const nextId = `HIST-2026-${{String(hist.length + 1).padStart(5, "0")}}`;
+  const entry = {{
+    id: nextId,
+    date_modification: ts,
+    doctype: doctype,
+    module_label: getNavLabel(doctype),
+    doc_name: docName,
+    action: actionType,
+    detail_modification: detailStr,
+    utilisateur: CURRENT_USER_ROLE,
+    lien_google_sheet: GOOGLE_SHEET_URL
+  }};
+  hist.unshift(entry);
+  return entry;
+}}
+
+function computeModificationDiff(doctype, oldDoc, newDoc, isNew) {{
+  const schema = SCHEMAS[doctype];
+  if (isNew || !oldDoc) {{
+    const summaryParts = [];
+    if (newDoc.client) summaryParts.push(`Client: ${{newDoc.client}}`);
+    if (newDoc.fournisseur) summaryParts.push(`Fournisseur: ${{newDoc.fournisseur}}`);
+    if (newDoc.employe) summaryParts.push(`Employé: ${{newDoc.employe}}`);
+    if (newDoc.montant_ttc !== undefined) summaryParts.push(`TTC: ${{fmtDZD(newDoc.montant_ttc)}}`);
+    else if (newDoc.montant !== undefined) summaryParts.push(`Montant: ${{fmtDZD(newDoc.montant)}}`);
+    else if (newDoc.ca_total_jour !== undefined) summaryParts.push(`CA Jour: ${{fmtDZD(newDoc.ca_total_jour)}}`);
+    if (newDoc.statut) summaryParts.push(`Statut: ${{newDoc.statut}}`);
+    return `Création de ${{newDoc.name}} (${{summaryParts.join(" | ") || getNavLabel(doctype)}})`;
+  }}
+  const changes = [];
+  const fields = (schema && schema.fields) || [];
+  fields.forEach(f => {{
+    if (["Section Break", "Column Break", "Table"].includes(f.fieldtype)) return;
+    const k = f.fieldname;
+    const vOld = oldDoc[k] ?? "";
+    const vNew = newDoc[k] ?? "";
+    if (String(vOld) !== String(vNew)) {{
+      changes.push(`${{f.label || k}} : [${{vOld || "vide"}} → ${{vNew}}]`);
+    }}
+  }});
+  return changes.length > 0 ? changes.join(" ; ") : `Mise à jour et recalcul de ${{newDoc.name}}`;
 }}
 
 function confirmResetDemoData() {{
-  if (!confirm("Voulez-vous réinitialiser la base avec les données de démonstration 2026 ? (Vos ajouts locaux seront effacés)")) return;
+  if (!confirm("Voulez-vous réinitialiser la base avec les données initiales 2026 ?")) return;
   localStorage.removeItem(STORAGE_KEY);
   DB = JSON.parse(JSON.stringify(INITIAL_DB));
   recomputeAllLinks(DB);
@@ -710,10 +1084,8 @@ function recomputeAllLinks(db) {{
   const cfg = (db["SE Parametres Hotel"] && db["SE Parametres Hotel"][0]) || {{}};
   const capChambres = Number(cfg.capacite_chambres || 45);
 
-  // 1. Factures Clients
   (db["SE Facture Client"] || []).forEach(fac => recomputeSingleInvoice(fac, db));
 
-  // 2. Factures Fournisseurs
   (db["SE Facture Fournisseur"] || []).forEach(ff => {{
     const ht = Number(ff.montant_ht || 0);
     const tvaR = Number(ff.taux_tva ?? 19);
@@ -734,7 +1106,6 @@ function recomputeAllLinks(db) {{
     else ff.statut = "Validée";
   }});
 
-  // 3. Performance Hôtelière (45 ch.)
   (db["SE Performance Hoteliere"] || []).forEach(p => {{
     const dispo = Number(p.chambres_disponibles || capChambres || 45);
     const vendues = Number(p.chambres_vendues || 0);
@@ -748,7 +1119,6 @@ function recomputeAllLinks(db) {{
     p.ca_total_jour = Math.round((caH + caR + aut) * 100) / 100;
   }});
 
-  // 4. Fiches de Paie (CNAS / IRG)
   (db["SE Fiche de Paie Mensuelle"] || []).forEach(fp => {{
     const base = Number(fp.salaire_base || 0);
     const primes = Number(fp.primes || 0);
@@ -768,7 +1138,6 @@ function recomputeAllLinks(db) {{
     if (!fp.statut || fp.statut === "Brouillon") fp.statut = "Validée";
   }});
 
-  // 5. Comptes de Trésorerie (Caisses & Banques)
   (db["SE Compte Tresorerie"] || []).forEach(c => {{
     const init = Number(c.solde_initial || 0);
     const enc = (db["SE Encaissement"] || [])
@@ -780,7 +1149,6 @@ function recomputeAllLinks(db) {{
     c.solde_actuel = Math.round((init + enc - dec) * 100) / 100;
   }});
 
-  // 6. Caisse Mensuelle
   (db["SE Caisse Mensuelle"] || []).forEach(cm => {{
     const m = cm.mois || "";
     const cpte = cm.compte_caisse || "Caisse Principale Hôtel";
@@ -796,7 +1164,6 @@ function recomputeAllLinks(db) {{
     cm.ecart = Math.round((Number(cm.solde_physique || 0) - cm.solde_theorique) * 100) / 100;
   }});
 
-  // 7. Déclarations TVA (G50)
   (db["SE Declaration TVA"] || []).forEach(g => {{
     const m = g.mois || "";
     const facsM = (db["SE Facture Client"] || []).filter(f => (f.date_facture || "").startsWith(m));
@@ -825,7 +1192,6 @@ function recomputeAllLinks(db) {{
     g.solde_fiscal = g.date_paiement ? 0 : totG50;
   }});
 
-  // 8. Budget Annuel 2026
   (db["SE Budget Annuel"] || []).forEach(b => {{
     const m = b.mois, cat = b.categorie;
     let real = 0;
@@ -937,9 +1303,10 @@ function computeDashboard(db) {{
 
 const NAV_GROUPS = [
   {{
-    title: "Pilotage Direction",
+    title: "Pilotage Direction & Cloud",
     items: [
       {{ label: "📊 Direction Saint Eugène 2026", action: "workspace" }},
+      {{ label: "☁️ Backup Google Sheet & Historique", action: "gsheet" }},
       {{ label: "⚙️ Paramètres Hôtel & Fiscalité 4★", doctype: "SE Parametres Hotel" }}
     ]
   }},
@@ -1011,10 +1378,14 @@ function renderSidebar(activeKey = "workspace") {{
   NAV_GROUPS.forEach(g => {{
     html += `<div class="nav-group">${{g.title}}</div>`;
     g.items.forEach(item => {{
-      const key = item.doctype || "workspace";
-      const count = item.doctype && DB[item.doctype] ? DB[item.doctype].length : "";
+      const key = item.doctype || item.action || "workspace";
+      let count = "";
+      if (item.doctype && DB[item.doctype]) count = DB[item.doctype].length;
+      else if (item.action === "gsheet") count = (DB["SE Historique Modifications"] || []).length;
       const active = activeKey === key ? "active" : "";
-      const fn = item.doctype ? `showList('${{item.doctype}}')` : `showWorkspace()`;
+      let fn = "showWorkspace()";
+      if (item.doctype) fn = `showList('${{item.doctype}}')`;
+      else if (item.action === "gsheet") fn = `showGoogleSheetBackupCenter()`;
       html += `<button class="nav-btn ${{active}}" onclick="${{fn}}">
         <span>${{item.label}}</span>
         ${{count !== "" ? `<span style="font-size:11px;opacity:0.75;">${{count}}</span>` : ""}}
@@ -1098,23 +1469,126 @@ function showWorkspace() {{
   }});
 }}
 
-function showList(doctype, search = "") {{
+function getPrimaryEntityField(doctype) {{
+  const map = {{
+    "SE Facture Client": {{ field: "client", label: "Tous les Clients" }},
+    "SE Encaissement": {{ field: "client", label: "Tous les Clients" }},
+    "SE Facture Fournisseur": {{ field: "fournisseur", label: "Tous les Fournisseurs" }},
+    "SE Decaissement": {{ field: "beneficiaire", label: "Tous les Bénéficiaires" }},
+    "SE Charge et Depense": {{ field: "fournisseur", label: "Tous les Fournisseurs" }},
+    "SE Fiche de Paie Mensuelle": {{ field: "employe", label: "Tous les Collaborateurs" }},
+    "SE Budget Annuel": {{ field: "categorie", label: "Toutes les Catégories" }},
+    "SE Operation Bancaire": {{ field: "compte_bancaire", label: "Tous les Comptes" }}
+  }};
+  return map[doctype] || null;
+}}
+
+function getFilteredRows(doctype) {{
+  const rows = DB[doctype] || [];
+  const s = (LIST_STATE.search || "").trim().toLowerCase();
+  const ef = LIST_STATE.entityFilter || "";
+  const sf = LIST_STATE.statusFilter || "";
+  const entityCfg = getPrimaryEntityField(doctype);
+
+  return rows.filter(r => {{
+    if (ef && entityCfg && String(r[entityCfg.field] || "") !== ef) return false;
+    if (sf) {{
+      const stVal = r.statut || r.statut_validation || r.statut_pointage || r.statut_budget || r.niveau_risque || "";
+      if (String(stVal) !== sf) return false;
+    }}
+    if (s && !JSON.stringify(r).toLowerCase().includes(s)) return false;
+    return true;
+  }});
+}}
+
+function showList(doctype, resetFilters = true) {{
   toggleMobileSidebar(false);
   if (doctype === "SE Parametres Hotel") {{
     openDoc("SE Parametres Hotel", "SE Parametres Hotel");
     return;
   }}
+  if (CURRENT_DOCTYPE !== doctype || resetFilters === true) {{
+    LIST_STATE = {{ search: "", entityFilter: "", statusFilter: "" }};
+  }}
   CURRENT_DOCTYPE = doctype;
   renderSidebar(doctype);
+  renderCurrentListView();
+}}
+
+function onFilterChange(type, val) {{
+  if (type === "search") LIST_STATE.search = val;
+  if (type === "entity") LIST_STATE.entityFilter = val;
+  if (type === "status") LIST_STATE.statusFilter = val;
+  renderCurrentListView();
+}}
+
+function renderCurrentListView() {{
+  const doctype = CURRENT_DOCTYPE;
   const schema = SCHEMAS[doctype];
-  const rows = DB[doctype] || [];
+  const allRows = DB[doctype] || [];
+  const filtered = getFilteredRows(doctype);
   const labelTitle = getNavLabel(doctype);
-  document.getElementById("viewTitle").textContent = `${{labelTitle}} (${{rows.length}})`;
+  document.getElementById("viewTitle").textContent = `${{labelTitle}} (${{filtered.length}} / ${{allRows.length}})`;
 
-  const listFields = schema.fields.filter(f => f.in_list_view && !["Section Break", "Column Break", "Table"].includes(f.fieldtype)).slice(0, 6);
-  const filtered = rows.filter(r => !search || JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
+  const listFields = schema.fields.filter(f => f.in_list_view && !["Section Break", "Column Break", "Table"].includes(f.fieldtype)).slice(0, 8);
 
-  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${{f.label}}</th>`).join("");
+  // Construction des options de filtre rapide (ex: Client = SONATRACH, Statut = Payée/Échue)
+  const entityCfg = getPrimaryEntityField(doctype);
+  let entitySelectHtml = "";
+  if (entityCfg) {{
+    const uniqueEntities = Array.from(new Set(allRows.map(r => r[entityCfg.field]).filter(Boolean))).sort();
+    entitySelectHtml = `<select class="filter-select" onchange="onFilterChange('entity', this.value)">
+      <option value="">🏢 ${{entityCfg.label}} (${{uniqueEntities.length}})</option>
+      ${{uniqueEntities.map(e => `<option value="${{e}}" ${{LIST_STATE.entityFilter === e ? "selected" : ""}}>${{e}}</option>`).join("")}}
+    </select>`;
+  }}
+
+  const statusField = schema.fields.find(f => ["statut", "statut_validation", "statut_pointage", "statut_budget", "niveau_risque"].includes(f.fieldname));
+  let statusSelectHtml = "";
+  if (statusField) {{
+    const uniqueStatuses = Array.from(new Set(allRows.map(r => r[statusField.fieldname]).filter(Boolean)));
+    statusSelectHtml = `<select class="filter-select" style="min-width:140px;" onchange="onFilterChange('status', this.value)">
+      <option value="">📌 Tous les Statuts</option>
+      ${{uniqueStatuses.map(st => `<option value="${{st}}" ${{LIST_STATE.statusFilter === st ? "selected" : ""}}>${{st}}</option>`).join("")}}
+    </select>`;
+  }}
+
+  // Calcul des totaux pour les colonnes numériques et le bandeau supérieur
+  const numericFields = schema.fields.filter(f => ["Currency", "Int", "Percent"].includes(f.fieldtype) && !["Section Break", "Column Break", "Table"].includes(f.fieldtype));
+  const totalsMap = {{}};
+  numericFields.forEach(f => {{
+    if (f.fieldtype === "Percent") {{
+      const avg = filtered.length > 0 ? filtered.reduce((a, r) => a + Number(r[f.fieldname] || 0), 0) / filtered.length : 0;
+      totalsMap[f.fieldname] = Math.round(avg * 100) / 100;
+    }} else {{
+      const sum = filtered.reduce((a, r) => a + Number(r[f.fieldname] || 0), 0);
+      totalsMap[f.fieldname] = Math.round(sum * 100) / 100;
+    }}
+  }});
+
+  // Bandeau supérieur des Totaux (toujours affiché)
+  const currencyFieldsForStrip = schema.fields.filter(f => f.fieldtype === "Currency").slice(0, 5);
+  let stripHtml = "";
+  if (currencyFieldsForStrip.length > 0) {{
+    const filterTitle = LIST_STATE.entityFilter || LIST_STATE.statusFilter || LIST_STATE.search || "Tous les enregistrements";
+    stripHtml = `
+      <div class="totals-strip">
+        <div>
+          <div style="font-size:11px;color:#cbd5e1;text-transform:uppercase;font-weight:700;">Σ Récapitulatif & Totaux (${{filtered.length}} lignes — Filtre : ${{filterTitle}})</div>
+        </div>
+        <div class="totals-strip-items">
+          ${{currencyFieldsForStrip.map(f => `
+            <div class="tot-box">
+              <span>Total ${{f.label}}</span>
+              <b>${{fmtDZD(totalsMap[f.fieldname] || 0)}}</b>
+            </div>
+          `).join("")}}
+        </div>
+      </div>
+    `;
+  }}
+
+  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${{f.label}}</th>`).join("") + `<th>Dernière Modif.</th>`;
   let trHtml = filtered.map(r => {{
     let tds = `<td><b>${{r.name}}</b></td>`;
     listFields.forEach(f => {{
@@ -1131,23 +1605,363 @@ function showList(doctype, search = "") {{
         tds += `<td>${{val ?? "—"}}</td>`;
       }}
     }});
+    tds += `<td style="font-size:11px;color:#64748b;white-space:nowrap;">${{r.date_modification || "2026-11-03"}}</td>`;
     return `<tr onclick="openDoc('${{doctype}}', '${{r.name.replace(/'/g, "\\\\'")}}')">${{tds}}</tr>`;
   }}).join("");
 
+  // Ligne TOTAL GÉNÉRAL en pied de tableau (<tfoot>)
+  let tfootCells = `<td><b>TOTAL (${{filtered.length}} lignes)</b></td>`;
+  listFields.forEach(f => {{
+    if (f.fieldtype === "Currency") {{
+      tfootCells += `<td style="text-align:right;font-variant-numeric:tabular-nums;">${{fmtDZD(totalsMap[f.fieldname] || 0)}}</td>`;
+    }} else if (f.fieldtype === "Percent") {{
+      tfootCells += `<td>Moy: ${{Number(totalsMap[f.fieldname] || 0).toFixed(2)}} %</td>`;
+    }} else if (f.fieldtype === "Int") {{
+      tfootCells += `<td>Total: ${{totalsMap[f.fieldname] || 0}}</td>`;
+    }} else {{
+      tfootCells += `<td></td>`;
+    }}
+  }});
+  tfootCells += `<td></td>`;
+
   document.getElementById("mainContent").innerHTML = `
+    ${{stripHtml}}
     <div class="table-card">
       <div class="table-toolbar">
-        <input class="search-input" placeholder="🔍 Rechercher dans ${{labelTitle}}..." value="${{search}}" oninput="showList('${{doctype}}', this.value)">
-        <button class="btn btn-primary" onclick="openNewDoc('${{doctype}}')">+ Nouveau (${{labelTitle}})</button>
+        <div class="filter-group">
+          <input id="listSearchInput" class="search-input" placeholder="🔍 Rechercher (ex: SONATRACH)..." value="${{LIST_STATE.search}}" oninput="onFilterChange('search', this.value)">
+          ${{entitySelectHtml}}
+          ${{statusSelectHtml}}
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-gold" onclick="printCurrentListStatement()">🖨️ Imprimer l'État (avec Totaux)</button>
+          <button class="btn btn-primary" onclick="openNewDoc('${{doctype}}')">+ Nouveau</button>
+        </div>
       </div>
       <div class="table-scroll">
         <table class="frappe-list">
           <thead><tr>${{thHtml}}</tr></thead>
-          <tbody>${{trHtml || `<tr><td colspan="8" style="text-align:center;padding:24px;color:#64748b;">Aucun enregistrement</td></tr>`}}</tbody>
+          <tbody>${{trHtml || `<tr><td colspan="${{listFields.length + 2}}" style="text-align:center;padding:24px;color:#64748b;">Aucun enregistrement correspondant au filtre</td></tr>`}}</tbody>
+          <tfoot><tr>${{tfootCells}}</tr></tfoot>
         </table>
       </div>
     </div>
   `;
+}}
+
+function printCurrentListStatement() {{
+  const doctype = CURRENT_DOCTYPE;
+  const schema = SCHEMAS[doctype];
+  const filtered = getFilteredRows(doctype);
+  const cfg = (DB["SE Parametres Hotel"] && DB["SE Parametres Hotel"][0]) || {{}};
+  const labelTitle = getNavLabel(doctype);
+  const activeFilterDesc = [
+    LIST_STATE.entityFilter ? `Entité / Client : ${{LIST_STATE.entityFilter}}` : "",
+    LIST_STATE.statusFilter ? `Statut : ${{LIST_STATE.statusFilter}}` : "",
+    LIST_STATE.search ? `Recherche : "${{LIST_STATE.search}}"` : ""
+  ].filter(Boolean).join(" | ") || "Tous les enregistrements (Exercice 2026)";
+
+  // Colonnes à imprimer dans l'état récapitulatif
+  const printFields = schema.fields.filter(f =>
+    !["Section Break", "Column Break", "Table"].includes(f.fieldtype) &&
+    !["naming_series", "amended_from", "montant_en_lettres", "appliquer_taxe_sejour", "nb_adultes"].includes(f.fieldname)
+  ).slice(0, 9);
+
+  // Calcul des totaux
+  const totals = {{}};
+  printFields.forEach(f => {{
+    if (f.fieldtype === "Currency" || f.fieldtype === "Int") {{
+      totals[f.fieldname] = filtered.reduce((a, r) => a + Number(r[f.fieldname] || 0), 0);
+    }} else if (f.fieldtype === "Percent") {{
+      totals[f.fieldname] = filtered.length ? filtered.reduce((a, r) => a + Number(r[f.fieldname] || 0), 0) / filtered.length : 0;
+    }}
+  }});
+
+  const ths = `<th>N° / Réf.</th>` + printFields.map(f => `<th style="${{f.fieldtype === 'Currency' ? 'text-align:right;' : ''}}">${{f.label}}</th>`).join("");
+  const trs = filtered.map(r => {{
+    let cells = `<td><b>${{r.name}}</b></td>`;
+    printFields.forEach(f => {{
+      const v = r[f.fieldname];
+      if (f.fieldtype === "Currency") cells += `<td style="text-align:right;white-space:nowrap;">${{fmtDZD(v)}}</td>`;
+      else if (f.fieldtype === "Percent") cells += `<td style="text-align:right;">${{Number(v || 0).toFixed(2)}} %</td>`;
+      else cells += `<td>${{v ?? "—"}}</td>`;
+    }});
+    return `<tr>${{cells}}</tr>`;
+  }}).join("");
+
+  let tfoot = `<td><b>TOTAL GÉNÉRAL (${{filtered.length}} lignes)</b></td>`;
+  printFields.forEach(f => {{
+    if (f.fieldtype === "Currency") tfoot += `<td style="text-align:right;white-space:nowrap;"><b>${{fmtDZD(totals[f.fieldname] || 0)}}</b></td>`;
+    else if (f.fieldtype === "Percent") tfoot += `<td style="text-align:right;"><b>Moy: ${{Number(totals[f.fieldname] || 0).toFixed(2)}} %</b></td>`;
+    else if (f.fieldtype === "Int") tfoot += `<td><b>${{totals[f.fieldname] || 0}}</b></td>`;
+    else tfoot += `<td></td>`;
+  }});
+
+  const currencyBoxes = printFields.filter(f => f.fieldtype === "Currency").map(f => `
+    <div style="border:1px solid #cbd5e1;border-radius:6px;padding:10px 14px;background:#f8fafc;min-width:170px;">
+      <div style="font-size:10.5px;color:#475569;text-transform:uppercase;font-weight:700;">TOTAL ${{f.label}}</div>
+      <div style="font-size:15px;font-weight:800;color:#0f172a;margin-top:3px;">${{fmtDZD(totals[f.fieldname] || 0)}}</div>
+    </div>
+  `).join("");
+
+  const w = window.open("", "_blank");
+  w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>État Récapitulatif — ${{labelTitle}}</title>
+  <style>
+    body {{ font-family:'Segoe UI',Arial,sans-serif; color:#0f172a; max-width:1080px; margin:20px auto; padding:22px; }}
+    .hdr {{ display:flex; justify-content:space-between; border-bottom:3px solid #b45309; padding-bottom:14px; margin-bottom:16px; flex-wrap:wrap; gap:12px; }}
+    .filter-banner {{ background:#fef3c7; border-left:4px solid #d97706; padding:10px 14px; font-size:12.5px; margin-bottom:16px; border-radius:4px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }}
+    .sum-grid {{ display:flex; flex-wrap:wrap; gap:12px; margin-bottom:16px; }}
+    table {{ width:100%; border-collapse:collapse; font-size:11.8px; margin-bottom:20px; }}
+    th {{ background:#0f172a; color:#fff; padding:8px 9px; text-align:left; font-size:10.5px; text-transform:uppercase; }}
+    td {{ padding:8px 9px; border-bottom:1px solid #cbd5e1; }}
+    tfoot td {{ background:#fef3c7; color:#0f172a; font-weight:800; border-top:2px solid #b45309; font-size:12px; padding:10px 9px; }}
+    .sigs {{ display:flex; justify-content:space-between; margin-top:28px; gap:20px; }}
+    .sig-box {{ flex:1; border:1px dashed #94a3b8; border-radius:6px; padding:12px; min-height:85px; font-size:11.5px; }}
+    @media print {{ .no-print {{ display:none; }} body {{ margin:0; padding:10px; }} }}
+  </style></head><body>
+  <div class="no-print" style="margin-bottom:14px;display:flex;justify-content:flex-end;gap:10px;">
+    <button onclick="window.print()" style="padding:9px 18px;background:#0f172a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">🖨️ Imprimer / Enregistrer en PDF</button>
+  </div>
+  <div class="hdr">
+    <div>
+      <h1 style="margin:0;font-size:20px;">${{cfg.raison_sociale || "SPA HÔTEL SAINT EUGÈNE"}} <span style="color:#d97706;">★★★★</span></h1>
+      <div style="font-size:11.5px;color:#475569;margin-top:4px;">
+        ${{cfg.adresse || "04 Blv Omar Lounas, Bologhine - 16090 Alger, Algérie"}}<br>
+        <b>RC :</b> ${{cfg.rc || "—"}} | <b>NIF :</b> ${{cfg.nif || "—"}} | <b>NIS :</b> ${{cfg.nis || "—"}} | <b>AI :</b> ${{cfg.article_imposition || "—"}}
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <h2 style="margin:0;color:#b45309;font-size:17px;">ÉTAT RÉCAPITULATIF & RELEVÉ SCF</h2>
+      <div style="font-size:13px;font-weight:700;margin-top:3px;">${{labelTitle}}</div>
+      <div style="font-size:11.5px;color:#475569;">Édité le : ${{nowAlgeriaTimestamp()}}</div>
+      <div style="font-size:11.5px;color:#475569;">Nombre de lignes : <b>${{filtered.length}}</b></div>
+    </div>
+  </div>
+  <div class="filter-banner">
+    <div><b>Périmètre / Filtre appliqué :</b> ${{activeFilterDesc}}</div>
+    <div><b>Devise :</b> Dinar Algérien (DZD) — Normes SCF</div>
+  </div>
+  ${{currencyBoxes ? `<div class="sum-grid">${{currencyBoxes}}</div>` : ""}}
+  <table>
+    <thead><tr>${{ths}}</tr></thead>
+    <tbody>${{trs}}</tbody>
+    <tfoot><tr>${{tfoot}}</tr></tfoot>
+  </table>
+  <div class="sigs">
+    <div class="sig-box"><b>Visa Contrôle de Gestion / DAF :</b><br><span style="color:#64748b;">Date, Signature & Cachet</span></div>
+    <div class="sig-box"><b>Visa Direction Générale :</b><br><span style="color:#64748b;">Bon pour validation</span></div>
+  </div>
+  </body></html>`);
+  w.document.close();
+}}
+
+function showGoogleSheetBackupCenter() {{
+  toggleMobileSidebar(false);
+  CURRENT_DOCTYPE = null;
+  renderSidebar("gsheet");
+  document.getElementById("viewTitle").textContent = "☁️ Sauvegarde Google Sheet & Historique Complet des Modifications";
+
+  const hist = DB["SE Historique Modifications"] || [];
+  const savedWebhook = localStorage.getItem(WEBHOOK_KEY) || "";
+
+  const histRowsHtml = hist.map(h => `
+    <tr>
+      <td><b>${{h.id || "—"}}</b></td>
+      <td style="white-space:nowrap;"><b>${{h.date_modification || "—"}}</b></td>
+      <td>${{h.module_label || h.doctype || "—"}}</td>
+      <td><b>${{h.doc_name || "—"}}</b></td>
+      <td><span class="pill ${{h.action && h.action.includes('Suppression') ? 'red' : (h.action && h.action.includes('Création') ? 'green' : 'orange')}}">${{h.action || "Modification"}}</span></td>
+      <td>${{h.detail_modification || "—"}}</td>
+      <td>${{h.utilisateur || "—"}}</td>
+      <td><a href="${{GOOGLE_SHEET_URL}}" target="_blank" style="color:#2563eb;font-weight:700;text-decoration:none;">🔗 Ouvrir Google Sheet</a></td>
+    </tr>
+  `).join("");
+
+  document.getElementById("mainContent").innerHTML = `
+    <div class="alerts-panel" style="border-left:5px solid #16a34a;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h3 style="margin:0 0 6px 0;font-size:15px;">☁️ Sauvegarde & Synchronisation Google Sheets (22 Feuilles Séparées + Historique Complet)</h3>
+          <div style="font-size:12.5px;color:#475569;">
+            Lien Google Sheet configuré : <a href="${{GOOGLE_SHEET_URL}}" target="_blank" style="color:#15803d;font-weight:700;word-break:break-all;">${{GOOGLE_SHEET_URL}}</a>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a class="btn btn-green" href="${{GOOGLE_SHEET_URL}}" target="_blank">🔗 Ouvrir votre Google Sheet</a>
+          <button class="btn btn-gold" onclick="exportFullWorkbookXLSX()">📊 Télécharger Classeur 23 Feuilles (.xlsx)</button>
+          <button class="btn btn-primary" onclick="printHistoryStatement()">🖨️ Imprimer l'Historique</button>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;">
+        <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+          ⚡ Connexion Automatique Temps Réel (Google Apps Script Web App) :
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input id="webhookInput" class="search-input" style="flex:1;min-width:240px;" placeholder="Collez ici l'URL Web App Google Script (https://script.google.com/macros/s/.../exec)" value="${{savedWebhook}}">
+          <button class="btn btn-primary" onclick="saveWebhookUrl()">💾 Activer & Synchroniser Maintenant</button>
+          <button class="btn" onclick="copyGoogleAppsScriptCode()">📋 Copier le Script Google Sheet (23 Feuilles)</button>
+        </div>
+        <div style="font-size:11.5px;color:#64748b;margin-top:6px;">
+          💡 <b>Astuce :</b> Cliquez sur <b>"📋 Copier le Script Google Sheet"</b>, ouvrez votre Google Sheet → <b>Extensions > Apps Script</b>, collez le script et déployez-le en <i>Application Web (Accès : Tout le monde)</i>. Chaque ajout de Facture ou Encaissement mettra à jour automatiquement les 23 feuilles séparées de votre Google Sheet avec la date et le détail exact des modifications !
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div style="font-weight:700;font-size:14px;color:#0f172a;">
+          🕘 Journal & Historique Complet des Modifications (${{hist.length}} opérations enregistrées)
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="frappe-list">
+          <thead>
+            <tr>
+              <th>N° Log</th>
+              <th>Date & Heure Modification</th>
+              <th>Module (Feuille)</th>
+              <th>Réf. Document</th>
+              <th>Action</th>
+              <th>Détail Exact de la Modification (Avant → Après)</th>
+              <th>Modifié Par</th>
+              <th>Lien Google Sheet</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${{histRowsHtml || '<tr><td colspan="8" style="text-align:center;padding:20px;">Aucune modification</td></tr>'}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}}
+
+function saveWebhookUrl() {{
+  const val = (document.getElementById("webhookInput").value || "").trim();
+  localStorage.setItem(WEBHOOK_KEY, val);
+  if (val) {{
+    triggerGoogleSheetAutoBackup({{ action: "Synchronisation Complète Manuelle", date: nowAlgeriaTimestamp() }});
+    showToast("☁️ Synchronisation envoyée vers votre Google Sheet !");
+  }} else {{
+    showToast("ℹ️ URL Web App effacée");
+  }}
+}}
+
+function copyGoogleAppsScriptCode() {{
+  navigator.clipboard.writeText(GS_SCRIPT_CODE).then(() => {{
+    showToast("📋 Script Google Sheet copié ! Collez-le dans Extensions > Apps Script");
+  }}).catch(() => {{
+    alert("Le script est également disponible dans le fichier GOOGLE_SHEET_AUTO_BACKUP.gs de votre dossier.");
+  }});
+}}
+
+function exportFullWorkbookXLSX() {{
+  if (typeof XLSX === "undefined") {{
+    alert("Chargement du module Excel en cours, veuillez réessayer dans 2 secondes.");
+    return;
+  }}
+  const wb = XLSX.utils.book_new();
+  const ts = nowAlgeriaTimestamp();
+
+  // 1. Feuille Historique Complet des Modifications
+  const hist = DB["SE Historique Modifications"] || [];
+  const histRows = [
+    ["SPA HÔTEL SAINT EUGÈNE 4★ ALGER — JOURNAL & HISTORIQUE COMPLET DES MODIFICATIONS (Export du " + ts + ")"],
+    ["ID Modification", "Date & Heure de Modification", "Module (Titre)", "Référence Document", "Action Effectuée", "Détail de la Modification (Avant -> Après)", "Utilisateur", "Lien Google Sheet"],
+    ...hist.map(h => [
+      h.id || "",
+      h.date_modification || ts,
+      h.module_label || h.doctype || "",
+      h.doc_name || "",
+      h.action || "",
+      h.detail_modification || "",
+      h.utilisateur || "",
+      GOOGLE_SHEET_URL
+    ])
+  ];
+  const wsHist = XLSX.utils.aoa_to_sheet(histRows);
+  XLSX.utils.book_append_sheet(wb, wsHist, "Historique_Modifications");
+
+  // 2. Une feuille séparée par Module avec ligne TOTAL GÉNÉRAL
+  NAV_GROUPS.forEach(g => {{
+    g.items.forEach(item => {{
+      if (!item.doctype) return;
+      const dt = item.doctype;
+      const schema = SCHEMAS[dt];
+      if (!schema) return;
+      const rows = DB[dt] || [];
+      const fields = schema.fields.filter(f => !["Section Break", "Column Break", "Table"].includes(f.fieldtype) && f.fieldname !== "naming_series" && f.fieldname !== "amended_from");
+
+      const headers = [
+        "Référence (ID)",
+        ...fields.map(f => f.label || f.fieldname),
+        "Date de Modification",
+        "Modifié par",
+        "Détail de la Modification",
+        "Lien Google Sheet"
+      ];
+
+      const dataRows = rows.map(r => [
+        r.name || "",
+        ...fields.map(f => r[f.fieldname] !== undefined && r[f.fieldname] !== null ? r[f.fieldname] : ""),
+        r.date_modification || ts,
+        r.modifie_par || CURRENT_USER_ROLE,
+        r.detail_modification || "Enregistrement validé",
+        GOOGLE_SHEET_URL
+      ]);
+
+      const totalRow = new Array(headers.length).fill("");
+      totalRow[0] = `TOTAL GÉNÉRAL (${{rows.length}} lignes)`;
+      fields.forEach((f, idx) => {{
+        if (["Currency", "Int", "Float"].includes(f.fieldtype)) {{
+          const s = rows.reduce((a, r) => a + Number(r[f.fieldname] || 0), 0);
+          totalRow[idx + 1] = Math.round(s * 100) / 100;
+        }} else if (f.fieldtype === "Percent" && rows.length > 0) {{
+          const avg = rows.reduce((a, r) => a + Number(r[f.fieldname] || 0), 0) / rows.length;
+          totalRow[idx + 1] = Math.round(avg * 100) / 100;
+        }}
+      }});
+
+      const sheetAoA = [
+        [`HÔTEL SAINT EUGÈNE 4★ ALGER — ${{item.label}} — Export du ${{ts}}`],
+        headers,
+        ...dataRows,
+        totalRow
+      ];
+      const cleanTabName = item.label.replace(/[\\/?*\\[\\]:]/g, "").replace(/^[^a-zA-Z0-9À-ÿ]+/, "").trim().slice(0, 31) || dt.slice(0, 31);
+      const ws = XLSX.utils.aoa_to_sheet(sheetAoA);
+      XLSX.utils.book_append_sheet(wb, ws, cleanTabName);
+    }});
+  }});
+
+  XLSX.writeFile(wb, `Saint_Eugene_ERP_2026_Backup_Complet_${{ts.slice(0, 10)}}.xlsx`);
+  showToast("📊 Classeur complet (23 feuilles séparées + Totaux) téléchargé !");
+}}
+
+function printHistoryStatement() {{
+  const hist = DB["SE Historique Modifications"] || [];
+  const cfg = (DB["SE Parametres Hotel"] && DB["SE Parametres Hotel"][0]) || {{}};
+  const w = window.open("", "_blank");
+  w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Historique des Modifications</title>
+  <style>
+    body {{ font-family:'Segoe UI',Arial,sans-serif; color:#0f172a; max-width:1050px; margin:20px auto; padding:20px; }}
+    table {{ width:100%; border-collapse:collapse; font-size:12px; margin-top:16px; }}
+    th {{ background:#0f172a; color:#fff; padding:8px; text-align:left; }}
+    td {{ padding:8px; border-bottom:1px solid #cbd5e1; }}
+    @media print {{ .no-print {{ display:none; }} }}
+  </style></head><body>
+  <div class="no-print" style="text-align:right;margin-bottom:12px;"><button onclick="window.print()" style="padding:8px 16px;background:#0f172a;color:#fff;border:none;border-radius:6px;cursor:pointer;">🖨️ Imprimer PDF</button></div>
+  <h2>${{cfg.raison_sociale || "SPA HÔTEL SAINT EUGÈNE 4★"}} — Journal & Historique des Modifications</h2>
+  <p><b>Google Sheet de Sauvegarde :</b> ${{GOOGLE_SHEET_URL}} | <b>Total Opérations :</b> ${{hist.length}}</p>
+  <table>
+    <thead><tr><th>ID</th><th>Date & Heure</th><th>Module</th><th>Réf.</th><th>Action</th><th>Détail de la Modification</th><th>Utilisateur</th></tr></thead>
+    <tbody>
+      ${{hist.map(h => `<tr><td>${{h.id}}</td><td>${{h.date_modification}}</td><td>${{h.module_label || h.doctype}}</td><td><b>${{h.doc_name}}</b></td><td>${{h.action}}</td><td>${{h.detail_modification}}</td><td>${{h.utilisateur}}</td></tr>`).join("")}}
+    </tbody>
+  </table>
+  </body></html>`);
+  w.document.close();
 }}
 
 function generateNextDocName(doctype) {{
@@ -1186,6 +2000,7 @@ function openDoc(doctype, name) {{
   const rows = DB[doctype] || [];
   const doc = rows.find(r => r.name === name) || rows[0];
   if (!doc) return;
+  CURRENT_ORIGINAL_DOC = JSON.parse(JSON.stringify(doc));
   renderDocModal(doctype, JSON.parse(JSON.stringify(doc)), false);
 }}
 
@@ -1208,16 +2023,15 @@ function openNewDoc(doctype) {{
     }}
   }});
 
-  // Valeurs intelligentes par défaut pour Facture Client & Encaissement
   if (doctype === "SE Facture Client") {{
     const firstClient = (DB["SE Client"] || [])[0];
     if (firstClient) {{
-      doc.client = firstClient.name;
+      doc.client = LIST_STATE.entityFilter || firstClient.name;
       doc.type_client = firstClient.type_client || "Corporate";
     }}
     doc.date_facture = "2026-11-03";
-    doc.date_debut_sejour = "2026-11-01";
-    doc.date_fin_sejour = "2026-11-03";
+    doc.date_arrivee = "2026-11-01";
+    doc.date_depart = "2026-11-03";
     doc.nuitees = 2;
     doc.nb_adultes = 1;
     doc.nature_prestation = "Hébergement";
@@ -1251,6 +2065,7 @@ function openNewDoc(doctype) {{
     doc.autres_revenus = 65000;
   }}
 
+  CURRENT_ORIGINAL_DOC = null;
   renderDocModal(doctype, doc, true);
 }}
 
@@ -1261,7 +2076,15 @@ function renderDocModal(doctype, doc, isNew) {{
   const schema = SCHEMAS[doctype];
   document.getElementById("modalTitle").textContent = `${{isNew ? "➕ Nouveau" : doc.name}} — ${{getNavLabel(doctype)}}`;
 
-  let formHtml = `<div class="form-grid">`;
+  let formHtml = "";
+  if (!isNew && doc.date_modification) {{
+    formHtml += `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #16a34a;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11.5px;color:#334155;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+      <span>🕒 <b>Dernière modification :</b> ${{doc.date_modification}} par <b>${{doc.modifie_par || CURRENT_USER_ROLE}}</b></span>
+      <span>📝 ${{doc.detail_modification || "Enregistrement sauvegardé"}}</span>
+    </div>`;
+  }}
+
+  formHtml += `<div class="form-grid">`;
   schema.fields.forEach(f => {{
     if (["Section Break", "Column Break", "Table"].includes(f.fieldtype) || f.fieldname === "naming_series" || f.fieldname === "amended_from") return;
     const val = doc[f.fieldname] ?? "";
@@ -1303,10 +2126,9 @@ function renderDocModal(doctype, doc, isNew) {{
   formHtml += `</div>`;
   document.getElementById("modalBody").innerHTML = formHtml;
 
-  const printable = ["SE Facture Client", "SE Caisse Mensuelle", "SE Fiche de Paie Mensuelle", "SE Declaration TVA"].includes(doctype);
   let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;">`;
-  if (printable && !isNew) {{
-    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview()">🖨️ PDF SCF</button>`;
+  if (!isNew) {{
+    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview()">🖨️ Imprimer PDF</button>`;
   }}
   if (doctype === "SE Facture Client" && !isNew && Number(doc.reste_a_encaisser) > 0) {{
     ftrHtml += `<button class="btn" onclick="quickReceiptFromInvoice()">💰 Encaisser cette Facture</button>`;
@@ -1331,7 +2153,6 @@ function updateInputOnScreen(fieldname, val) {{
 function onFieldChange(fieldname, value) {{
   CURRENT_DOC[fieldname] = value;
 
-  // Auto-calcul en direct pour Facture Client
   if (CURRENT_DOCTYPE === "SE Facture Client") {{
     if (fieldname === "client") {{
       const cli = (DB["SE Client"] || []).find(c => c.name === value);
@@ -1349,7 +2170,6 @@ function onFieldChange(fieldname, value) {{
     }});
   }}
 
-  // Auto-remplissage en direct pour Encaissement Client
   if (CURRENT_DOCTYPE === "SE Encaissement") {{
     if (fieldname === "facture_liee") {{
       const fac = (DB["SE Facture Client"] || []).find(f => f.name === value);
@@ -1367,7 +2187,6 @@ function onFieldChange(fieldname, value) {{
     }}
   }}
 
-  // Auto-calcul en direct pour Performance Hôtelière (45 ch.)
   if (CURRENT_DOCTYPE === "SE Performance Hoteliere") {{
     const dispo = Number(CURRENT_DOC.chambres_disponibles || 45);
     const vendues = Number(CURRENT_DOC.chambres_vendues || 0);
@@ -1402,6 +2221,7 @@ function quickReceiptFromInvoice() {{
   syncModalInputsToDoc();
   const inv = CURRENT_DOC;
   closeModal();
+  CURRENT_ORIGINAL_DOC = null;
   renderDocModal("SE Encaissement", {{
     name: generateNextDocName("SE Encaissement"),
     date_encaissement: "2026-11-03",
@@ -1417,12 +2237,24 @@ function quickReceiptFromInvoice() {{
 
 function saveCurrentDoc() {{
   syncModalInputsToDoc();
+  if (CURRENT_DOCTYPE === "SE Facture Client") {{
+    recomputeSingleInvoice(CURRENT_DOC, DB);
+  }}
+
+  const ts = nowAlgeriaTimestamp();
+  const diffStr = computeModificationDiff(CURRENT_DOCTYPE, CURRENT_ORIGINAL_DOC, CURRENT_DOC, CURRENT_IS_NEW);
+  const actionLabel = CURRENT_IS_NEW ? "➕ Création" : "✏️ Modification";
+
+  CURRENT_DOC.date_modification = ts;
+  CURRENT_DOC.modifie_par = CURRENT_USER_ROLE;
+  CURRENT_DOC.detail_modification = diffStr;
+  CURRENT_DOC.lien_google_sheet = GOOGLE_SHEET_URL;
+
   const rows = DB[CURRENT_DOCTYPE] || (DB[CURRENT_DOCTYPE] = []);
   const idx = rows.findIndex(r => r.name === CURRENT_DOC.name);
   if (idx >= 0) rows[idx] = CURRENT_DOC;
   else rows.unshift(CURRENT_DOC);
 
-  // Si c'est une Facture Client d'un nouveau mois, créer automatiquement la ligne G50 correspondante si absente
   if (CURRENT_DOCTYPE === "SE Facture Client" && CURRENT_DOC.date_facture) {{
     const mois = String(CURRENT_DOC.date_facture).slice(0, 7);
     const g50List = DB["SE Declaration TVA"] || (DB["SE Declaration TVA"] = []);
@@ -1431,31 +2263,39 @@ function saveCurrentDoc() {{
         name: `G50-${{mois}}`,
         mois: mois,
         precompte_anterieur: 0,
-        statut: "Déclarée (G50)"
+        statut: "Déclarée (G50)",
+        date_modification: ts,
+        modifie_par: CURRENT_USER_ROLE,
+        detail_modification: `Création automatique G50 pour ${{mois}}`,
+        lien_google_sheet: GOOGLE_SHEET_URL
       }});
     }}
   }}
 
-  saveDB();
+  const logEntry = recordAuditModification(CURRENT_DOCTYPE, CURRENT_DOC.name, actionLabel, diffStr);
+  saveDB(logEntry);
+
   const savedName = CURRENT_DOC.name;
   const savedDoctype = CURRENT_DOCTYPE;
   closeModal();
   renderSidebar(savedDoctype);
   if (savedDoctype === "SE Parametres Hotel") showWorkspace();
-  else showList(savedDoctype);
-  showToast(`✅ ${{savedName}} enregistré et sauvegardé !`);
+  else showList(savedDoctype, false);
+  showToast(`✅ ${{savedName}} sauvegardé (+ Historique & Backup Google Sheet)`);
 }}
 
 function deleteCurrentDoc() {{
   if (!confirm(`Supprimer définitivement ${{CURRENT_DOC.name}} ?`)) return;
-  const rows = DB[CURRENT_DOCTYPE] || [];
-  DB[CURRENT_DOCTYPE] = rows.filter(r => r.name !== CURRENT_DOC.name);
-  saveDB();
+  const deletedName = CURRENT_DOC.name;
   const dt = CURRENT_DOCTYPE;
+  const rows = DB[dt] || [];
+  DB[dt] = rows.filter(r => r.name !== deletedName);
+  const logEntry = recordAuditModification(dt, deletedName, "🗑️ Suppression", `Suppression de ${{deletedName}} dans ${{getNavLabel(dt)}}`);
+  saveDB(logEntry);
   closeModal();
   renderSidebar(dt);
-  showList(dt);
-  showToast(`🗑️ ${{CURRENT_DOC.name}} supprimé`);
+  showList(dt, false);
+  showToast(`🗑️ ${{deletedName}} supprimé (Historique mis à jour)`);
 }}
 
 function openPrintPreview() {{
@@ -1551,7 +2391,7 @@ function closeModal() {{
 </html>
 """
     (APP_ROOT / "index.html").write_text(html, encoding="utf-8")
-    print(f"OK: index.html chiffré et optimisé Mobile généré avec le code d'accès '{password}'.")
+    print(f"OK: index.html et GOOGLE_SHEET_AUTO_BACKUP.gs générés avec le code d'accès '{password}'.")
 
 
 if __name__ == "__main__":
