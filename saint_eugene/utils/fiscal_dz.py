@@ -18,7 +18,7 @@ DEFAULT_SETTINGS = {
     "raison_sociale": "SPA HÔTEL SAINT EUGÈNE",
     "classement_etoiles": "4 Étoiles",
     "capital_social": "120 000 000,00 DZD",
-    "adresse": "Front de Mer, Bologhine - 16090 Alger, Algérie",
+    "adresse": "04 Blv Omar Lounas, Bologhine - 16090 Alger, Algérie",
     "telephone": "+213 (0) 21 95 40 00",
     "email": "direction.financiere@hotel-sainteugene.dz",
     "nif": "002616099124587",
@@ -27,7 +27,7 @@ DEFAULT_SETTINGS = {
     "article_imposition": "16094512874",
     "numero_employeur_cnas": "16 4458 92 01",
     "rib_principal": "BNA Agence Bologhine : 00100614030001458921",
-    "capacite_chambres": 84,
+    "capacite_chambres": 45,
     "taux_tva_hebergement_defaut": 9.0,
     "taux_tva_standard_defaut": 19.0,
     "taxe_sejour_nuitee_adulte": 400.0,
@@ -96,7 +96,7 @@ def compute_taxe_sejour_algerie(
     appliquer: int | bool,
     nb_adultes: int,
     nuitees: int,
-    tarif_unitaire: float = 400.0,
+    tarif_unitaire: float = 500.0,
 ) -> float:
     """
     Calcule la Taxe de Séjour hôtelière algérienne (400 DZD / adulte / nuitée en hôtel 4★).
