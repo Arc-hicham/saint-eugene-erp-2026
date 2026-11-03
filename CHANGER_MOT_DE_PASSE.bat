@@ -14,7 +14,7 @@ if "%NEW_PASS%"=="" (
     exit /b 1
 )
 
-python "C:\Users\HICHAM BAKIR\.gemini\antigravity\brain\603f0c7f-cde3-4986-a69d-d2ef2ac1fa8f\scratch\build_static_pages.py" "%NEW_PASS%"
+python encrypt_web_portal.py "%NEW_PASS%"
 git add index.html
 git commit -m "Update encrypted access portal password"
 git push origin main
