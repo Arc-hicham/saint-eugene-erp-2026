@@ -1,0 +1,322 @@
+{
+  "actions": [],
+  "autoname": "naming_series:",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_entete",
+    "naming_series",
+    "date_facture",
+    "date_validite",
+    "client",
+    "type_client",
+    "nature_prestation",
+    "cb_sejour",
+    "ref_devis",
+    "sejours_separes",
+    "date_arrivee",
+    "date_depart",
+    "nuitees",
+    "nb_adultes",
+    "appliquer_taxe_sejour",
+    "taxe_sejour_incluse",
+    "mode_paiement_prevu",
+    "sb_sejours_tab",
+    "sejours",
+    "sb_lignes_tab",
+    "lignes",
+    "sb_montants",
+    "total_ttc_saisi",
+    "montant_ht",
+    "montant_tva",
+    "cb_ttc",
+    "taxe_sejour",
+    "droit_timbre",
+    "montant_ttc",
+    "detail_tva",
+    "montant_en_lettres",
+    "sb_statut",
+    "statut",
+    "conditions_reglement",
+    "notes_proforma"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_entete",
+      "fieldtype": "Section Break",
+      "label": "Informations Facture Pro Forma & Séjour"
+    },
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Série N° Pro Forma",
+      "options": "PRO-FORMA-.YYYY.-.#####",
+      "reqd": 1,
+      "default": "PRO-FORMA-.YYYY.-.#####"
+    },
+    {
+      "fieldname": "date_facture",
+      "fieldtype": "Date",
+      "label": "Date d'Émission",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today"
+    },
+    {
+      "fieldname": "date_validite",
+      "fieldtype": "Date",
+      "label": "Date de Validité de l'Offre",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "client",
+      "fieldtype": "Link",
+      "label": "Client / Prospect",
+      "options": "SE Client",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "type_client",
+      "fieldtype": "Select",
+      "label": "Type Client",
+      "options": "Corporate\nAgence\nPassager",
+      "reqd": 1,
+      "in_standard_filter": 1,
+      "fetch_from": "client.type_client"
+    },
+    {
+      "fieldname": "nature_prestation",
+      "fieldtype": "Select",
+      "label": "Catégorie Principale (SCF)",
+      "options": "Hébergement\nRestauration\nSéminaires & Banquets\nMixte\nAutres Services",
+      "read_only": 1,
+      "in_standard_filter": 1,
+      "default": "Hébergement"
+    },
+    {
+      "fieldname": "cb_sejour",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "ref_devis",
+      "fieldtype": "Data",
+      "label": "Réf. Réservation / Devis"
+    },
+    {
+      "fieldname": "sejours_separes",
+      "fieldtype": "Check",
+      "label": "Séjours Séparés Multiples (plusieurs séjours distincts)",
+      "default": "0"
+    },
+    {
+      "fieldname": "date_arrivee",
+      "fieldtype": "Date",
+      "label": "Date d'Arrivée (Séjour 1 / Principal)",
+      "depends_on": "eval:!doc.sejours_separes"
+    },
+    {
+      "fieldname": "date_depart",
+      "fieldtype": "Date",
+      "label": "Date de Départ (Séjour 1 / Principal)",
+      "depends_on": "eval:!doc.sejours_separes"
+    },
+    {
+      "fieldname": "nuitees",
+      "fieldtype": "Int",
+      "label": "Total Nuitées",
+      "read_only": 1,
+      "default": "1"
+    },
+    {
+      "fieldname": "nb_adultes",
+      "fieldtype": "Int",
+      "label": "Total Personnes / Occupants",
+      "read_only": 1,
+      "default": "1"
+    },
+    {
+      "fieldname": "appliquer_taxe_sejour",
+      "fieldtype": "Check",
+      "label": "Appliquer la Taxe de Séjour 4★ (500 DZD / pers. / nuitée)",
+      "default": "1"
+    },
+    {
+      "fieldname": "taxe_sejour_incluse",
+      "fieldtype": "Check",
+      "label": "Taxe de Séjour incluse dans le montant TTC saisi",
+      "default": "1"
+    },
+    {
+      "fieldname": "mode_paiement_prevu",
+      "fieldtype": "Select",
+      "label": "Mode de Règlement Prévu",
+      "options": "Virement\nChèque\nEspèces\nTPE",
+      "reqd": 1,
+      "default": "Virement"
+    },
+    {
+      "fieldname": "sb_sejours_tab",
+      "fieldtype": "Section Break",
+      "label": "Détail des Séjours Séparés (Chacun avec ses dates, nuitées et occupants)",
+      "depends_on": "eval:doc.sejours_separes"
+    },
+    {
+      "fieldname": "sejours",
+      "fieldtype": "Table",
+      "label": "Liste des Séjours Séparés",
+      "options": "SE Sejour Facture Client"
+    },
+    {
+      "fieldname": "sb_lignes_tab",
+      "fieldtype": "Section Break",
+      "label": "Prestations & Chambres (Saisir uniquement le Montant TTC par ligne)"
+    },
+    {
+      "fieldname": "lignes",
+      "fieldtype": "Table",
+      "label": "Détail des Lignes (Chambres & Services)",
+      "options": "SE Ligne Facture Client",
+      "reqd": 1
+    },
+    {
+      "fieldname": "sb_montants",
+      "fieldtype": "Section Break",
+      "label": "Décomposition Fiscale Automatique (HT, TVA, Taxe de Séjour, Timbre & TTC)"
+    },
+    {
+      "fieldname": "total_ttc_saisi",
+      "fieldtype": "Currency",
+      "label": "Total TTC des Prestations (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "montant_ht",
+      "fieldtype": "Currency",
+      "label": "Montant Hors Taxe HT (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "montant_tva",
+      "fieldtype": "Currency",
+      "label": "Montant TVA Total (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cb_ttc",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "taxe_sejour",
+      "fieldtype": "Currency",
+      "label": "Taxe de Séjour Hôtelière 4★ (DZD)",
+      "read_only": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "droit_timbre",
+      "fieldtype": "Currency",
+      "label": "Droit de Timbre Espèces (Ajouté en plus)",
+      "read_only": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "montant_ttc",
+      "fieldtype": "Currency",
+      "label": "Net à Payer TTC Pro Forma (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "detail_tva",
+      "fieldtype": "Data",
+      "label": "Ventilation TVA par Taux",
+      "read_only": 1
+    },
+    {
+      "fieldname": "montant_en_lettres",
+      "fieldtype": "Small Text",
+      "label": "Arrêté de la Pro Forma en Toutes Lettres",
+      "read_only": 1
+    },
+    {
+      "fieldname": "sb_statut",
+      "fieldtype": "Section Break",
+      "label": "Suivi & Statut Commercial"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "options": "Brouillon\nEnvoyée\nAcceptée\nFacturée\nExpirée\nRefusée",
+      "default": "Brouillon",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "conditions_reglement",
+      "fieldtype": "Small Text",
+      "label": "Conditions de Règlement",
+      "default": "Règlement par virement bancaire sous 30 jours à réception de facture définitive."
+    },
+    {
+      "fieldname": "notes_proforma",
+      "fieldtype": "Small Text",
+      "label": "Notes & Remarques"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Facture Pro Forma",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "client",
+  "search_fields": "client,ref_devis,statut"
+}

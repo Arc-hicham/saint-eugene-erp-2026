@@ -13,21 +13,28 @@
     "nature_prestation",
     "cb_sejour",
     "ref_reservation",
+    "sejours_separes",
     "date_arrivee",
     "date_depart",
     "nuitees",
     "nb_adultes",
     "appliquer_taxe_sejour",
+    "taxe_sejour_incluse",
     "date_echeance",
     "mode_paiement_prevu",
+    "sb_sejours_tab",
+    "sejours",
+    "sb_lignes_tab",
+    "lignes",
     "sb_montants",
+    "total_ttc_saisi",
     "montant_ht",
-    "taux_tva",
     "montant_tva",
     "cb_ttc",
     "taxe_sejour",
     "droit_timbre",
     "montant_ttc",
+    "detail_tva",
     "montant_en_lettres",
     "sb_reglement",
     "montant_encaisse",
@@ -80,9 +87,9 @@
     {
       "fieldname": "nature_prestation",
       "fieldtype": "Select",
-      "label": "Catégorie de Revenu (SCF)",
-      "options": "Hébergement\nRestauration\nSéminaires & Banquets\nAutres Services",
-      "reqd": 1,
+      "label": "Catégorie Principale (SCF)",
+      "options": "Hébergement\nRestauration\nSéminaires & Banquets\nMixte\nAutres Services",
+      "read_only": 1,
       "in_standard_filter": 1,
       "default": "Hébergement"
     },
@@ -96,35 +103,48 @@
       "label": "Réf. Réservation / Voucher"
     },
     {
+      "fieldname": "sejours_separes",
+      "fieldtype": "Check",
+      "label": "Séjours Séparés Multiples (plusieurs séjours distincts)",
+      "default": "0"
+    },
+    {
       "fieldname": "date_arrivee",
       "fieldtype": "Date",
-      "label": "Date d'Arrivée (Check-in)"
+      "label": "Date d'Arrivée (Séjour 1 / Principal)",
+      "depends_on": "eval:!doc.sejours_separes"
     },
     {
       "fieldname": "date_depart",
       "fieldtype": "Date",
-      "label": "Date de Départ (Check-out)"
+      "label": "Date de Départ (Séjour 1 / Principal)",
+      "depends_on": "eval:!doc.sejours_separes"
     },
     {
       "fieldname": "nuitees",
       "fieldtype": "Int",
-      "label": "Nombre de Nuitées",
+      "label": "Total Nuitées",
       "read_only": 1,
       "default": "1"
     },
     {
       "fieldname": "nb_adultes",
       "fieldtype": "Int",
-      "label": "Nombre d'Occupants (Adultes)",
-      "default": "1",
-      "depends_on": "eval:doc.nature_prestation=='Hébergement'"
+      "label": "Total Personnes / Occupants",
+      "read_only": 1,
+      "default": "1"
     },
     {
       "fieldname": "appliquer_taxe_sejour",
       "fieldtype": "Check",
-      "label": "Appliquer la Taxe de Séjour 4★",
-      "default": "1",
-      "depends_on": "eval:doc.nature_prestation=='Hébergement'"
+      "label": "Appliquer la Taxe de Séjour 4★ (500 DZD / pers. / nuitée)",
+      "default": "1"
+    },
+    {
+      "fieldname": "taxe_sejour_incluse",
+      "fieldtype": "Check",
+      "label": "Taxe de Séjour incluse dans le montant TTC saisi",
+      "default": "1"
     },
     {
       "fieldname": "date_echeance",
@@ -135,35 +155,57 @@
     {
       "fieldname": "mode_paiement_prevu",
       "fieldtype": "Select",
-      "label": "Mode de Paiement",
+      "label": "Mode de Paiement Prévu",
       "options": "Virement\nChèque\nEspèces\nTPE",
       "reqd": 1,
       "default": "Virement"
     },
     {
+      "fieldname": "sb_sejours_tab",
+      "fieldtype": "Section Break",
+      "label": "Détail des Séjours Séparés (Chacun avec ses dates, nuitées et occupants)",
+      "depends_on": "eval:doc.sejours_separes"
+    },
+    {
+      "fieldname": "sejours",
+      "fieldtype": "Table",
+      "label": "Liste des Séjours Séparés",
+      "options": "SE Sejour Facture Client"
+    },
+    {
+      "fieldname": "sb_lignes_tab",
+      "fieldtype": "Section Break",
+      "label": "Prestations & Chambres (Saisir uniquement le Montant TTC par ligne)"
+    },
+    {
+      "fieldname": "lignes",
+      "fieldtype": "Table",
+      "label": "Détail des Lignes (Chambres & Services)",
+      "options": "SE Ligne Facture Client",
+      "reqd": 1
+    },
+    {
       "fieldname": "sb_montants",
       "fieldtype": "Section Break",
-      "label": "Montants, TVA, Taxe de Séjour & Droit de Timbre (DZD)"
+      "label": "Décomposition Fiscale Automatique (HT, TVA, Taxe de Séjour, Timbre & TTC)"
+    },
+    {
+      "fieldname": "total_ttc_saisi",
+      "fieldtype": "Currency",
+      "label": "Total TTC des Prestations (DZD)",
+      "read_only": 1
     },
     {
       "fieldname": "montant_ht",
       "fieldtype": "Currency",
-      "label": "Montant HT (DZD)",
-      "reqd": 1,
+      "label": "Montant Hors Taxe HT (DZD)",
+      "read_only": 1,
       "in_list_view": 1
-    },
-    {
-      "fieldname": "taux_tva",
-      "fieldtype": "Percent",
-      "label": "TVA (%)",
-      "reqd": 1,
-      "default": "9",
-      "description": "9% taux réduit tourisme/hôtellerie en Algérie, ou 19% taux normal"
     },
     {
       "fieldname": "montant_tva",
       "fieldtype": "Currency",
-      "label": "Montant TVA (DZD)",
+      "label": "Montant TVA Total (DZD)",
       "read_only": 1
     },
     {
@@ -173,23 +215,29 @@
     {
       "fieldname": "taxe_sejour",
       "fieldtype": "Currency",
-      "label": "Taxe de Séjour Hôtelière 4★ (Hors TVA)",
+      "label": "Taxe de Séjour Hôtelière 4★ (DZD)",
       "read_only": 1,
       "default": "0"
     },
     {
       "fieldname": "droit_timbre",
       "fieldtype": "Currency",
-      "label": "Droit de Timbre Espèces (Code du Timbre)",
+      "label": "Droit de Timbre Espèces (Ajouté en plus)",
       "read_only": 1,
       "default": "0"
     },
     {
       "fieldname": "montant_ttc",
       "fieldtype": "Currency",
-      "label": "Total Net à Payer TTC (DZD)",
+      "label": "Net à Payer TTC (DZD)",
       "read_only": 1,
       "in_list_view": 1
+    },
+    {
+      "fieldname": "detail_tva",
+      "fieldtype": "Data",
+      "label": "Ventilation TVA par Taux",
+      "read_only": 1
     },
     {
       "fieldname": "montant_en_lettres",
@@ -207,9 +255,9 @@
       "fieldtype": "Currency",
       "label": "Montant Encaissé (DZD)",
       "read_only": 1,
+      "in_list_view": 1,
       "default": "0",
-      "allow_on_submit": 1,
-      "in_list_view": 1
+      "allow_on_submit": 1
     },
     {
       "fieldname": "reste_a_encaisser",

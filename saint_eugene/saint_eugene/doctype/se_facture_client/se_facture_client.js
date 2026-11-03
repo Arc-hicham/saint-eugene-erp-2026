@@ -11,49 +11,42 @@ frappe.ui.form.on("SE Facture Client", {
             }, __("Trésorerie"));
         }
     },
-    montant_ht(frm) { frm.trigger("recalc_taxes"); },
-    taux_tva(frm) { frm.trigger("recalc_taxes"); },
-    nature_prestation(frm) { frm.trigger("recalc_taxes"); },
-    appliquer_taxe_sejour(frm) { frm.trigger("recalc_taxes"); },
-    nb_adultes(frm) { frm.trigger("recalc_taxes"); },
-    date_arrivee(frm) { frm.trigger("update_nuitees"); },
-    date_depart(frm) { frm.trigger("update_nuitees"); },
-    mode_paiement_prevu(frm) { frm.trigger("recalc_taxes"); },
-    update_nuitees(frm) {
-        if (frm.doc.date_arrivee && frm.doc.date_depart) {
-            const diff = frappe.datetime.get_day_diff(frm.doc.date_depart, frm.doc.date_arrivee);
-            if (diff >= 0) {
-                frm.set_value("nuitees", Math.max(1, diff));
-            }
-        }
-        frm.trigger("recalc_taxes");
-    },
-    recalc_taxes(frm) {
-        if (!frm.doc.montant_ht) return;
+    sejours_separes(frm) { frm.trigger("trigger_recalc"); },
+    taxe_sejour_incluse(frm) { frm.trigger("trigger_recalc"); },
+    appliquer_taxe_sejour(frm) { frm.trigger("trigger_recalc"); },
+    date_arrivee(frm) { frm.trigger("trigger_recalc"); },
+    date_depart(frm) { frm.trigger("trigger_recalc"); },
+    mode_paiement_prevu(frm) { frm.trigger("trigger_recalc"); },
+    trigger_recalc(frm) {
+        if (!frm.doc.lignes || !frm.doc.lignes.length) return;
         frappe.call({
-            method: "saint_eugene.saint_eugene.doctype.se_facture_client.se_facture_client.preview_invoice_taxes",
-            args: {
-                montant_ht: flt(frm.doc.montant_ht),
-                taux_tva: flt(frm.doc.taux_tva),
-                nature_prestation: frm.doc.nature_prestation || "Hébergement",
-                appliquer_taxe_sejour: cint(frm.doc.appliquer_taxe_sejour),
-                nb_adultes: cint(frm.doc.nb_adultes || 1),
-                nuitees: cint(frm.doc.nuitees || 1),
-                mode_paiement_prevu: frm.doc.mode_paiement_prevu || "Virement",
-            },
+            method: "saint_eugene.utils.invoice_calc.preview_invoice",
+            args: { doc: frm.doc },
             callback(r) {
-                if (r.message) {
-                    frm.set_value("montant_tva", r.message.montant_tva);
-                    frm.set_value("taxe_sejour", r.message.taxe_sejour);
-                    frm.set_value("droit_timbre", r.message.droit_timbre);
-                    frm.set_value("montant_ttc", r.message.montant_ttc);
-                    frm.set_value("montant_en_lettres", r.message.montant_en_lettres);
+                if (r.message && r.message.totals) {
+                    $.extend(frm.doc, r.message.totals);
                     frm.set_value(
                         "reste_a_encaisser",
-                        Math.max(0, flt(r.message.montant_ttc - flt(frm.doc.montant_encaisse), 2))
+                        Math.max(0, flt(r.message.totals.montant_ttc - flt(frm.doc.montant_encaisse), 2))
                     );
+                    frm.refresh_fields();
                 }
-            },
+            }
         });
-    },
+    }
+});
+
+frappe.ui.form.on("SE Ligne Facture Client", {
+    montant_ttc_saisi(frm, cdt, cdn) { frm.trigger("trigger_recalc"); },
+    article(frm, cdt, cdn) { frm.trigger("trigger_recalc"); },
+    quantite(frm, cdt, cdn) { frm.trigger("trigger_recalc"); },
+    nb_personnes(frm, cdt, cdn) { frm.trigger("trigger_recalc"); },
+    sejour_no(frm, cdt, cdn) { frm.trigger("trigger_recalc"); },
+    lignes_remove(frm) { frm.trigger("trigger_recalc"); }
+});
+
+frappe.ui.form.on("SE Sejour Facture Client", {
+    date_arrivee(frm, cdt, cdn) { frm.trigger("trigger_recalc"); },
+    date_depart(frm, cdt, cdn) { frm.trigger("trigger_recalc"); },
+    sejours_remove(frm) { frm.trigger("trigger_recalc"); }
 });

@@ -10,8 +10,24 @@ from __future__ import annotations
 
 import math
 
-import frappe
-from frappe.utils import cint, flt
+try:
+    import frappe
+    from frappe.utils import cint, flt
+except ImportError:
+    frappe = None
+
+    def cint(val):
+        try:
+            return int(float(val or 0))
+        except (ValueError, TypeError):
+            return 0
+
+    def flt(val, precision=None):
+        try:
+            v = float(val or 0)
+            return round(v, precision) if precision is not None else v
+        except (ValueError, TypeError):
+            return 0.0
 
 DEFAULT_SETTINGS = {
     "nom_hotel": "Hôtel Saint Eugène 4★ - Alger",
@@ -30,7 +46,7 @@ DEFAULT_SETTINGS = {
     "capacite_chambres": 45,
     "taux_tva_hebergement_defaut": 9.0,
     "taux_tva_standard_defaut": 19.0,
-    "taxe_sejour_nuitee_adulte": 400.0,
+    "taxe_sejour_nuitee_adulte": 500.0,
     "activer_droit_timbre_especes": 1,
     "plafond_droit_timbre": 0.0,
     "seuil_tresorerie_critique": 2_500_000.0,
@@ -39,7 +55,7 @@ DEFAULT_SETTINGS = {
 }
 
 
-@frappe.whitelist()
+# @frappe.whitelist()
 def get_hotel_settings() -> dict:
     """Retourne les paramètres de l'Hôtel Saint Eugène (avec repli sur DEFAULT_SETTINGS)."""
     cfg = dict(DEFAULT_SETTINGS)
@@ -188,7 +204,7 @@ def _int_to_french(n: int) -> str:
     return " ".join(parts).strip()
 
 
-@frappe.whitelist()
+# @frappe.whitelist()
 def montant_dzd_en_lettres(montant: float) -> str:
     """
     Convertit un montant numérique DZD en mention légale algérienne :

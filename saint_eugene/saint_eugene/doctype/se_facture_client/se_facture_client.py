@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_days, cint, date_diff, flt, getdate, nowdate
+from frappe.utils import add_days, date_diff, flt, getdate, nowdate
 
 from saint_eugene.utils.fiscal_dz import (
     compute_droit_timbre_algerie,
-    compute_taxe_sejour_algerie,
     get_hotel_settings,
     montant_dzd_en_lettres,
 )
+from saint_eugene.utils.invoice_calc import apply_to_frappe_doc
 
 
 def compute_invoice_status_and_overdue(
@@ -84,80 +86,16 @@ def sync_customer_invoice_payment(facture_name: str) -> None:
     )
 
 
-@frappe.whitelist()
-def preview_invoice_taxes(
-    montant_ht: float,
-    taux_tva: float,
-    nature_prestation: str,
-    appliquer_taxe_sejour: int,
-    nb_adultes: int,
-    nuitees: int,
-    mode_paiement_prevu: str,
-) -> dict:
-    """Calcul temps réel côté serveur appelé par le formulaire JS."""
-    cfg = get_hotel_settings()
-    ht = flt(montant_ht, 2)
-    tva = flt(ht * flt(taux_tva) / 100.0, 2)
-    taxe_sej = compute_taxe_sejour_algerie(
-        nature_prestation=nature_prestation,
-        appliquer=cint(appliquer_taxe_sejour),
-        nb_adultes=cint(nb_adultes or 1),
-        nuitees=cint(nuitees or 1),
-        tarif_unitaire=flt(cfg["taxe_sejour_nuitee_adulte"]),
-    )
-    sous_total = flt(ht + tva + taxe_sej, 2)
-    timbre = compute_droit_timbre_algerie(
-        montant_base=sous_total,
-        mode_paiement=mode_paiement_prevu,
-        activer=cint(cfg["activer_droit_timbre_especes"]),
-        plafond=flt(cfg["plafond_droit_timbre"]),
-    )
-    ttc = flt(sous_total + timbre, 2)
-    return {
-        "montant_tva": tva,
-        "taxe_sejour": taxe_sej,
-        "droit_timbre": timbre,
-        "montant_ttc": ttc,
-        "montant_en_lettres": montant_dzd_en_lettres(ttc),
-    }
-
-
 class SEFactureClient(Document):
     def validate(self):
-        if flt(self.montant_ht) <= 0:
-            frappe.throw(_("Le Montant HT doit être strictement positif."))
-
-        if self.date_arrivee and self.date_depart:
-            diff = date_diff(getdate(self.date_depart), getdate(self.date_arrivee))
-            if diff < 0:
-                frappe.throw(_("La date de départ ne peut pas être antérieure à la date d'arrivée."))
-            self.nuitees = max(1, diff)
-        else:
-            self.nuitees = max(1, cint(self.nuitees or 1))
-
-        self.nb_adultes = max(1, cint(self.nb_adultes or 1))
-
         if not self.date_echeance:
             delai = frappe.db.get_value("SE Client", self.client, "delai_paiement_jours")
             delai = 0 if self.type_client == "Passager" else (int(delai) if delai is not None else 30)
             self.date_echeance = add_days(self.date_facture, delai)
 
-        res = preview_invoice_taxes(
-            montant_ht=self.montant_ht,
-            taux_tva=self.taux_tva,
-            nature_prestation=self.nature_prestation,
-            appliquer_taxe_sejour=self.appliquer_taxe_sejour,
-            nb_adultes=self.nb_adultes,
-            nuitees=self.nuitees,
-            mode_paiement_prevu=self.mode_paiement_prevu,
-        )
-        self.montant_tva = res["montant_tva"]
-        self.taxe_sejour = res["taxe_sejour"]
-        self.droit_timbre = res["droit_timbre"]
-        self.montant_ttc = res["montant_ttc"]
-        self.montant_en_lettres = res["montant_en_lettres"]
-        self.montant_encaisse = flt(self.montant_encaisse, 2)
+        apply_to_frappe_doc(self)
 
+        self.montant_encaisse = flt(self.montant_encaisse, 2)
         reste, retard, statut = compute_invoice_status_and_overdue(
             self.docstatus, self.montant_ttc, self.montant_encaisse, self.date_echeance
         )

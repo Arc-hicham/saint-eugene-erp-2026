@@ -114,6 +114,7 @@ function initialiserFeuillesSaintEugene() {{
 
 const MODULE_TITLES = {{
   "SE Facture Client": "Factures Clients (SCF 70)",
+  "SE Facture Pro Forma": "Factures Pro Forma",
   "SE Performance Hoteliere": "Performance Hôtelière (45 ch.)",
   "SE Facture Fournisseur": "Factures Fournisseurs (SCF 60)",
   "SE Charge et Depense": "Charges & Dépenses (61-62)",
@@ -1085,6 +1086,7 @@ function recomputeAllLinks(db) {{
   const capChambres = Number(cfg.capacite_chambres || 45);
 
   (db["SE Facture Client"] || []).forEach(fac => recomputeSingleInvoice(fac, db));
+  (db["SE Facture Pro Forma"] || []).forEach(pro => recomputeSingleInvoice(pro, db));
 
   (db["SE Facture Fournisseur"] || []).forEach(ff => {{
     const ht = Number(ff.montant_ht || 0);
@@ -2069,10 +2071,540 @@ function openNewDoc(doctype) {{
   renderDocModal(doctype, doc, true);
 }}
 
+
+// --- MOTEUR DE FACTURATION INVERSE & SÉJOURS MULTIPLES 4★ ---
+const ROOM_TYPES = ["Single", "Double", "Twin", "Triple", "Suite Deluxe", "Suite Saint Eugène"];
+const SERVICES = ["Dîner", "Déjeuner", "Coffee Break", "Location de salle"];
+
+function getArticleCategory(article) {{
+  if (ROOM_TYPES.includes(article)) return "Hébergement";
+  if (article === "Location de salle") return "Séminaires & Banquets";
+  return "Restauration";
+}}
+
+function computeInvoiceDocClient(doc, cfg) {{
+  cfg = cfg || {{}};
+  const tarifTs = Number(cfg.taxe_sejour_nuitee_adulte || 500);
+  const incluse = doc.taxe_sejour_incluse !== undefined ? Number(doc.taxe_sejour_incluse) : 1;
+  const appliquerTs = doc.appliquer_taxe_sejour !== undefined ? Number(doc.appliquer_taxe_sejour) : 1;
+
+  if (!doc.sejours || !doc.sejours.length) {{
+    doc.sejours = [{{
+      sejour_no: 1,
+      description: "Séjour Principal",
+      date_arrivee: doc.date_arrivee || "2026-11-04",
+      date_depart: doc.date_depart || "2026-11-07",
+      nuitees: 3,
+      nb_personnes: 1,
+      total_ttc_sejour: 0
+    }}];
+  }}
+
+  doc.sejours.forEach((s, idx) => {{
+    s.sejour_no = s.sejour_no || (idx + 1);
+    if (s.date_arrivee && s.date_depart) {{
+      const d1 = new Date(s.date_arrivee);
+      const d2 = new Date(s.date_depart);
+      const diff = Math.round((d2 - d1) / (1000 * 3600 * 24));
+      s.nuitees = diff > 0 ? diff : 1;
+    }} else {{
+      s.nuitees = Math.max(1, parseInt(s.nuitees || 1));
+    }}
+    s.nb_personnes = 0;
+    s.total_ttc_sejour = 0;
+  }});
+
+  if (!doc.lignes || !doc.lignes.length) {{
+    doc.lignes = [{{
+      sejour_no: 1,
+      article: "Double",
+      type_ligne: "Hébergement",
+      quantite: 1,
+      nb_jours: doc.sejours[0].nuitees || 3,
+      nb_personnes: 1,
+      montant_ttc_saisi: 45000,
+      taux_tva: 9,
+      montant_ht: 0,
+      montant_tva: 0,
+      taxe_sejour: 0,
+      total_ligne_ttc: 45000
+    }}];
+  }}
+
+  let totHt = 0, totTva = 0, totTs = 0, totTtc = 0;
+  let totHtHeb = 0, totHtSrv = 0;
+  let totPers = 0;
+  let tva9Base = 0, tva9Mnt = 0;
+  let tva19Base = 0, tva19Mnt = 0;
+
+  doc.lignes.forEach((ln) => {{
+    ln.article = ln.article || "Double";
+    const cat = getArticleCategory(ln.article);
+    const isRoom = cat === "Hébergement";
+    ln.type_ligne = cat;
+
+    const no = parseInt(ln.sejour_no || 1);
+    const sej = doc.sejours.find(s => s.sejour_no === no) || doc.sejours[0];
+    ln.sejour_no = sej ? sej.sejour_no : 1;
+
+    const qty = Math.max(1, parseInt(ln.quantite || 1));
+    ln.quantite = qty;
+
+    const jours = isRoom ? (sej ? sej.nuitees : Math.max(1, parseInt(ln.nb_jours || 1))) : Math.max(1, parseInt(ln.nb_jours || 1));
+    const personnes = isRoom ? Math.max(1, parseInt(ln.nb_personnes || qty)) : 0;
+    ln.nb_jours = jours;
+    ln.nb_personnes = personnes;
+
+    const taux = isRoom ? 9.0 : 19.0;
+    ln.taux_tva = taux;
+
+    const ttcSaisi = Math.round(Number(ln.montant_ttc_saisi || 0) * 100) / 100;
+    ln.montant_ttc_saisi = ttcSaisi;
+
+    const ts = (isRoom && appliquerTs) ? (personnes * jours * tarifTs) : 0;
+    let ttcHorsTs = 0;
+    let totalLigne = 0;
+
+    if (incluse) {{
+      ttcHorsTs = Math.max(0, ttcSaisi - ts);
+      totalLigne = ttcSaisi;
+    }} else {{
+      ttcHorsTs = ttcSaisi;
+      totalLigne = Math.round((ttcSaisi + ts) * 100) / 100;
+    }}
+
+    const ht = Math.round((ttcHorsTs / (1 + taux / 100)) * 100) / 100;
+    const tva = Math.round((ttcHorsTs - ht) * 100) / 100;
+
+    ln.taxe_sejour = ts;
+    ln.montant_ht = ht;
+    ln.montant_tva = tva;
+    ln.total_ligne_ttc = totalLigne;
+    ln.prix_unitaire_ttc = (qty * jours > 0) ? Math.round((ttcHorsTs / (qty * jours)) * 100) / 100 : 0;
+
+    totHt += ht;
+    totTva += tva;
+    totTs += ts;
+    totTtc += totalLigne;
+
+    if (isRoom) {{
+      totHtHeb += ht;
+      totPers += personnes;
+      tva9Base += ht;
+      tva9Mnt += tva;
+      if (sej) sej.nb_personnes += personnes;
+    }} else {{
+      totHtSrv += ht;
+      tva19Base += ht;
+      tva19Mnt += tva;
+    }}
+    if (sej) sej.total_ttc_sejour = Math.round((sej.total_ttc_sejour + totalLigne) * 100) / 100;
+  }});
+
+  totHt = Math.round(totHt * 100) / 100;
+  totTva = Math.round(totTva * 100) / 100;
+  totTs = Math.round(totTs * 100) / 100;
+  totTtc = Math.round(totTtc * 100) / 100;
+
+  const mode = doc.mode_paiement_prevu || "Virement";
+  let timbre = 0;
+  if (mode === "Espèces" && totTtc > 300) {{
+    const tranches = Math.ceil(totTtc / 100.0);
+    if (totTtc <= 30000) timbre = tranches * 1.0;
+    else if (totTtc <= 100000) timbre = tranches * 1.5;
+    else timbre = tranches * 2.0;
+    timbre = Math.max(5.0, Math.round(timbre * 100) / 100);
+  }}
+  const net = Math.round((totTtc + timbre) * 100) / 100;
+
+  doc.montant_ht = totHt;
+  doc.montant_tva = totTva;
+  doc.taxe_sejour = totTs;
+  doc.total_ttc_saisi = totTtc;
+  doc.droit_timbre = timbre;
+  doc.montant_ttc = net;
+  doc.ht_hebergement = Math.round(totHtHeb * 100) / 100;
+  doc.ht_services = Math.round(totHtSrv * 100) / 100;
+  doc.nb_adultes = totPers;
+  doc.nuitees = doc.sejours.reduce((acc, s) => acc + (s.nuitees || 0), 0);
+  doc.date_arrivee = doc.sejours[0] ? doc.sejours[0].date_arrivee : "";
+  doc.date_depart = doc.sejours[doc.sejours.length - 1] ? doc.sejours[doc.sejours.length - 1].date_depart : "";
+
+  const detailParts = [];
+  if (tva9Base > 0) detailParts.push(`TVA 9% : base HT ${{tva9Base.toLocaleString('fr-FR')}} DZD — TVA ${{tva9Mnt.toLocaleString('fr-FR')}} DZD`);
+  if (tva19Base > 0) detailParts.push(`TVA 19% : base HT ${{tva19Base.toLocaleString('fr-FR')}} DZD — TVA ${{tva19Mnt.toLocaleString('fr-FR')}} DZD`);
+  doc.detail_tva = detailParts.join(" | ");
+  doc.montant_en_lettres = `${{net.toLocaleString('fr-FR', {{ minimumFractionDigits: 2, maximumFractionDigits: 2 }})}} Dinars Algériens`;
+
+  return doc;
+}}
+
+function renderInvoiceStaysRows(doc) {{
+  return doc.sejours.map((s, idx) => `
+    <tr style="border-bottom:1px solid #e2e8f0;">
+      <td style="padding:6px 8px;font-weight:700;">#${{s.sejour_no || (idx + 1)}}</td>
+      <td style="padding:6px 8px;"><input type="text" style="width:100%;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.description || ''}}" placeholder="Ex: Séjour Direction Hydra" oninput="CURRENT_DOC.sejours[${{idx}}].description=this.value;"></td>
+      <td style="padding:6px 8px;"><input type="date" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.date_arrivee || ''}}" onchange="CURRENT_DOC.sejours[${{idx}}].date_arrivee=this.value; onInvoiceFormUpdate();"></td>
+      <td style="padding:6px 8px;"><input type="date" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.date_depart || ''}}" onchange="CURRENT_DOC.sejours[${{idx}}].date_depart=this.value; onInvoiceFormUpdate();"></td>
+      <td style="padding:6px 8px;text-align:center;font-weight:700;">${{s.nuitees || 1}} j</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;color:#0f172a;">${{fmtDZD(s.total_ttc_sejour || 0)}}</td>
+      ${{doc.sejours_separes ? `<td style="padding:6px 8px;text-align:center;"><button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceStay(${{idx}})" title="Supprimer ce séjour">✕</button></td>` : ''}}
+    </tr>
+  `).join("");
+}}
+
+function renderInvoiceLinesRows(doc) {{
+  return doc.lignes.map((ln, idx) => `
+    <tr style="border-bottom:1px solid #e2e8f0;background:${{idx % 2 === 0 ? '#fff' : '#f8fafc'}};">
+      ${{doc.sejours_separes ? `
+      <td style="padding:6px;">
+        <select style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;" onchange="CURRENT_DOC.lignes[${{idx}}].sejour_no=parseInt(this.value); onInvoiceFormUpdate();">
+          ${{doc.sejours.map(s => `<option value="${{s.sejour_no}}" ${{s.sejour_no === ln.sejour_no ? "selected" : ""}}>Séjour #${{s.sejour_no}}</option>`).join("")}}
+        </select>
+      </td>` : ''}}
+      <td style="padding:6px;">
+        <select style="width:100%;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" onchange="CURRENT_DOC.lignes[${{idx}}].article=this.value; onInvoiceFormUpdate();">
+          <optgroup label="🛏️ Chambres Hôtel 4★ (TVA 9% + Taxe séjour)">
+            ${{ROOM_TYPES.map(r => `<option value="${{r}}" ${{r === ln.article ? "selected" : ""}}>${{r}}</option>`).join("")}}
+          </optgroup>
+          <optgroup label="🍽️ Services & Événements (TVA 19%)">
+            ${{SERVICES.map(s => `<option value="${{s}}" ${{s === ln.article ? "selected" : ""}}>${{s}}</option>`).join("")}}
+          </optgroup>
+        </select>
+      </td>
+      <td style="padding:6px;text-align:center;">
+        <input type="number" min="1" style="width:50px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{ln.quantite || 1}}" oninput="CURRENT_DOC.lignes[${{idx}}].quantite=parseInt(this.value||1); onInvoiceFormUpdate();">
+      </td>
+      <td style="padding:6px;text-align:center;">
+        <input type="number" min="1" style="width:50px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{ln.nb_jours || 1}}" ${{ROOM_TYPES.includes(ln.article) ? 'readonly title="Synchronisé avec le séjour"' : ''}} oninput="CURRENT_DOC.lignes[${{idx}}].nb_jours=parseInt(this.value||1); onInvoiceFormUpdate();">
+      </td>
+      <td style="padding:6px;text-align:center;">
+        <input type="number" min="0" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{ln.nb_personnes || 0}}" ${{!ROOM_TYPES.includes(ln.article) ? 'disabled style="background:#f1f5f9;"' : ''}} oninput="CURRENT_DOC.lignes[${{idx}}].nb_personnes=parseInt(this.value||0); onInvoiceFormUpdate();">
+      </td>
+      <td style="padding:6px;text-align:right;">
+        <input type="number" step="any" style="width:130px;padding:5px 8px;text-align:right;border:2px solid #b45309;background:#fffbeb;font-weight:700;color:#92400e;border-radius:4px;font-size:13px;" value="${{ln.montant_ttc_saisi || 0}}" oninput="CURRENT_DOC.lignes[${{idx}}].montant_ttc_saisi=parseFloat(this.value||0); onInvoiceFormUpdate();">
+      </td>
+      <td style="padding:6px;text-align:right;color:#334155;">${{fmtDZD(ln.montant_ht || 0)}}</td>
+      <td style="padding:6px;text-align:center;font-size:11px;color:#64748b;">${{ln.taux_tva || 9}}%</td>
+      <td style="padding:6px;text-align:right;color:#0369a1;">${{fmtDZD(ln.taxe_sejour || 0)}}</td>
+      <td style="padding:6px;text-align:right;font-weight:700;color:#0f172a;">${{fmtDZD(ln.total_ligne_ttc || 0)}}</td>
+      <td style="padding:6px;text-align:center;">
+        <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceLine(${{idx}})" title="Supprimer la ligne">✕</button>
+      </td>
+    </tr>
+  `).join("");
+}}
+
+function renderInvoiceTotalsCard(doc) {{
+  const isEsp = (doc.mode_paiement_prevu === "Espèces");
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;">
+      <div style="flex:1;min-width:280px;">
+        <div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:6px;">📊 Ventilation Fiscale & Arrêté Légal (Algérie SCF)</div>
+        <div style="font-size:11.5px;color:#475569;margin-bottom:4px;"><b>Détail TVA :</b> ${{doc.detail_tva || 'N/A'}}</div>
+        <div style="font-size:11.5px;color:#475569;margin-bottom:4px;"><b>Hébergement 4★ :</b> ${{doc.nuitees || 0}} nuitée(s) | ${{doc.nb_adultes || 0}} occupant(s) | Taxe : 500 DZD / nuitée / pers.</div>
+        <div style="background:#fff;border-left:3px solid #b45309;padding:8px 10px;border-radius:4px;font-size:12px;color:#1e293b;margin-top:8px;">
+          Arrêtée la présente facture à la somme de :<br>
+          <b>« ${{doc.montant_en_lettres || ''}} »</b>
+        </div>
+      </div>
+      <div style="width:100%;max-width:380px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+          <tr><td style="padding:4px 0;color:#475569;">Total HT (Hébergement + Services)</td><td style="padding:4px 0;text-align:right;font-weight:600;">${{fmtDZD(doc.montant_ht)}}</td></tr>
+          <tr><td style="padding:4px 0;color:#475569;">TVA Hébergement (9%)</td><td style="padding:4px 0;text-align:right;">${{fmtDZD(doc.lignes.filter(l => l.taux_tva === 9).reduce((a, b) => a + (b.montant_tva || 0), 0))}}</td></tr>
+          <tr><td style="padding:4px 0;color:#475569;">TVA Services & Restauration (19%)</td><td style="padding:4px 0;text-align:right;">${{fmtDZD(doc.lignes.filter(l => l.taux_tva === 19).reduce((a, b) => a + (b.montant_tva || 0), 0))}}</td></tr>
+          <tr><td style="padding:4px 0;color:#0369a1;font-weight:600;">Taxe de Séjour 4★ (500 DZD × pers. × nuits)</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#0369a1;">${{fmtDZD(doc.taxe_sejour)}}</td></tr>
+          <tr style="border-top:1px solid #cbd5e1;"><td style="padding:5px 0;font-weight:700;color:#1e293b;">Total TTC Saisi</td><td style="padding:5px 0;text-align:right;font-weight:700;color:#1e293b;">${{fmtDZD(doc.total_ttc_saisi || doc.montant_ttc)}}</td></tr>
+          <tr>
+            <td style="padding:4px 0;color:${{isEsp ? '#b45309' : '#64748b'}};font-weight:${{isEsp ? '700' : 'normal'}};">
+              Droit de Timbre Fiscal ${{isEsp ? '(Espèces - En sus)' : '(Exonéré hors espèces)'}}
+            </td>
+            <td style="padding:4px 0;text-align:right;color:${{isEsp ? '#b45309' : '#64748b'}};font-weight:${{isEsp ? '700' : 'normal'}};">
+              ${{fmtDZD(doc.droit_timbre)}}
+            </td>
+          </tr>
+          <tr style="background:#0f172a;color:#fff;font-weight:700;font-size:13.5px;">
+            <td style="padding:8px 10px;border-radius:4px 0 0 4px;">NET À PAYER TTC (DZD)</td>
+            <td style="padding:8px 10px;text-align:right;border-radius:0 4px 4px 0;color:#fbbf24;">${{fmtDZD(doc.montant_ttc)}}</td>
+          </tr>
+          ${{CURRENT_DOCTYPE === "SE Facture Client" ? `
+          <tr><td style="padding:4px 0;color:#16a34a;font-weight:600;">Montant Encaissé</td><td style="padding:4px 0;text-align:right;color:#16a34a;font-weight:600;">${{fmtDZD(doc.montant_encaisse || 0)}}</td></tr>
+          <tr><td style="padding:4px 0;color:#dc2626;font-weight:700;">Reste à Encaisser</td><td style="padding:4px 0;text-align:right;color:#dc2626;font-weight:700;">${{fmtDZD(doc.reste_a_encaisser || doc.montant_ttc)}}</td></tr>
+          ` : ''}}
+        </table>
+      </div>
+    </div>
+  `;
+}}
+
+function onInvoiceFormUpdate() {{
+  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
+  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {{}};
+  computeInvoiceDocClient(CURRENT_DOC, cfg);
+  document.getElementById("inv_stays_tbody").innerHTML = renderInvoiceStaysRows(CURRENT_DOC);
+  document.getElementById("inv_lines_tbody").innerHTML = renderInvoiceLinesRows(CURRENT_DOC);
+  document.getElementById("inv_totals_card").innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
+}}
+
+function onInvoiceClientChange(clientName) {{
+  CURRENT_DOC.client = clientName;
+  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
+  const cli = (dbSrc["SE Client"] || []).find(c => c.name === clientName);
+  if (cli) {{
+    CURRENT_DOC.type_client = cli.type_client || "Corporate";
+    const el = document.getElementById("inv_type_client");
+    if (el) el.value = CURRENT_DOC.type_client;
+  }}
+}}
+
+function addInvoiceStay() {{
+  const nextNo = (CURRENT_DOC.sejours.length ? Math.max(...CURRENT_DOC.sejours.map(s => s.sejour_no || 0)) : 0) + 1;
+  CURRENT_DOC.sejours.push({{
+    sejour_no: nextNo,
+    description: `Séjour #${{nextNo}}`,
+    date_arrivee: CURRENT_DOC.date_facture || "2026-11-04",
+    date_depart: "2026-11-07",
+    nuitees: 3,
+    nb_personnes: 1,
+    total_ttc_sejour: 0
+  }});
+  onInvoiceFormUpdate();
+}}
+
+function removeInvoiceStay(idx) {{
+  if (CURRENT_DOC.sejours.length <= 1) {{
+    alert("Vous devez conserver au moins un séjour.");
+    return;
+  }}
+  const removedNo = CURRENT_DOC.sejours[idx].sejour_no;
+  CURRENT_DOC.sejours.splice(idx, 1);
+  const fallbackNo = CURRENT_DOC.sejours[0].sejour_no;
+  CURRENT_DOC.lignes.forEach(l => {{
+    if (l.sejour_no === removedNo) l.sejour_no = fallbackNo;
+  }});
+  onInvoiceFormUpdate();
+}}
+
+function addInvoiceLine() {{
+  const stayNo = CURRENT_DOC.sejours.length ? CURRENT_DOC.sejours[0].sejour_no : 1;
+  const stayNuits = CURRENT_DOC.sejours.length ? CURRENT_DOC.sejours[0].nuitees : 1;
+  CURRENT_DOC.lignes.push({{
+    sejour_no: stayNo,
+    article: "Double",
+    type_ligne: "Hébergement",
+    quantite: 1,
+    nb_jours: stayNuits,
+    nb_personnes: 1,
+    montant_ttc_saisi: 20000,
+    taux_tva: 9,
+    montant_ht: 0,
+    montant_tva: 0,
+    taxe_sejour: 0,
+    total_ligne_ttc: 20000
+  }});
+  onInvoiceFormUpdate();
+}}
+
+function removeInvoiceLine(idx) {{
+  if (CURRENT_DOC.lignes.length <= 1) {{
+    alert("Vous devez conserver au moins une prestation.");
+    return;
+  }}
+  CURRENT_DOC.lignes.splice(idx, 1);
+  onInvoiceFormUpdate();
+}}
+
+function renderInvoiceModal(doctype, doc, isNew) {{
+  CURRENT_DOCTYPE = doctype;
+  CURRENT_DOC = doc;
+  const isProforma = (doctype === "SE Facture Pro Forma");
+  document.getElementById("modalTitle").textContent = `${{isNew ? "Nouvelle" : doc.name}} — ${{isProforma ? "Facture Pro Forma" : "Facture Client (SCF 70)"}}`;
+
+  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
+  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {{}};
+  computeInvoiceDocClient(doc, cfg);
+
+  const clients = dbSrc["SE Client"] || [];
+  const clientOptions = clients.map(c => `<option value="${{c.name}}" ${{c.name === doc.client ? "selected" : ""}}>${{c.name}} (${{c.type_client || ""}})</option>`).join("");
+
+  let html = `
+  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">
+    <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+      <span>📌 Informations Générales & Modalités de Règlement</span>
+      <span class="pill ${{isProforma ? 'blue' : 'green'}}">${{isProforma ? 'Devis Pro Forma' : 'Facture Client Officielle'}}</span>
+    </div>
+    <div class="form-grid" style="grid-template-columns:repeat(3, 1fr);gap:12px;">
+      <div class="form-group" style="grid-column:span 2;">
+        <label>Client *</label>
+        <select id="inv_client" onchange="onInvoiceClientChange(this.value)">
+          <option value="">— Sélectionner un client —</option>
+          ${{clientOptions}}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Type Client</label>
+        <input type="text" id="inv_type_client" value="${{doc.type_client || 'Corporate'}}" readonly>
+      </div>
+      <div class="form-group">
+        <label>Date de Facturation</label>
+        <input type="date" id="inv_date_facture" value="${{doc.date_facture || '2026-11-04'}}" onchange="CURRENT_DOC.date_facture=this.value">
+      </div>
+      <div class="form-group">
+        <label>${{isProforma ? 'Date de Validité' : 'Date d\'Échéance'}}</label>
+        <input type="date" id="inv_date_echeance" value="${{doc.date_echeance || doc.date_validite || '2026-11-25'}}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
+      </div>
+      <div class="form-group">
+        <label>Mode de Paiement Prévu *</label>
+        <select id="inv_mode_paiement" onchange="CURRENT_DOC.mode_paiement_prevu=this.value; onInvoiceFormUpdate();">
+          <option value="Virement" ${{doc.mode_paiement_prevu === "Virement" ? "selected" : ""}}>Virement Bancaire (Sans timbre)</option>
+          <option value="Chèque" ${{doc.mode_paiement_prevu === "Chèque" ? "selected" : ""}}>Chèque Bancaire (Sans timbre)</option>
+          <option value="Espèces" ${{doc.mode_paiement_prevu === "Espèces" ? "selected" : ""}}>Espèces (Droit de timbre fiscal 1% à 2%)</option>
+          <option value="TPE" ${{doc.mode_paiement_prevu === "TPE" ? "selected" : ""}}>TPE / Carte CIB / Edahabia (Sans timbre)</option>
+        </select>
+      </div>
+      <div class="form-group" style="grid-column:span 3;display:flex;flex-direction:row;gap:20px;margin-top:6px;background:#fff;padding:10px 14px;border:1px solid #cbd5e1;border-radius:6px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
+          <input type="checkbox" id="inv_ts_incluse" ${{doc.taxe_sejour_incluse ? "checked" : ""}} onchange="CURRENT_DOC.taxe_sejour_incluse = this.checked ? 1 : 0; onInvoiceFormUpdate();">
+          🏷️ Taxe de séjour 4★ (500 DZD) incluse dans le montant TTC saisi
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
+          <input type="checkbox" id="inv_app_ts" ${{doc.appliquer_taxe_sejour ? "checked" : ""}} onchange="CURRENT_DOC.appliquer_taxe_sejour = this.checked ? 1 : 0; onInvoiceFormUpdate();">
+          🛎️ Appliquer la taxe de séjour (Hébergement)
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
+          <input type="checkbox" id="inv_sej_separes" ${{doc.sejours_separes ? "checked" : ""}} onchange="CURRENT_DOC.sejours_separes = this.checked ? 1 : 0; renderInvoiceModal(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);">
+          📅 Plusieurs séjours distincts (Dates et personnes indépendantes)
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- SÉJOURS -->
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-weight:700;font-size:13px;color:#0f172a;">📅 Détail des Séjours Hôteliers</span>
+      ${{doc.sejours_separes ? `<button class="btn btn-gold" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceStay()">+ Ajouter un séjour séparé</button>` : ''}}
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:#f1f5f9;border-bottom:2px solid #cbd5e1;text-align:left;">
+            <th style="padding:6px 8px;width:40px;">N°</th>
+            <th style="padding:6px 8px;">Description du séjour</th>
+            <th style="padding:6px 8px;width:130px;">Date Arrivée</th>
+            <th style="padding:6px 8px;width:130px;">Date Départ</th>
+            <th style="padding:6px 8px;width:70px;text-align:center;">Nuitées</th>
+            <th style="padding:6px 8px;width:120px;text-align:right;">Total TTC Séjour</th>
+            ${{doc.sejours_separes ? `<th style="padding:6px 8px;width:40px;text-align:center;"></th>` : ''}}
+          </tr>
+        </thead>
+        <tbody id="inv_stays_tbody">
+          ${{renderInvoiceStaysRows(doc)}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LIGNES -->
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div>
+        <span style="font-weight:700;font-size:13px;color:#0f172a;">🛎️ Chambres & Services (Calcul Inverse Automatique à partir du TTC Saisi)</span>
+        <div style="font-size:11px;color:#64748b;margin-top:2px;">Saisissez simplement le montant TTC pour chaque chambre ou service : le système extrait automatiquement HT, TVA et Taxe de séjour.</div>
+      </div>
+      <button class="btn btn-primary" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceLine()">+ Ajouter une prestation</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:#0f172a;color:#fff;text-align:left;">
+            ${{doc.sejours_separes ? `<th style="padding:7px;width:90px;">Séjour</th>` : ''}}
+            <th style="padding:7px;min-width:180px;">Article / Prestation</th>
+            <th style="padding:7px;width:60px;text-align:center;">Qté</th>
+            <th style="padding:7px;width:60px;text-align:center;">Nuits</th>
+            <th style="padding:7px;width:65px;text-align:center;">Pers.</th>
+            <th style="padding:7px;width:140px;text-align:right;background:#b45309;">Montant TTC Saisi (DZD) *</th>
+            <th style="padding:7px;width:100px;text-align:right;">Base HT</th>
+            <th style="padding:7px;width:60px;text-align:center;">TVA</th>
+            <th style="padding:7px;width:90px;text-align:right;">Taxe Séjour</th>
+            <th style="padding:7px;width:110px;text-align:right;">Total TTC</th>
+            <th style="padding:7px;width:40px;text-align:center;"></th>
+          </tr>
+        </thead>
+        <tbody id="inv_lines_tbody">
+          ${{renderInvoiceLinesRows(doc)}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RÉCAPITULATIF FISCAL & TIMBRE -->
+  <div id="inv_totals_card" style="background:#f8fafc;border:2px solid #b45309;border-radius:8px;padding:14px;margin-bottom:14px;">
+    ${{renderInvoiceTotalsCard(doc)}}
+  </div>
+  `;
+
+  document.getElementById("modalBody").innerHTML = html;
+
+  let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;">`;
+  if (!isNew) {{
+    if (typeof openPrintPreview === "function") {{
+      ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
+    }}
+  }}
+  if (isProforma && !isNew) {{
+    ftrHtml += `<button class="btn btn-primary" onclick="convertProformaToInvoice()">🔄 Convertir en Facture Définitive (SCF 70)</button> `;
+  }}
+  if (!isProforma && !isNew && Number(doc.reste_a_encaisser) > 0 && typeof quickReceiptFromInvoice === "function") {{
+    ftrHtml += `<button class="btn" onclick="quickReceiptFromInvoice()">💰 Enregistrer un Encaissement</button>`;
+  }}
+  ftrHtml += `</div><div>
+    <button class="btn" onclick="closeModal()">Fermer</button>
+    <button class="btn btn-primary" onclick="saveInvoiceDoc()">💾 Enregistrer & Sauvegarder</button>
+  </div>`;
+  document.getElementById("modalFooter").innerHTML = ftrHtml;
+  document.getElementById("docModal").classList.add("open");
+}}
+
+async function saveInvoiceDoc() {{
+  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
+  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {{}};
+  computeInvoiceDocClient(CURRENT_DOC, cfg);
+
+  if (typeof saveCurrentDoc === "function") {{
+    await saveCurrentDoc(CURRENT_IS_NEW);
+  }}
+}}
+
+function convertProformaToInvoice() {{
+  if (confirm("Voulez-vous convertir cette Facture Pro Forma en Facture Client Définitive (SCF 70) ?")) {{
+    const pro = CURRENT_DOC;
+    pro.statut = "Convertie en Facture";
+    const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
+    const count = (dbSrc["SE Facture Client"] || []).length + 1;
+    const newName = `FAC-CLI-2026-000${{count < 10 ? '0' + count : count}}`;
+    
+    const newInvoice = JSON.parse(JSON.stringify(pro));
+    newInvoice.name = newName;
+    newInvoice.ref_reservation = pro.ref_devis || pro.name;
+    newInvoice.statut = "Validée";
+    newInvoice.docstatus = 1;
+    delete newInvoice.date_validite;
+    delete newInvoice.ref_devis;
+    newInvoice.date_echeance = "2026-11-25";
+    
+    renderInvoiceModal("SE Facture Client", newInvoice, true);
+  }}
+}}
+
 function renderDocModal(doctype, doc, isNew) {{
   CURRENT_DOCTYPE = doctype;
   CURRENT_DOC = doc;
   CURRENT_IS_NEW = !!isNew;
+  if (doctype === "SE Facture Client" || doctype === "SE Facture Pro Forma") {{
+    renderInvoiceModal(doctype, doc, isNew);
+    return;
+  }}
   const schema = SCHEMAS[doctype];
   document.getElementById("modalTitle").textContent = `${{isNew ? "➕ Nouveau" : doc.name}} — ${{getNavLabel(doctype)}}`;
 
@@ -2303,62 +2835,131 @@ function openPrintPreview() {{
   const doc = CURRENT_DOC;
   const cfg = DB["SE Parametres Hotel"][0];
   const w = window.open("", "_blank");
-  if (CURRENT_DOCTYPE === "SE Facture Client") {{
+  if (CURRENT_DOCTYPE === "SE Facture Client" || CURRENT_DOCTYPE === "SE Facture Pro Forma") {{
+    const isPro = (CURRENT_DOCTYPE === "SE Facture Pro Forma");
     const cli = (DB["SE Client"] || []).find(c => c.name === doc.client) || {{}};
-    w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Facture ${{doc.name}}</title>
+    const sejours = doc.sejours || [];
+    const lignes = doc.lignes || [];
+
+    let staysHtml = "";
+    if (sejours.length > 0) {{
+      staysHtml = `<div style="margin-bottom:14px;"><b style="font-size:12px;color:#0f172a;">Détail des Périodes & Séjours :</b>
+      <table style="width:100%;border-collapse:collapse;margin-top:4px;font-size:12px;">
+        <tr style="background:#f1f5f9;color:#334155;">
+          <th style="padding:6px;text-align:left;">Désignation Séjour</th>
+          <th style="padding:6px;text-align:center;">Date Arrivée</th>
+          <th style="padding:6px;text-align:center;">Date Départ</th>
+          <th style="padding:6px;text-align:center;">Nuitées</th>
+          <th style="padding:6px;text-align:right;">Total Séjour TTC</th>
+        </tr>
+        ${{sejours.map(s => `<tr>
+          <td style="padding:6px;border-bottom:1px solid #e2e8f0;"><b>Séjour #${{s.sejour_no || 1}}</b> — ${{s.description || ''}}</td>
+          <td style="padding:6px;border-bottom:1px solid #e2e8f0;text-align:center;">${{s.date_arrivee || ''}}</td>
+          <td style="padding:6px;border-bottom:1px solid #e2e8f0;text-align:center;">${{s.date_depart || ''}}</td>
+          <td style="padding:6px;border-bottom:1px solid #e2e8f0;text-align:center;font-weight:bold;">${{s.nuitees || 1}} j</td>
+          <td style="padding:6px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:bold;">${{fmtDZD(s.total_ttc_sejour || 0)}}</td>
+        </tr>`).join('')}}
+      </table></div>`;
+    }}
+
+    let linesHtml = "";
+    lignes.forEach(ln => {{
+      linesHtml += `<tr>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;">
+          <b>${{ln.article || 'Prestation'}}</b> (${{ln.type_ligne || 'Hébergement'}})
+          ${{sejours.length > 1 ? `<span style="font-size:11px;color:#64748b;">[Séjour #${{ln.sejour_no || 1}}]</span>` : ''}}
+        </td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;">${{ln.quantite || 1}}</td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;">${{ln.nb_jours || 1}}</td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;">${{ln.type_ligne === 'Hébergement' ? (ln.nb_personnes || 0) : '—'}}</td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:right;">${{fmtDZD(ln.montant_ht || 0)}}</td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;">${{ln.taux_tva || 9}}%</td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:right;">${{fmtDZD(ln.montant_tva || 0)}}</td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:right;color:#0369a1;">${{fmtDZD(ln.taxe_sejour || 0)}}</td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:bold;">${{fmtDZD(ln.total_ligne_ttc || 0)}}</td>
+      </tr>`;
+    }});
+
+    w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>${{isPro ? 'FACTURE PRO FORMA' : 'FACTURE CLIENT'}} ${{doc.name}}</title>
     <style>
-      body {{ font-family:'Segoe UI',Arial,sans-serif; color:#0f172a; max-width:820px; margin:24px auto; padding:24px; border:1px solid #cbd5e1; }}
+      body {{ font-family:'Segoe UI',Arial,sans-serif; color:#0f172a; max-width:880px; margin:20px auto; padding:24px; border:1px solid #cbd5e1; }}
       .hdr {{ display:flex; justify-content:space-between; border-bottom:3px solid #b45309; padding-bottom:14px; margin-bottom:18px; flex-wrap:wrap; gap:12px; }}
-      .grid {{ display:flex; gap:18px; margin-bottom:18px; flex-wrap:wrap; }}
-      .box {{ flex:1; min-width:240px; border:1px solid #cbd5e1; border-radius:6px; padding:12px; background:#f8fafc; font-size:12.5px; }}
-      table {{ width:100%; border-collapse:collapse; margin-bottom:16px; font-size:13px; }}
-      th {{ background:#0f172a; color:#fff; padding:9px; text-align:left; }}
-      td {{ padding:9px; border-bottom:1px solid #e2e8f0; }}
-      .words {{ background:#fffbeb; border-left:4px solid #d97706; padding:12px; font-size:13px; margin:18px 0; }}
-      @media print {{ .no-print {{ display:none; }} body {{ border:none; margin:0; }} }}
+      .grid {{ display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; }}
+      .box {{ flex:1; min-width:260px; border:1px solid #cbd5e1; border-radius:6px; padding:12px; background:#f8fafc; font-size:12px; }}
+      table {{ width:100%; border-collapse:collapse; margin-bottom:14px; font-size:12px; }}
+      th {{ background:#0f172a; color:#fff; padding:8px; text-align:left; }}
+      td {{ padding:8px; border-bottom:1px solid #e2e8f0; }}
+      .words {{ background:#fffbeb; border-left:4px solid #d97706; padding:12px; font-size:12.5px; margin:16px 0; }}
+      @media print {{ .no-print {{ display:none; }} body {{ border:none; margin:0; padding:10px; }} }}
     </style></head><body>
-    <div class="no-print" style="margin-bottom:14px;text-align:right;"><button onclick="window.print()" style="padding:8px 16px;background:#0f172a;color:#fff;border:none;border-radius:6px;cursor:pointer;">🖨️ Imprimer / Enregistrer en PDF</button></div>
+    <div class="no-print" style="margin-bottom:14px;text-align:right;">
+      <button onclick="window.print()" style="padding:8px 18px;background:#0f172a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">🖨️ Imprimer / Enregistrer en PDF</button>
+    </div>
     <div class="hdr">
       <div>
-        <h1 style="margin:0;font-size:21px;">${{cfg.raison_sociale}} <span style="color:#d97706;">★★★★</span></h1>
+        <h1 style="margin:0;font-size:20px;color:#0f172a;">${{cfg.raison_sociale}} <span style="color:#d97706;">★★★★</span></h1>
         <div style="font-size:11.5px;color:#475569;margin-top:4px;">
           ${{cfg.adresse}}<br>Tél : ${{cfg.telephone}} | Email : ${{cfg.email}}<br>
           <b>RC :</b> ${{cfg.rc}} | <b>NIF :</b> ${{cfg.nif}} | <b>NIS :</b> ${{cfg.nis}} | <b>AI :</b> ${{cfg.article_imposition}}
         </div>
       </div>
       <div style="text-align:right;">
-        <h2 style="margin:0;color:#b45309;">FACTURE SCF</h2>
-        <div><b>N° :</b> ${{doc.name}}</div>
-        <div><b>Date :</b> ${{doc.date_facture}}</div>
-        <div><b>Échéance :</b> ${{doc.date_echeance}}</div>
-        <div><b>Statut :</b> ${{doc.statut}}</div>
+        <h2 style="margin:0;color:#b45309;font-size:18px;">${{isPro ? 'FACTURE PRO FORMA' : 'FACTURE CLIENT OFFICIELLE'}}</h2>
+        <div style="font-size:12px;margin-top:4px;"><b>N° :</b> ${{doc.name}}</div>
+        <div style="font-size:12px;"><b>Date :</b> ${{doc.date_facture}}</div>
+        <div style="font-size:12px;"><b>${{isPro ? 'Validité' : 'Échéance'}} :</b> ${{doc.date_validite || doc.date_echeance || '—'}}</div>
+        <div style="font-size:12px;"><b>Statut :</b> ${{doc.statut || 'Validée'}}</div>
       </div>
     </div>
     <div class="grid">
       <div class="box">
-        <b>FACTURÉ À :</b><br><b>${{doc.client}}</b> (${{doc.type_client || ''}})<br>
+        <b style="color:#b45309;">FACTURÉ À (CLIENT) :</b><br>
+        <b style="font-size:13px;">${{doc.client}}</b> (${{doc.type_client || ''}})<br>
         ${{cli.adresse || ''}}<br>
-        <b>RC :</b> ${{cli.rc || '—'}} | <b>NIF :</b> ${{cli.nif || '—'}}
+        <b>RC :</b> ${{cli.rc || '—'}} | <b>NIF :</b> ${{cli.nif || '—'}}<br>
+        <b>NIS :</b> ${{cli.nis || '—'}} | <b>AI :</b> ${{cli.article_imposition || '—'}}
       </div>
       <div class="box">
-        <b>DÉTAILS DU SÉJOUR :</b><br>
-        <b>Prestation :</b> ${{doc.nature_prestation}}<br>
-        <b>Réf. Réservation :</b> ${{doc.ref_reservation || '—'}}<br>
-        <b>Nuitées / Occupants :</b> ${{doc.nuitees || 1}} nuit(s) / ${{doc.nb_adultes || 1}} adulte(s)<br>
-        <b>Mode de règlement :</b> ${{doc.mode_paiement_prevu || 'Virement'}}
+        <b style="color:#b45309;">MODALITÉS DU RÈGLEMENT :</b><br>
+        <b>Mode prévu :</b> ${{doc.mode_paiement_prevu || 'Virement'}}<br>
+        <b>Réf. Dossier :</b> ${{doc.ref_devis || doc.ref_reservation || '—'}}<br>
+        <b>Taxe de séjour :</b> 500 DZD / nuitée / pers. (Hébergement 4★)<br>
+        <b>Ventilation TVA :</b> ${{doc.detail_tva || 'Conforme SCF'}}
       </div>
     </div>
-    <table style="width:100%;max-width:460px;margin-left:auto;">
-      <tr><td>Total HT</td><td style="text-align:right;"><b>${{fmtDZD(doc.montant_ht)}}</b></td></tr>
-      <tr><td>TVA (${{doc.taux_tva}} %)</td><td style="text-align:right;">${{fmtDZD(doc.montant_tva)}}</td></tr>
-      <tr><td>Taxe de Séjour 4★</td><td style="text-align:right;">${{fmtDZD(doc.taxe_sejour)}}</td></tr>
-      <tr><td>Droit de Timbre Fiscal (Espèces)</td><td style="text-align:right;">${{fmtDZD(doc.droit_timbre)}}</td></tr>
-      <tr style="background:#0f172a;color:#fff;font-weight:bold;"><td>NET À PAYER TTC (DZD)</td><td style="text-align:right;">${{fmtDZD(doc.montant_ttc)}}</td></tr>
-      <tr><td>Montant Encaissé</td><td style="text-align:right;">${{fmtDZD(doc.montant_encaisse)}}</td></tr>
-      <tr><td><b>Reste à Encaisser</b></td><td style="text-align:right;"><b>${{fmtDZD(doc.reste_a_encaisser)}}</b></td></tr>
+
+    ${{staysHtml}}
+
+    <b style="font-size:12px;color:#0f172a;">Détail des Prestations Hôtelières & Services :</b>
+    <table style="width:100%;border-collapse:collapse;margin-top:4px;font-size:12px;">
+      <thead>
+        <tr><th>Prestation</th><th style="text-align:center;">Qté</th><th style="text-align:center;">Nuits</th><th style="text-align:center;">Pers.</th><th style="text-align:right;">Base HT</th><th style="text-align:center;">TVA</th><th style="text-align:right;">Montant TVA</th><th style="text-align:right;">Taxe Séjour</th><th style="text-align:right;">Total TTC</th></tr>
+      </thead>
+      <tbody>${{linesHtml}}</tbody>
     </table>
-    <div class="words">Arrêtée la présente facture à la somme de :<br><b>« ${{doc.montant_en_lettres}} »</b></div>
-    <div style="font-size:11.5px;color:#475569;"><b>RIB :</b> ${{cfg.rib_principal}} | <b>Capital Social :</b> ${{cfg.capital_social}}</div>
+
+    <table style="width:55%;margin-left:auto;font-size:12.5px;">
+      <tr><td>Total HT</td><td style="text-align:right;font-weight:bold;">${{fmtDZD(doc.montant_ht)}}</td></tr>
+      <tr><td>TVA Collectée (9% / 19%)</td><td style="text-align:right;">${{fmtDZD(doc.montant_tva)}}</td></tr>
+      <tr><td>Taxe de Séjour 4★ (500 DZD × pers. × nuits)</td><td style="text-align:right;color:#0369a1;">${{fmtDZD(doc.taxe_sejour)}}</td></tr>
+      <tr style="border-top:1px solid #cbd5e1;"><td>Total TTC Saisi</td><td style="text-align:right;font-weight:bold;">${{fmtDZD(doc.total_ttc_saisi || doc.montant_ttc)}}</td></tr>
+      <tr><td>Droit de Timbre Fiscal (Espèces)</td><td style="text-align:right;">${{fmtDZD(doc.droit_timbre)}}</td></tr>
+      <tr style="background:#0f172a;color:#fff;font-weight:bold;font-size:13px;"><td>NET À PAYER TTC (DZD)</td><td style="text-align:right;color:#fbbf24;">${{fmtDZD(doc.montant_ttc)}}</td></tr>
+      ${{!isPro ? `
+      <tr><td>Montant Encaissé</td><td style="text-align:right;color:#16a34a;font-weight:bold;">${{fmtDZD(doc.montant_encaisse || 0)}}</td></tr>
+      <tr><td><b>Reste à Encaisser</b></td><td style="text-align:right;color:#dc2626;font-weight:bold;">${{fmtDZD(doc.reste_a_encaisser || doc.montant_ttc)}}</td></tr>
+      ` : ''}}
+    </table>
+
+    <div class="words">Arrêtée la présente ${{isPro ? 'Facture Pro Forma' : 'Facture'}} à la somme de :<br><b>« ${{doc.montant_en_lettres || ''}} »</b></div>
+    <div style="display:flex;justify-content:space-between;margin-top:20px;padding-top:10px;border-top:1px solid #cbd5e1;font-size:11px;color:#475569;">
+      <div><b>RIB BNA :</b> ${{cfg.rib_principal}}<br><b>Capital Social :</b> ${{cfg.capital_social}}</div>
+      <div style="text-align:right;min-width:200px;">
+        <b>Cachet & Signature Direction</b><br><br><br>
+        <i>Hôtel Saint Eugène 4★ Alger</i>
+      </div>
+    </div>
     </body></html>`);
   }} else {{
     w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${{doc.name}}</title>

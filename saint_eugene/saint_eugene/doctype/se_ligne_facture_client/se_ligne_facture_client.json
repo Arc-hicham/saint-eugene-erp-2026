@@ -1,0 +1,129 @@
+{
+  "actions": [],
+  "autoname": "hash",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sejour_no",
+    "article",
+    "type_ligne",
+    "quantite",
+    "nb_jours",
+    "nb_personnes",
+    "montant_ttc_saisi",
+    "taux_tva",
+    "montant_ht",
+    "montant_tva",
+    "taxe_sejour",
+    "total_ligne_ttc",
+    "prix_unitaire_ttc"
+  ],
+  "fields": [
+    {
+      "fieldname": "sejour_no",
+      "fieldtype": "Int",
+      "label": "N° Séjour",
+      "default": "1",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "article",
+      "fieldtype": "Select",
+      "label": "Type de Chambre / Prestation",
+      "options": "Single\nDouble\nTwin\nTriple\nSuite Deluxe\nSuite Saint Eugène\nDîner\nDéjeuner\nCoffee Break\nLocation de salle",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "type_ligne",
+      "fieldtype": "Select",
+      "label": "Catégorie",
+      "options": "Hébergement\nRestauration\nSéminaires & Banquets",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "quantite",
+      "fieldtype": "Int",
+      "label": "Quantité / Chambres",
+      "default": "1",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "nb_jours",
+      "fieldtype": "Int",
+      "label": "Nuitées / Jours",
+      "default": "1",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "nb_personnes",
+      "fieldtype": "Int",
+      "label": "Nombre de Personnes",
+      "default": "1",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "montant_ttc_saisi",
+      "fieldtype": "Currency",
+      "label": "Montant TTC Saisi (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "taux_tva",
+      "fieldtype": "Percent",
+      "label": "Taux TVA (%)",
+      "default": "9",
+      "read_only": 1
+    },
+    {
+      "fieldname": "montant_ht",
+      "fieldtype": "Currency",
+      "label": "Montant HT (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "montant_tva",
+      "fieldtype": "Currency",
+      "label": "Montant TVA (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "taxe_sejour",
+      "fieldtype": "Currency",
+      "label": "Taxe de Séjour (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "total_ligne_ttc",
+      "fieldtype": "Currency",
+      "label": "Total Ligne TTC (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "prix_unitaire_ttc",
+      "fieldtype": "Currency",
+      "label": "Prix Unitaire TTC (DZD)",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 1,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Ligne Facture Client",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 0
+}
