@@ -199,7 +199,7 @@ def build_initial_seed_db() -> dict:
 
     for fname, dfac, dech, cli, tcli, nat, ref, darr, ddep, nuits, adultes, app_ts, mode, ht, tva_r, enc in factures_seed:
         tva = round(ht * tva_r / 100.0, 2)
-        ts = compute_taxe_sejour_algerie(nat, app_ts, adultes, nuits, 400.0)
+        ts = compute_taxe_sejour_algerie(nat, app_ts, adultes, nuits, float(DEFAULT_SETTINGS.get("taxe_sejour_nuitee_adulte", 500.0)))
         timbre = compute_droit_timbre_algerie(ht + tva + ts, mode, 1, 0.0)
         ttc = round(ht + tva + ts + timbre, 2)
         db["SE Facture Client"].append(
@@ -479,7 +479,7 @@ def recompute_all_links(db: dict) -> None:
         nuits = max(1, int(fac.get("nuitees") or 1))
         adultes = max(1, int(fac.get("nb_adultes") or 1))
         mode = fac.get("mode_paiement_prevu") or "Virement"
-        ts = compute_taxe_sejour_algerie(nat, app_ts, adultes, nuits, 400.0)
+        ts = compute_taxe_sejour_algerie(nat, app_ts, adultes, nuits, float(DEFAULT_SETTINGS.get("taxe_sejour_nuitee_adulte", 500.0)))
         timbre = compute_droit_timbre_algerie(ht + tva + ts, mode, 1, 0.0)
         ttc = round(ht + tva + ts + timbre, 2)
         fac["montant_tva"] = tva
