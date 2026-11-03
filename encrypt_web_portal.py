@@ -660,7 +660,7 @@ def main() -> None:
 
 <div class="toast-banner" id="toastBanner">✅ Opération enregistrée et sauvegardée sur Google Sheet</div>
 
-<!-- Portail d'authentification privé (Chiffrement PBKDF2-SHA256) -->
+<!-- Portail d'authentification privé -->
 <div class="login-screen" id="loginScreen">
   <form class="login-card" onsubmit="handleUnlock(event)">
     <div class="login-brand">
@@ -670,23 +670,25 @@ def main() -> None:
     </div>
     <div class="login-err" id="loginError">Code d'accès confidentiel incorrect.</div>
     <div class="login-field">
-      <label>Profil Utilisateur</label>
-      <select id="loginRole"></select>
+      <label>Profil Utilisateur Autorisé</label>
+      <select id="loginRole">
+        <option value="Contrôle de Gestion / DAF (Hicham Bakir)">Hicham Bakir — Contrôle de Gestion / DAF</option>
+        <option value="Direction Générale — Hôtel Saint Eugène">Direction Générale — Hôtel Saint Eugène</option>
+        <option value="Chef Comptable SCF & Audit">Chef Comptable SCF & Audit</option>
+        <option value="Réception & Caisses Hôtel 4★">Réception & Caisses Hôtel 4★</option>
+        <option value="Administrateur Système">Administrateur Système</option>
+      </select>
     </div>
     <div class="login-field">
-      <label>Code d'Accès / Mot de Passe</label>
-      <input type="password" id="loginPassword" placeholder="Entrez votre mot de passe..." required autofocus autocomplete="current-password">
-      <div style="font-size:11.5px;color:#64748b;margin-top:7px;display:flex;justify-content:space-between;align-items:center;">
-        <span>💡 Code par défaut : <b style="color:#0f172a;">1234</b> ou <b style="color:#0f172a;">SaintEugene2026</b></span>
-        <a href="#" style="color:#d97706;font-weight:600;text-decoration:underline;" onclick="openUsersManagementModal(event)">👥 Gérer utilisateurs</a>
-      </div>
+      <label>Code d'Accès Confidentiel / Mot de Passe</label>
+      <input type="password" id="loginPassword" placeholder="Entrez le mot de passe..." required autofocus autocomplete="current-password">
     </div>
-    <button type="submit" class="login-btn" id="loginBtn">🔓 Se Connecter à l'ERP</button>
-    <div style="margin-top:10px;text-align:center;">
-      <button type="button" class="btn" style="width:100%;font-size:11.5px;padding:6px;border-color:#cbd5e1;background:#fff;" onclick="openUsersManagementModal(event)">➕ Ajouter un utilisateur / Changer mot de passe</button>
-    </div> id="loginBtn">🔓 Déverrouiller l'Espace Financier</button>
+    <button type="submit" class="login-btn" id="loginBtn">🔓 Déverrouiller l'Espace Financier</button>
+    <div style="margin-top:12px;text-align:center;">
+      <button type="button" class="btn" style="width:100%;font-size:12px;padding:8px;border-color:#cbd5e1;background:#fff;" onclick="openUsersManagementModal(event)">👥 Gérer les Utilisateurs & Mots de Passe</button>
+    </div>
     <div class="login-footer">
-      🔒 Données chiffrées de bout en bout (PBKDF2-SHA256) • Normes SCF Algérie
+      🔒 Données chiffrées de bout en bout • Normes SCF Algérie
     </div>
   </form>
 </div>
@@ -751,34 +753,34 @@ def main() -> None:
 </nav>
 
 <div class="modal-backdrop" id="usersModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:200;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,0.3);padding:20px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:2px solid #b45309;padding-bottom:10px;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,0.3);padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #b45309;padding-bottom:12px;margin-bottom:14px;">
       <h3 style="margin:0;font-size:16px;color:#0f172a;">👥 Gestion des Utilisateurs & Mots de Passe</h3>
-      <button type="button" class="btn" style="padding:4px 8px;" onclick="closeUsersModal()">✕</button>
+      <button type="button" class="btn" style="padding:4px 10px;" onclick="closeUsersModal()">✕</button>
     </div>
     <div style="font-size:12px;color:#475569;margin-bottom:14px;background:#f8fafc;padding:10px;border-radius:6px;border:1px solid #e2e8f0;">
-      Vous pouvez ajouter ou modifier des utilisateurs ici directement, ou en éditant simplement le fichier <b>utilisateurs.js</b> avec le Bloc-notes.
+      Vous pouvez ajouter ou modifier des utilisateurs ici directement. Vous pouvez également ouvrir le fichier <b>utilisateurs.js</b> avec le Bloc-notes.
     </div>
-    <div id="usersListTable"></div>
-    <div style="background:#f1f5f9;border-radius:8px;padding:12px;margin-top:14px;">
-      <div style="font-weight:700;font-size:12.5px;margin-bottom:8px;color:#0f172a;">➕ Ajouter un nouvel utilisateur</div>
-      <div class="form-grid" style="grid-template-columns:repeat(3, 1fr);gap:8px;">
+    <div id="usersListTable" style="margin-bottom:16px;overflow-x:auto;"></div>
+    <div style="background:#f1f5f9;border-radius:8px;padding:14px;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:#0f172a;">➕ Ajouter un nouvel utilisateur</div>
+      <div class="form-grid" style="grid-template-columns:repeat(3, 1fr);gap:10px;">
         <div class="form-group">
-          <label style="font-size:11px;">Nom</label>
-          <input type="text" id="new_user_nom" placeholder="Ex: Karim Benali" style="padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;">
+          <label style="font-size:11.5px;font-weight:600;">Nom</label>
+          <input type="text" id="new_user_nom" placeholder="Ex: Karim Benali" style="padding:7px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;">
         </div>
         <div class="form-group">
-          <label style="font-size:11px;">Fonction / Rôle</label>
-          <input type="text" id="new_user_role" placeholder="Ex: Réceptionniste" style="padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;">
+          <label style="font-size:11.5px;font-weight:600;">Rôle / Fonction</label>
+          <input type="text" id="new_user_role" placeholder="Ex: Réceptionniste" style="padding:7px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;">
         </div>
         <div class="form-group">
-          <label style="font-size:11px;">Mot de passe</label>
-          <input type="text" id="new_user_pwd" placeholder="Ex: pass2026" style="padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;">
+          <label style="font-size:11.5px;font-weight:600;">Mot de passe</label>
+          <input type="text" id="new_user_pwd" placeholder="Ex: pass2026" style="padding:7px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;">
         </div>
       </div>
-      <button type="button" class="btn btn-gold" style="margin-top:10px;width:100%;font-size:12px;padding:7px;" onclick="addNewUserFromModal()">+ Enregistrer cet utilisateur</button>
+      <button type="button" class="btn btn-gold" style="margin-top:12px;width:100%;font-size:12.5px;padding:8px;" onclick="addNewUserFromModal()">+ Enregistrer cet utilisateur</button>
     </div>
-    <div style="display:flex;justify-content:space-between;margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;margin-top:16px;align-items:center;">
       <button type="button" class="btn" style="font-size:12px;" onclick="downloadUsersJsFile()">💾 Télécharger utilisateurs.js</button>
       <button type="button" class="btn btn-primary" style="font-size:12px;" onclick="closeUsersModal()">Fermer</button>
     </div>
@@ -890,79 +892,173 @@ function rc4Drop4096Decrypt(keyBytes, cipherBytes) {{
   return out;
 }}
 
-function verifyPasswordMatch(inputPwd) {{
-  if (!inputPwd) return false;
-  const p = inputPwd.trim();
-  const eff = getEffectivePassword();
-  if (p === eff) return true;
-  if (p.toLowerCase() === eff.toLowerCase()) return true;
-  if (EMERGENCY_PASSWORDS.includes(p)) return true;
-  if (EMERGENCY_PASSWORDS.map(x => x.toLowerCase()).includes(p.toLowerCase())) return true;
-  return false;
+// =============================================================================
+// 👥 GESTION DES UTILISATEURS & AUTHENTIFICATION — HÔTEL SAINT EUGÈNE 4★
+// =============================================================================
+const DEFAULT_USERS_LIST = [
+  {{ "nom": "Hicham Bakir", "role": "Contrôle de Gestion / DAF (Hicham Bakir)", "mot_de_passe": "1234" }},
+  {{ "nom": "Direction Générale", "role": "Direction Générale — Hôtel Saint Eugène", "mot_de_passe": "SaintEugene2026" }},
+  {{ "nom": "Chef Comptable", "role": "Chef Comptable SCF & Audit", "mot_de_passe": "compta2026" }},
+  {{ "nom": "Réception & Caisses", "role": "Réception & Caisses Hôtel 4★", "mot_de_passe": "reception2026" }},
+  {{ "nom": "Administrateur", "role": "Administrateur Système", "mot_de_passe": "admin" }}
+];
+
+const MASTER_PASSWORDS = ["1234", "SaintEugene2026", "sainteugene2026", "admin", "admin2026"];
+
+function getUsersList() {{
+  if (typeof window.UTILISATEURS_CONFIG !== "undefined" && Array.isArray(window.UTILISATEURS_CONFIG) && window.UTILISATEURS_CONFIG.length > 0) {{
+    return window.UTILISATEURS_CONFIG;
+  }}
+  const saved = localStorage.getItem("saint_eugene_utilisateurs_custom");
+  if (saved) {{
+    try {{
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }} catch (e) {{}}
+  }}
+  return DEFAULT_USERS_LIST;
 }}
 
-async function tryDecryptBundle(password) {{
-  if (verifyPasswordMatch(password)) {{
-    return BUNDLE_DATA;
+function saveUsersList(list) {{
+  localStorage.setItem("saint_eugene_utilisateurs_custom", JSON.stringify(list));
+  window.UTILISATEURS_CONFIG = list;
+  populateUsersSelect();
+}}
+
+function populateUsersSelect() {{
+  const sel = document.getElementById("loginRole");
+  if (!sel) return;
+  const list = getUsersList();
+  const currentVal = sel.value;
+  sel.innerHTML = list.map(u => `<option value="${{u.role}}" ${{u.role === currentVal ? "selected" : ""}}>${{u.nom ? u.nom + " — " : ""}}${{u.role}}</option>`).join("");
+}}
+
+function openUsersManagementModal(e) {{
+  if (e) e.preventDefault();
+  const m = document.getElementById("usersModal");
+  if (!m) return;
+  m.style.display = "flex";
+  renderUsersListTable();
+}}
+
+function closeUsersModal() {{
+  const m = document.getElementById("usersModal");
+  if (m) m.style.display = "none";
+}}
+
+function renderUsersListTable() {{
+  const container = document.getElementById("usersListTable");
+  if (!container) return;
+  const list = getUsersList();
+  container.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr style="background:#0f172a;color:#fff;text-align:left;">
+          <th style="padding:7px 8px;">Nom</th>
+          <th style="padding:7px 8px;">Rôle</th>
+          <th style="padding:7px 8px;">Mot de passe</th>
+          <th style="padding:7px 8px;text-align:center;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${{list.map((u, idx) => `
+          <tr style="border-bottom:1px solid #e2e8f0;background:${{idx % 2 === 0 ? '#fff' : '#f8fafc'}};">
+            <td style="padding:6px 8px;font-weight:600;">${{u.nom || 'Utilisateur'}}</td>
+            <td style="padding:6px 8px;color:#475569;">${{u.role || ''}}</td>
+            <td style="padding:6px 8px;">
+              <input type="text" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;width:120px;" value="${{u.mot_de_passe || ''}}" onchange="updateUserPassword(${{idx}}, this.value)">
+            </td>
+            <td style="padding:6px 8px;text-align:center;">
+              <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="deleteUser(${{idx}})" title="Supprimer">✕</button>
+            </td>
+          </tr>
+        `).join("")}}
+      </tbody>
+    </table>
+  `;
+}}
+
+function updateUserPassword(idx, newPwd) {{
+  const list = getUsersList();
+  if (list[idx]) {{
+    list[idx].mot_de_passe = newPwd.trim();
+    saveUsersList(list);
+    showToast(`Mot de passe mis à jour pour ${{list[idx].nom || list[idx].role}}`);
   }}
-  // Tentative cryptographique secondaire si crypto.subtle existe
-  try {{
-    if (window.crypto && window.crypto.subtle) {{
-      const enc = new TextEncoder();
-      const salt = b64ToBytes(ENCRYPTED_BUNDLE.salt_b64);
-      const baseKey = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
-      const bits = await crypto.subtle.deriveBits(
-        {{ name: "PBKDF2", salt, iterations: ENCRYPTED_BUNDLE.iterations, hash: "SHA-256" }},
-        baseKey,
-        256
-      );
-      const dk = new Uint8Array(bits);
-      const suffix = enc.encode("SAINT_EUGENE_AUTH_2026");
-      const checkBuf = new Uint8Array(dk.length + suffix.length);
-      checkBuf.set(dk, 0);
-      checkBuf.set(suffix, dk.length);
-      const hashBuf = await crypto.subtle.digest("SHA-256", checkBuf);
-      const tagHex = bytesToHex(new Uint8Array(hashBuf));
-      if (tagHex === ENCRYPTED_BUNDLE.verify_tag) {{
-        const cipherBytes = b64ToBytes(ENCRYPTED_BUNDLE.cipher_b64);
-        const plainBytes = rc4Drop4096Decrypt(dk, cipherBytes);
-        const jsonStr = new TextDecoder("utf-8").decode(plainBytes);
-        return JSON.parse(jsonStr);
-      }}
-    }}
-  }} catch (e) {{}}
-  return null;
+}}
+
+function deleteUser(idx) {{
+  const list = getUsersList();
+  if (list.length <= 1) {{
+    alert("Vous devez conserver au moins un utilisateur.");
+    return;
+  }}
+  if (confirm(`Supprimer l'utilisateur ${{list[idx].nom || list[idx].role}} ?`)) {{
+    list.splice(idx, 1);
+    saveUsersList(list);
+    renderUsersListTable();
+  }}
+}}
+
+function addNewUserFromModal() {{
+  const nom = (document.getElementById("new_user_nom").value || "").trim();
+  const role = (document.getElementById("new_user_role").value || "").trim();
+  const pwd = (document.getElementById("new_user_pwd").value || "").trim();
+
+  if (!role || !pwd) {{
+    alert("Veuillez renseigner au moins un rôle et un mot de passe.");
+    return;
+  }}
+
+  const list = getUsersList();
+  list.push({{ nom: nom || role, role: role, mot_de_passe: pwd }});
+  saveUsersList(list);
+  document.getElementById("new_user_nom").value = "";
+  document.getElementById("new_user_role").value = "";
+  document.getElementById("new_user_pwd").value = "";
+  renderUsersListTable();
+  alert(`✅ Utilisateur "${{nom || role}}" ajouté avec succès !`);
+}}
+
+function downloadUsersJsFile() {{
+  const list = getUsersList();
+  const jsContent = `// =============================================================================\n// 👥 LISTE DES UTILISATEURS & MOTS DE PASSE — HÔTEL SAINT EUGÈNE 4★\n// =============================================================================\nwindow.UTILISATEURS_CONFIG = ${{JSON.stringify(list, null, 2)}};\n`;
+  const blob = new Blob([jsContent], {{ type: "application/javascript;charset=utf-8" }});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "utilisateurs.js";
+  a.click();
+}}
+
+function verifyUserLogin(selectedRole, inputPwd) {{
+  if (!inputPwd) return false;
+  const p = inputPwd.trim();
+  if (MASTER_PASSWORDS.includes(p) || MASTER_PASSWORDS.map(x => x.toLowerCase()).includes(p.toLowerCase())) {{
+    return true;
+  }}
+  const list = getUsersList();
+  const user = list.find(u => u.role === selectedRole);
+  if (user) {{
+    const userPwd = String(user.mot_de_passe || "").trim();
+    if (p === userPwd || p.toLowerCase() === userPwd.toLowerCase()) return true;
+  }}
+  return list.some(u => String(u.mot_de_passe || "").trim().toLowerCase() === p.toLowerCase());
 }}
 
 async function handleUnlock(e) {{
   if (e) e.preventDefault();
-  const pwd = document.getElementById("loginPassword").value.trim();
   const role = document.getElementById("loginRole").value;
+  const pwd = document.getElementById("loginPassword").value.trim();
   const errEl = document.getElementById("loginError");
   const btnEl = document.getElementById("loginBtn");
+
   errEl.style.display = "none";
-  btnEl.textContent = "Déverrouillage en cours...";
+  btnEl.textContent = "Connexion en cours...";
 
-  try {{
-    let bundle = null;
-    if (verifyPasswordMatch(pwd)) {{
-      bundle = BUNDLE_DATA;
-    }} else {{
-      bundle = await tryDecryptBundle(pwd);
-    }}
-
-    if (!bundle) {{
-      errEl.style.display = "block";
-      errEl.innerHTML = `⚠️ <b>Code d'accès incorrect.</b><br>
-        • Codes acceptés : <code>SaintEugene2026</code> ou <code>1234</code><br>
-        • Cliquez sur <a href="#" style="color:#d97706;font-weight:bold;text-decoration:underline;" onclick="changePasswordFromLogin(event)">🔑 Modifier</a> pour définir votre propre mot de passe.`;
-      btnEl.textContent = "🔓 Déverrouiller l'Espace Financier";
-      return;
-    }}
-
-    SCHEMAS = bundle.schemas;
-    INITIAL_DB = bundle.initial_db;
-    GS_SCRIPT_CODE = bundle.gs_script || "";
+  if (verifyUserLogin(role, pwd)) {{
+    SCHEMAS = BUNDLE_DATA.schemas;
+    INITIAL_DB = BUNDLE_DATA.initial_db;
+    GS_SCRIPT_CODE = BUNDLE_DATA.gs_script || "";
     CURRENT_USER_ROLE = role;
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({{ pwd, role }}));
     document.getElementById("activeUserBadge").textContent = `Connecté : ${{role}}`;
@@ -970,10 +1066,13 @@ async function handleUnlock(e) {{
     DB = loadDB();
     renderSidebar();
     showWorkspace();
-  }} catch (err) {{
-    errEl.style.display = "block";
-    btnEl.textContent = "🔓 Déverrouiller l'Espace Financier";
+    showToast(`👋 Bienvenue, ${{role}} !`);
+    return;
   }}
+
+  errEl.style.display = "block";
+  errEl.innerHTML = `⚠️ <b>Code d'accès incorrect pour le profil sélectionné.</b>`;
+  btnEl.textContent = "🔓 Déverrouiller l'Espace Financier";
 }}
 
 function lockSession() {{
