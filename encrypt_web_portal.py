@@ -345,6 +345,7 @@ def main() -> None:
 <title>Accès Privé — Saint Eugène ERP 2026 (Hôtel 4★ Alger)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="utilisateurs.js"></script>
 <style>
   :root {{
     --bg: #f1f5f9;
@@ -669,22 +670,21 @@ def main() -> None:
     </div>
     <div class="login-err" id="loginError">Code d'accès confidentiel incorrect.</div>
     <div class="login-field">
-      <label>Profil Utilisateur Autorisé</label>
-      <select id="loginRole">
-        <option value="Contrôle de Gestion / DAF (Hicham Bakir)">Contrôle de Gestion / DAF (Hicham Bakir)</option>
-        <option value="Direction Générale">Direction Générale — Hôtel Saint Eugène</option>
-        <option value="Chef Comptable SCF">Chef Comptable SCF & Audit</option>
-      </select>
+      <label>Profil Utilisateur</label>
+      <select id="loginRole"></select>
     </div>
     <div class="login-field">
-      <label>Code d'Accès Confidentiel</label>
-      <input type="password" id="loginPassword" placeholder="Entrez le code d'accès privé..." required autofocus>
-      <div style="font-size:11.5px;color:#64748b;margin-top:6px;display:flex;justify-content:space-between;align-items:center;">
-        <span>Mot de passe : <b style="color:#0f172a;">SaintEugene2026</b> ou <b>1234</b></span>
-        <a href="#" style="color:#d97706;font-weight:600;text-decoration:underline;" onclick="changePasswordFromLogin(event)">🔑 Modifier</a>
+      <label>Code d'Accès / Mot de Passe</label>
+      <input type="password" id="loginPassword" placeholder="Entrez votre mot de passe..." required autofocus autocomplete="current-password">
+      <div style="font-size:11.5px;color:#64748b;margin-top:7px;display:flex;justify-content:space-between;align-items:center;">
+        <span>💡 Code par défaut : <b style="color:#0f172a;">1234</b> ou <b style="color:#0f172a;">SaintEugene2026</b></span>
+        <a href="#" style="color:#d97706;font-weight:600;text-decoration:underline;" onclick="openUsersManagementModal(event)">👥 Gérer utilisateurs</a>
       </div>
     </div>
-    <button type="submit" class="login-btn" id="loginBtn">🔓 Déverrouiller l'Espace Financier</button>
+    <button type="submit" class="login-btn" id="loginBtn">🔓 Se Connecter à l'ERP</button>
+    <div style="margin-top:10px;text-align:center;">
+      <button type="button" class="btn" style="width:100%;font-size:11.5px;padding:6px;border-color:#cbd5e1;background:#fff;" onclick="openUsersManagementModal(event)">➕ Ajouter un utilisateur / Changer mot de passe</button>
+    </div> id="loginBtn">🔓 Déverrouiller l'Espace Financier</button>
     <div class="login-footer">
       🔒 Données chiffrées de bout en bout (PBKDF2-SHA256) • Normes SCF Algérie
     </div>
@@ -750,6 +750,41 @@ def main() -> None:
   </button>
 </nav>
 
+<div class="modal-backdrop" id="usersModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:200;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,0.3);padding:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:2px solid #b45309;padding-bottom:10px;">
+      <h3 style="margin:0;font-size:16px;color:#0f172a;">👥 Gestion des Utilisateurs & Mots de Passe</h3>
+      <button type="button" class="btn" style="padding:4px 8px;" onclick="closeUsersModal()">✕</button>
+    </div>
+    <div style="font-size:12px;color:#475569;margin-bottom:14px;background:#f8fafc;padding:10px;border-radius:6px;border:1px solid #e2e8f0;">
+      Vous pouvez ajouter ou modifier des utilisateurs ici directement, ou en éditant simplement le fichier <b>utilisateurs.js</b> avec le Bloc-notes.
+    </div>
+    <div id="usersListTable"></div>
+    <div style="background:#f1f5f9;border-radius:8px;padding:12px;margin-top:14px;">
+      <div style="font-weight:700;font-size:12.5px;margin-bottom:8px;color:#0f172a;">➕ Ajouter un nouvel utilisateur</div>
+      <div class="form-grid" style="grid-template-columns:repeat(3, 1fr);gap:8px;">
+        <div class="form-group">
+          <label style="font-size:11px;">Nom</label>
+          <input type="text" id="new_user_nom" placeholder="Ex: Karim Benali" style="padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;">
+        </div>
+        <div class="form-group">
+          <label style="font-size:11px;">Fonction / Rôle</label>
+          <input type="text" id="new_user_role" placeholder="Ex: Réceptionniste" style="padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;">
+        </div>
+        <div class="form-group">
+          <label style="font-size:11px;">Mot de passe</label>
+          <input type="text" id="new_user_pwd" placeholder="Ex: pass2026" style="padding:6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;">
+        </div>
+      </div>
+      <button type="button" class="btn btn-gold" style="margin-top:10px;width:100%;font-size:12px;padding:7px;" onclick="addNewUserFromModal()">+ Enregistrer cet utilisateur</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:16px;">
+      <button type="button" class="btn" style="font-size:12px;" onclick="downloadUsersJsFile()">💾 Télécharger utilisateurs.js</button>
+      <button type="button" class="btn btn-primary" style="font-size:12px;" onclick="closeUsersModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="docModal">
   <div class="modal">
     <div class="modal-hdr">
@@ -774,17 +809,7 @@ function getEffectivePassword() {{
 
 function changePasswordFromLogin(e) {{
   if (e) e.preventDefault();
-  const current = getEffectivePassword();
-  const newPwd = prompt("🔑 Modification du Mot de Passe — Hôtel Saint Eugène 4★\n\nEntrez votre nouveau mot de passe d'accès :", current);
-  if (newPwd !== null) {{
-    const clean = newPwd.trim();
-    if (clean.length > 0) {{
-      localStorage.setItem("saint_eugene_custom_password", clean);
-      const inp = document.getElementById("loginPassword");
-      if (inp) inp.value = clean;
-      alert("✅ Mot de passe mis à jour avec succès !\n\nNouveau mot de passe : " + clean + "\n\n(Vous pouvez aussi modifier 'CONFIGURED_PASSWORD' à la ligne 765 de index.html dans le Bloc-notes)");
-    }}
-  }}
+  openUsersManagementModal(e);
 }}
 
 const BUNDLE_DATA = {bundle_json};
@@ -2512,7 +2537,7 @@ function renderInvoiceModal(doctype, doc, isNew) {{
         <input type="date" id="inv_date_facture" value="${{doc.date_facture || '2026-11-04'}}" onchange="CURRENT_DOC.date_facture=this.value">
       </div>
       <div class="form-group">
-        <label>${{isProforma ? 'Date de Validité' : 'Date d\'Échéance'}}</label>
+        <label>${{isProforma ? 'Date de Validité' : "Date d'Échéance"}}</label>
         <input type="date" id="inv_date_echeance" value="${{doc.date_echeance || doc.date_validite || '2026-11-25'}}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
       </div>
       <div class="form-group">
@@ -3037,6 +3062,7 @@ function closeModal() {{
   document.getElementById("docModal").classList.remove("open");
 }}
 
+populateUsersSelect();
 // Auto-reconnexion si la session est déjà déverrouillée dans l'onglet
 (async () => {{
   try {{
