@@ -1,0 +1,267 @@
+{
+  "actions": [],
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_id",
+    "nom_hotel",
+    "raison_sociale",
+    "classement_etoiles",
+    "capacite_chambres",
+    "cb_id_1",
+    "capital_social",
+    "adresse",
+    "telephone",
+    "email",
+    "sb_fisc_id",
+    "nif",
+    "nis",
+    "rc",
+    "cb_fisc_id_2",
+    "article_imposition",
+    "numero_employeur_cnas",
+    "rib_principal",
+    "sb_taxes",
+    "taux_tva_hebergement_defaut",
+    "taux_tva_standard_defaut",
+    "taxe_sejour_nuitee_adulte",
+    "cb_taxes_2",
+    "activer_droit_timbre_especes",
+    "plafond_droit_timbre",
+    "sb_alertes",
+    "seuil_tresorerie_critique",
+    "cb_alertes_2",
+    "delai_alerte_cheque_jours",
+    "delai_alerte_contrat_jours"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_id",
+      "fieldtype": "Section Break",
+      "label": "Identité & Classement de l'Établissement"
+    },
+    {
+      "fieldname": "nom_hotel",
+      "fieldtype": "Data",
+      "label": "Nom Commercial",
+      "reqd": 1,
+      "default": "Hôtel Saint Eugène 4★ - Alger"
+    },
+    {
+      "fieldname": "raison_sociale",
+      "fieldtype": "Data",
+      "label": "Raison Sociale Légale",
+      "reqd": 1,
+      "default": "SPA HÔTEL SAINT EUGÈNE"
+    },
+    {
+      "fieldname": "classement_etoiles",
+      "fieldtype": "Select",
+      "label": "Classement Ministère du Tourisme",
+      "options": "3 Étoiles\n4 Étoiles\n5 Étoiles",
+      "reqd": 1,
+      "default": "4 Étoiles"
+    },
+    {
+      "fieldname": "capacite_chambres",
+      "fieldtype": "Int",
+      "label": "Capacité Totale (Chambres Disponibles)",
+      "reqd": 1,
+      "default": "84"
+    },
+    {
+      "fieldname": "cb_id_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "capital_social",
+      "fieldtype": "Data",
+      "label": "Capital Social",
+      "default": "120 000 000,00 DZD"
+    },
+    {
+      "fieldname": "adresse",
+      "fieldtype": "Small Text",
+      "label": "Adresse Officielle",
+      "default": "Front de Mer, Bologhine - 16090 Alger, Algérie"
+    },
+    {
+      "fieldname": "telephone",
+      "fieldtype": "Data",
+      "label": "Téléphone Standard",
+      "default": "+213 (0) 21 95 40 00"
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email Direction Financière",
+      "default": "direction.financiere@hotel-sainteugene.dz"
+    },
+    {
+      "fieldname": "sb_fisc_id",
+      "fieldtype": "Section Break",
+      "label": "Identifiants Fiscaux, Sociaux & Bancaires (Mentions Factures SCF)"
+    },
+    {
+      "fieldname": "nif",
+      "fieldtype": "Data",
+      "label": "NIF (Numéro d'Identification Fiscale)",
+      "reqd": 1,
+      "default": "002616099124587"
+    },
+    {
+      "fieldname": "nis",
+      "fieldtype": "Data",
+      "label": "NIS (Numéro d'Identification Statistique)",
+      "default": "099916090145821"
+    },
+    {
+      "fieldname": "rc",
+      "fieldtype": "Data",
+      "label": "Registre de Commerce (RC)",
+      "reqd": 1,
+      "default": "16/00-0991245B26"
+    },
+    {
+      "fieldname": "cb_fisc_id_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "article_imposition",
+      "fieldtype": "Data",
+      "label": "Article d'Imposition (AI)",
+      "reqd": 1,
+      "default": "16094512874"
+    },
+    {
+      "fieldname": "numero_employeur_cnas",
+      "fieldtype": "Data",
+      "label": "N° Cotisant Employeur CNAS",
+      "default": "16 4458 92 01"
+    },
+    {
+      "fieldname": "rib_principal",
+      "fieldtype": "Data",
+      "label": "Coordonnées Bancaires / RIB sur Factures",
+      "default": "BNA Agence Bologhine : 00100614030001458921"
+    },
+    {
+      "fieldname": "sb_taxes",
+      "fieldtype": "Section Break",
+      "label": "Paramétrage Fiscal Algérie (TVA, Taxe de Séjour & Droit de Timbre)"
+    },
+    {
+      "fieldname": "taux_tva_hebergement_defaut",
+      "fieldtype": "Percent",
+      "label": "Taux TVA Tourisme / Hébergement (%)",
+      "default": "9"
+    },
+    {
+      "fieldname": "taux_tva_standard_defaut",
+      "fieldtype": "Percent",
+      "label": "Taux TVA Normal (%)",
+      "default": "19"
+    },
+    {
+      "fieldname": "taxe_sejour_nuitee_adulte",
+      "fieldtype": "Currency",
+      "label": "Taxe de Séjour par Nuitée & Adulte (DZD)",
+      "default": "400",
+      "description": "Barème légal Algérie : 400 DZD / nuitée / personne en Hôtel 4★"
+    },
+    {
+      "fieldname": "cb_taxes_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "activer_droit_timbre_especes",
+      "fieldtype": "Check",
+      "label": "Calculer automatiquement le Droit de Timbre sur paiements Espèces",
+      "default": "1"
+    },
+    {
+      "fieldname": "plafond_droit_timbre",
+      "fieldtype": "Currency",
+      "label": "Plafond Droit de Timbre Espèces (0 = Sans plafond)",
+      "default": "0",
+      "description": "Laisser 0 pour appliquer le barème déplafonné ou saisir un plafond DZD selon Loi de Finances"
+    },
+    {
+      "fieldname": "sb_alertes",
+      "fieldtype": "Section Break",
+      "label": "Seuils de Contrôle de Gestion & Alertes Automatiques"
+    },
+    {
+      "fieldname": "seuil_tresorerie_critique",
+      "fieldtype": "Currency",
+      "label": "Seuil Critique de Trésorerie Globale (DZD)",
+      "default": "2500000"
+    },
+    {
+      "fieldname": "cb_alertes_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "delai_alerte_cheque_jours",
+      "fieldtype": "Int",
+      "label": "Délai Alerte Chèque en Portefeuille Non Encaissé (Jours)",
+      "default": "7"
+    },
+    {
+      "fieldname": "delai_alerte_contrat_jours",
+      "fieldtype": "Int",
+      "label": "Préavis Alerte Renouvellement Contrat (Jours)",
+      "default": "30"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Parametres Hotel",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "issingle": 1
+}

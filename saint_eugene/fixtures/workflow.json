@@ -1,0 +1,70 @@
+[
+  {
+    "doctype": "Workflow",
+    "name": "Validation Caisse Mensuelle SE",
+    "workflow_name": "Validation Caisse Mensuelle SE",
+    "document_type": "SE Caisse Mensuelle",
+    "is_active": 1,
+    "workflow_state_field": "statut_validation",
+    "states": [
+      {
+        "state": "Brouillon",
+        "doc_status": "0",
+        "allow_edit": "Accounts User"
+      },
+      {
+        "state": "En attente signature DAF",
+        "doc_status": "0",
+        "allow_edit": "Accounts Manager"
+      },
+      {
+        "state": "Validée",
+        "doc_status": "1",
+        "allow_edit": "System Manager"
+      },
+      {
+        "state": "Rejetée",
+        "doc_status": "0",
+        "allow_edit": "Accounts User"
+      }
+    ],
+    "transitions": [
+      {
+        "state": "Brouillon",
+        "action": "Soumettre au DAF",
+        "next_state": "En attente signature DAF",
+        "allowed": "Accounts User"
+      },
+      {
+        "state": "Brouillon",
+        "action": "Soumettre au DAF",
+        "next_state": "En attente signature DAF",
+        "allowed": "System Manager"
+      },
+      {
+        "state": "En attente signature DAF",
+        "action": "Signer et Valider",
+        "next_state": "Validée",
+        "allowed": "Accounts Manager"
+      },
+      {
+        "state": "En attente signature DAF",
+        "action": "Signer et Valider",
+        "next_state": "Validée",
+        "allowed": "System Manager"
+      },
+      {
+        "state": "En attente signature DAF",
+        "action": "Rejeter pour recomptage",
+        "next_state": "Rejetée",
+        "allowed": "Accounts Manager"
+      },
+      {
+        "state": "Rejetée",
+        "action": "Soumettre au DAF",
+        "next_state": "En attente signature DAF",
+        "allowed": "Accounts User"
+      }
+    ]
+  }
+]

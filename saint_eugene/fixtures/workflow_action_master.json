@@ -1,0 +1,17 @@
+[
+  {
+    "doctype": "Workflow Action Master",
+    "name": "Soumettre au DAF",
+    "workflow_action_name": "Soumettre au DAF"
+  },
+  {
+    "doctype": "Workflow Action Master",
+    "name": "Signer et Valider",
+    "workflow_action_name": "Signer et Valider"
+  },
+  {
+    "doctype": "Workflow Action Master",
+    "name": "Rejeter pour recomptage",
+    "workflow_action_name": "Rejeter pour recomptage"
+  }
+]

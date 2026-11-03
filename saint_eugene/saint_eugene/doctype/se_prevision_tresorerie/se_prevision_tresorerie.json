@@ -1,0 +1,199 @@
+{
+  "actions": [],
+  "autoname": "format:PREV-TRESO-{date_prevision}",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_prev",
+    "date_prevision",
+    "seuil_alerte_minimum",
+    "cb_prev_1",
+    "solde_caisses",
+    "solde_banques",
+    "solde_actuel_total",
+    "sb_horizons",
+    "encaissements_prevus_7j",
+    "encaissements_prevus_30j",
+    "encaissements_prevus_90j",
+    "cb_prev_2",
+    "decaissements_prevus_7j",
+    "decaissements_prevus_30j",
+    "decaissements_prevus_90j",
+    "sb_prev_net",
+    "tresorerie_nette_30j",
+    "tresorerie_nette_90j",
+    "cb_prev_risk",
+    "niveau_risque"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_prev",
+      "fieldtype": "Section Break",
+      "label": "Point de Situation & Seuil de Sécurité"
+    },
+    {
+      "fieldname": "date_prevision",
+      "fieldtype": "Date",
+      "label": "Date d'Arrêté Prévisionnel",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today"
+    },
+    {
+      "fieldname": "seuil_alerte_minimum",
+      "fieldtype": "Currency",
+      "label": "Seuil Minimum de Sécurité (DZD)",
+      "default": "2500000"
+    },
+    {
+      "fieldname": "cb_prev_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "solde_caisses",
+      "fieldtype": "Currency",
+      "label": "Disponible Caisses (53)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "solde_banques",
+      "fieldtype": "Currency",
+      "label": "Disponible Banques (512)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "solde_actuel_total",
+      "fieldtype": "Currency",
+      "label": "Trésorerie Disponible Immédiate (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "sb_horizons",
+      "fieldtype": "Section Break",
+      "label": "Projections Glissantes à 7j, 30j et 90j (DZD)"
+    },
+    {
+      "fieldname": "encaissements_prevus_7j",
+      "fieldtype": "Currency",
+      "label": "Encaissements Attendus (7 jours)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "encaissements_prevus_30j",
+      "fieldtype": "Currency",
+      "label": "Encaissements Attendus (30 jours)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "encaissements_prevus_90j",
+      "fieldtype": "Currency",
+      "label": "Encaissements Attendus (90 jours)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cb_prev_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "decaissements_prevus_7j",
+      "fieldtype": "Currency",
+      "label": "Décaissements Engagés (7 jours)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "decaissements_prevus_30j",
+      "fieldtype": "Currency",
+      "label": "Décaissements Engagés (30 jours)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "decaissements_prevus_90j",
+      "fieldtype": "Currency",
+      "label": "Décaissements Engagés (90 jours)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "sb_prev_net",
+      "fieldtype": "Section Break",
+      "label": "Trésorerie Disponible Nette Projetée"
+    },
+    {
+      "fieldname": "tresorerie_nette_30j",
+      "fieldtype": "Currency",
+      "label": "Trésorerie Nette à 30 Jours (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "tresorerie_nette_90j",
+      "fieldtype": "Currency",
+      "label": "Trésorerie Nette à 90 Jours (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cb_prev_risk",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "niveau_risque",
+      "fieldtype": "Select",
+      "label": "Diagnostic Liquidité",
+      "options": "Sain\nSous Tension\nCritique",
+      "read_only": 1,
+      "in_list_view": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Prevision Tresorerie",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

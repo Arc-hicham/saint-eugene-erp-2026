@@ -1,0 +1,142 @@
+{
+  "actions": [],
+  "autoname": "format:SE-EMP-{####}",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_emp",
+    "nom_complet",
+    "fonction",
+    "departement",
+    "statut",
+    "cb_emp_1",
+    "numero_cnas",
+    "date_embauche",
+    "salaire_base",
+    "mode_paiement_defaut",
+    "rib_ccp"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_emp",
+      "fieldtype": "Section Break",
+      "label": "Fiche Collaborateur - Hôtel Saint Eugène"
+    },
+    {
+      "fieldname": "nom_complet",
+      "fieldtype": "Data",
+      "label": "Nom et Prénom",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "fonction",
+      "fieldtype": "Data",
+      "label": "Fonction / Poste",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "departement",
+      "fieldtype": "Select",
+      "label": "Département",
+      "options": "Direction & Administration\nRéception & Hébergement\nRestauration & Cuisine\nÉtages & Housekeeping\nMaintenance & Sécurité",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "options": "Actif\nCongé\nSorti",
+      "in_standard_filter": 1,
+      "default": "Actif"
+    },
+    {
+      "fieldname": "cb_emp_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "numero_cnas",
+      "fieldtype": "Data",
+      "label": "N° Immatriculation CNAS"
+    },
+    {
+      "fieldname": "date_embauche",
+      "fieldtype": "Date",
+      "label": "Date d'Embauche"
+    },
+    {
+      "fieldname": "salaire_base",
+      "fieldtype": "Currency",
+      "label": "Salaire de Base Mensuel (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "mode_paiement_defaut",
+      "fieldtype": "Select",
+      "label": "Mode de Paiement",
+      "options": "Virement\nChèque\nEspèces",
+      "default": "Virement"
+    },
+    {
+      "fieldname": "rib_ccp",
+      "fieldtype": "Data",
+      "label": "RIB Bancaire / CCP"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Employe",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "nom_complet",
+  "search_fields": "nom_complet,fonction,departement"
+}

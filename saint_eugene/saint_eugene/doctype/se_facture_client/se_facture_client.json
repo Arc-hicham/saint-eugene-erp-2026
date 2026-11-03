@@ -1,0 +1,310 @@
+{
+  "actions": [],
+  "autoname": "naming_series:",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_entete",
+    "naming_series",
+    "date_facture",
+    "client",
+    "type_client",
+    "nature_prestation",
+    "cb_sejour",
+    "ref_reservation",
+    "date_arrivee",
+    "date_depart",
+    "nuitees",
+    "nb_adultes",
+    "appliquer_taxe_sejour",
+    "date_echeance",
+    "mode_paiement_prevu",
+    "sb_montants",
+    "montant_ht",
+    "taux_tva",
+    "montant_tva",
+    "cb_ttc",
+    "taxe_sejour",
+    "droit_timbre",
+    "montant_ttc",
+    "montant_en_lettres",
+    "sb_reglement",
+    "montant_encaisse",
+    "reste_a_encaisser",
+    "cb_statut",
+    "statut",
+    "jours_retard",
+    "amended_from"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_entete",
+      "fieldtype": "Section Break",
+      "label": "Informations Facture & Séjour Hôtelier"
+    },
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Série N° Facture",
+      "options": "FAC-CLI-.YYYY.-.#####",
+      "reqd": 1,
+      "default": "FAC-CLI-.YYYY.-.#####"
+    },
+    {
+      "fieldname": "date_facture",
+      "fieldtype": "Date",
+      "label": "Date de Facturation",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today"
+    },
+    {
+      "fieldname": "client",
+      "fieldtype": "Link",
+      "label": "Client",
+      "options": "SE Client",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "type_client",
+      "fieldtype": "Select",
+      "label": "Type Client",
+      "options": "Corporate\nAgence\nPassager",
+      "reqd": 1,
+      "in_standard_filter": 1,
+      "fetch_from": "client.type_client"
+    },
+    {
+      "fieldname": "nature_prestation",
+      "fieldtype": "Select",
+      "label": "Catégorie de Revenu (SCF)",
+      "options": "Hébergement\nRestauration\nSéminaires & Banquets\nAutres Services",
+      "reqd": 1,
+      "in_standard_filter": 1,
+      "default": "Hébergement"
+    },
+    {
+      "fieldname": "cb_sejour",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "ref_reservation",
+      "fieldtype": "Data",
+      "label": "Réf. Réservation / Voucher"
+    },
+    {
+      "fieldname": "date_arrivee",
+      "fieldtype": "Date",
+      "label": "Date d'Arrivée (Check-in)"
+    },
+    {
+      "fieldname": "date_depart",
+      "fieldtype": "Date",
+      "label": "Date de Départ (Check-out)"
+    },
+    {
+      "fieldname": "nuitees",
+      "fieldtype": "Int",
+      "label": "Nombre de Nuitées",
+      "read_only": 1,
+      "default": "1"
+    },
+    {
+      "fieldname": "nb_adultes",
+      "fieldtype": "Int",
+      "label": "Nombre d'Occupants (Adultes)",
+      "default": "1",
+      "depends_on": "eval:doc.nature_prestation=='Hébergement'"
+    },
+    {
+      "fieldname": "appliquer_taxe_sejour",
+      "fieldtype": "Check",
+      "label": "Appliquer la Taxe de Séjour 4★",
+      "default": "1",
+      "depends_on": "eval:doc.nature_prestation=='Hébergement'"
+    },
+    {
+      "fieldname": "date_echeance",
+      "fieldtype": "Date",
+      "label": "Date d'Échéance",
+      "reqd": 1
+    },
+    {
+      "fieldname": "mode_paiement_prevu",
+      "fieldtype": "Select",
+      "label": "Mode de Paiement",
+      "options": "Virement\nChèque\nEspèces\nTPE",
+      "reqd": 1,
+      "default": "Virement"
+    },
+    {
+      "fieldname": "sb_montants",
+      "fieldtype": "Section Break",
+      "label": "Montants, TVA, Taxe de Séjour & Droit de Timbre (DZD)"
+    },
+    {
+      "fieldname": "montant_ht",
+      "fieldtype": "Currency",
+      "label": "Montant HT (DZD)",
+      "reqd": 1
+    },
+    {
+      "fieldname": "taux_tva",
+      "fieldtype": "Percent",
+      "label": "TVA (%)",
+      "reqd": 1,
+      "default": "9",
+      "description": "9% taux réduit tourisme/hôtellerie en Algérie, ou 19% taux normal"
+    },
+    {
+      "fieldname": "montant_tva",
+      "fieldtype": "Currency",
+      "label": "Montant TVA (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cb_ttc",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "taxe_sejour",
+      "fieldtype": "Currency",
+      "label": "Taxe de Séjour Hôtelière 4★ (Hors TVA)",
+      "read_only": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "droit_timbre",
+      "fieldtype": "Currency",
+      "label": "Droit de Timbre Espèces (Code du Timbre)",
+      "read_only": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "montant_ttc",
+      "fieldtype": "Currency",
+      "label": "Total Net à Payer TTC (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "montant_en_lettres",
+      "fieldtype": "Small Text",
+      "label": "Arrêté de la Facture en Toutes Lettres",
+      "read_only": 1
+    },
+    {
+      "fieldname": "sb_reglement",
+      "fieldtype": "Section Break",
+      "label": "Suivi du Recouvrement (Calcul Automatique)"
+    },
+    {
+      "fieldname": "montant_encaisse",
+      "fieldtype": "Currency",
+      "label": "Montant Encaissé (DZD)",
+      "read_only": 1,
+      "default": "0",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "reste_a_encaisser",
+      "fieldtype": "Currency",
+      "label": "Reste à Encaisser (DZD)",
+      "read_only": 1,
+      "in_list_view": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "cb_statut",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "options": "Brouillon\nValidée\nPartielle\nPayée\nImpayée\nÉchue\nAnnulée",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Brouillon",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "jours_retard",
+      "fieldtype": "Int",
+      "label": "Jours de Retard",
+      "read_only": 1,
+      "in_list_view": 1,
+      "default": "0",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "amended_from",
+      "fieldtype": "Link",
+      "label": "Amendé depuis",
+      "options": "SE Facture Client",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 1,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Facture Client",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1,
+      "submit": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "client",
+  "search_fields": "client,ref_reservation,statut"
+}

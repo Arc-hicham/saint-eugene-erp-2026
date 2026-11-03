@@ -1,0 +1,47 @@
+# Docker Compose - Environnement de développement Frappe v15 sous Docker Desktop / WSL2
+# Monter l'application saint_eugene directement dans le conteneur frappe_docker
+services:
+  mariadb:
+    image: mariadb:10.6
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mariadb-se-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--password=root"]
+      interval: 5s
+      retries: 10
+
+  redis-cache:
+    image: redis:6.2-alpine
+
+  redis-queue:
+    image: redis:6.2-alpine
+
+  frappe:
+    image: frappe/bench:latest
+    working_dir: /workspace/development
+    environment:
+      SHELL: /bin/bash
+    volumes:
+      - bench-se-data:/workspace/development
+      - ./:/workspace/saint_eugene_src:ro
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+    command: ["sleep", "infinity"]
+
+volumes:
+  mariadb-se-data:
+  bench-se-data:

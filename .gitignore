@@ -1,0 +1,13 @@
+# Byte-compiled / cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Données locales temporaires
+*.sqlite3
+*.log
+.DS_Store
+Thumbs.db

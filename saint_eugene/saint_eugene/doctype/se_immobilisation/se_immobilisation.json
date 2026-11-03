@@ -1,0 +1,167 @@
+{
+  "actions": [],
+  "autoname": "naming_series:",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_immo",
+    "naming_series",
+    "nom_immobilisation",
+    "categorie",
+    "cb_immo_1",
+    "date_acquisition",
+    "duree_amortissement",
+    "statut",
+    "sb_immo_val",
+    "valeur_acquisition",
+    "dotation_annuelle",
+    "cb_immo_2",
+    "amortissements_cumules",
+    "vnc"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_immo",
+      "fieldtype": "Section Break",
+      "label": "Registre des Immobilisations Corporelles & Incorporelles (SCF Classe 2)"
+    },
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Code Inventaire",
+      "options": "IMMO-.YYYY.-.####",
+      "reqd": 1,
+      "default": "IMMO-.YYYY.-.####"
+    },
+    {
+      "fieldname": "nom_immobilisation",
+      "fieldtype": "Data",
+      "label": "Désignation de l'Actif",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "categorie",
+      "fieldtype": "Select",
+      "label": "Catégorie SCF",
+      "options": "Bâtiment & Agencements (213)\nÉquipements Cuisine & Froid (215)\nMobilier & Literie Chambres (2184)\nMatériel Informatique & PMS (2183)\nVéhicules & Navettes (2182)",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "cb_immo_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "date_acquisition",
+      "fieldtype": "Date",
+      "label": "Date de Mise en Service",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "duree_amortissement",
+      "fieldtype": "Int",
+      "label": "Durée d'Utilité (Années)",
+      "reqd": 1,
+      "default": "5"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "État de l'Actif",
+      "options": "En service\nTotalement amorti\nCédé / Mis au rebut",
+      "read_only": 1,
+      "in_list_view": 1,
+      "default": "En service"
+    },
+    {
+      "fieldname": "sb_immo_val",
+      "fieldtype": "Section Break",
+      "label": "Plan d'Amortissement Linéaire & VNC au 31/12/2026 (DZD)"
+    },
+    {
+      "fieldname": "valeur_acquisition",
+      "fieldtype": "Currency",
+      "label": "Valeur Brute d'Acquisition HT (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "dotation_annuelle",
+      "fieldtype": "Currency",
+      "label": "Dotation Annuelle aux Amortissements (681)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_immo_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "amortissements_cumules",
+      "fieldtype": "Currency",
+      "label": "Amortissements Cumulés (28)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "vnc",
+      "fieldtype": "Currency",
+      "label": "Valeur Nette Comptable - VNC (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Immobilisation",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "nom_immobilisation"
+}

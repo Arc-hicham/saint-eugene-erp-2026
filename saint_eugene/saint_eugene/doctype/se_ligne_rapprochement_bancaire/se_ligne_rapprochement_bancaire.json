@@ -1,0 +1,75 @@
+{
+  "actions": [],
+  "autoname": "hash",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "date_operation",
+    "type_ecart",
+    "reference",
+    "libelle",
+    "sens",
+    "montant"
+  ],
+  "fields": [
+    {
+      "fieldname": "date_operation",
+      "fieldtype": "Date",
+      "label": "Date",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "type_ecart",
+      "fieldtype": "Select",
+      "label": "Nature du Suspens",
+      "options": "Chèque émis non débité\nVirement émis en attente\nEncaissement remis non crédité\nFrais/Agios non comptabilisés",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "reference",
+      "fieldtype": "Data",
+      "label": "N° Chèque / Réf",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "libelle",
+      "fieldtype": "Data",
+      "label": "Libellé",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "sens",
+      "fieldtype": "Select",
+      "label": "Retraitement Relevé",
+      "options": "À ajouter au relevé (+)\nÀ déduire du relevé (-)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "montant",
+      "fieldtype": "Currency",
+      "label": "Montant (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 1,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Ligne Rapprochement Bancaire",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 0
+}

@@ -1,0 +1,163 @@
+{
+  "actions": [],
+  "autoname": "naming_series:",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_ctr",
+    "naming_series",
+    "fournisseur",
+    "type_contrat",
+    "cb_ctr_1",
+    "date_debut",
+    "date_fin",
+    "statut",
+    "sb_ctr_fin",
+    "montant_echeance",
+    "frequence",
+    "cb_ctr_2",
+    "prochaine_echeance"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_ctr",
+      "fieldtype": "Section Break",
+      "label": "Contrat Fournisseur / Abonnement Récurrent"
+    },
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Référence Contrat",
+      "options": "CTR-.YYYY.-.####",
+      "reqd": 1,
+      "default": "CTR-.YYYY.-.####"
+    },
+    {
+      "fieldname": "fournisseur",
+      "fieldtype": "Link",
+      "label": "Prestataire / Fournisseur",
+      "options": "SE Fournisseur",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "type_contrat",
+      "fieldtype": "Select",
+      "label": "Objet du Contrat",
+      "options": "Maintenance Ascenseurs\nMaintenance Climatisation / CVC\nMaintenance Groupe Électrogène\nSécurité & Gardiennage\nBlanchisserie Externe\nLicence PMS / Logiciels\nInternet Fibre Dédiée\nAssurance Multirisque Hôtelière\nMédecine du Travail",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "cb_ctr_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "date_debut",
+      "fieldtype": "Date",
+      "label": "Date d'Effet",
+      "reqd": 1
+    },
+    {
+      "fieldname": "date_fin",
+      "fieldtype": "Date",
+      "label": "Date d'Échéance Annuelle",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "options": "Actif\nÀ renouveler (< 30j)\nExpiré\nRésilié",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Actif"
+    },
+    {
+      "fieldname": "sb_ctr_fin",
+      "fieldtype": "Section Break",
+      "label": "Conditions Financières (DZD)"
+    },
+    {
+      "fieldname": "montant_echeance",
+      "fieldtype": "Currency",
+      "label": "Montant par Échéance HT (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "frequence",
+      "fieldtype": "Select",
+      "label": "Fréquence de Facturation",
+      "options": "Mensuelle\nTrimestrielle\nSemestrielle\nAnnuelle",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Mensuelle"
+    },
+    {
+      "fieldname": "cb_ctr_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "prochaine_echeance",
+      "fieldtype": "Date",
+      "label": "Prochaine Facturation Prévue",
+      "reqd": 1,
+      "in_list_view": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Contrat et Abonnement",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "type_contrat"
+}

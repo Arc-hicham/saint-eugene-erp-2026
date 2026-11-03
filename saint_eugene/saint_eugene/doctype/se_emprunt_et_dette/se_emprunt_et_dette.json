@@ -1,0 +1,174 @@
+{
+  "actions": [],
+  "autoname": "naming_series:",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_loan",
+    "naming_series",
+    "organisme",
+    "type_emprunt",
+    "taux_interet_annuel",
+    "cb_loan_1",
+    "prochaine_echeance",
+    "statut",
+    "sb_loan_mnt",
+    "capital_initial",
+    "mensualite",
+    "cb_loan_2",
+    "capital_rembourse",
+    "interets_payes",
+    "solde_restant"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_loan",
+      "fieldtype": "Section Break",
+      "label": "Contrat de Financement / Dette (SCF Classe 16)"
+    },
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Série",
+      "options": "EMP-BNC-.YYYY.-.###",
+      "reqd": 1,
+      "default": "EMP-BNC-.YYYY.-.###"
+    },
+    {
+      "fieldname": "organisme",
+      "fieldtype": "Data",
+      "label": "Organisme Prêteur / Banque",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "type_emprunt",
+      "fieldtype": "Select",
+      "label": "Type de Concours",
+      "options": "Crédit d'Investissement Hôtelier Bonifié\nCrédit-Bail (Leasing)\nLigne d'Exploitation\nCompte Courant Associés",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "taux_interet_annuel",
+      "fieldtype": "Percent",
+      "label": "Taux d'Intérêt Annuel (%)",
+      "default": "4.5"
+    },
+    {
+      "fieldname": "cb_loan_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "prochaine_echeance",
+      "fieldtype": "Date",
+      "label": "Prochaine Date d'Échéance",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "options": "En cours\nSoldé\nEn retard",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "En cours"
+    },
+    {
+      "fieldname": "sb_loan_mnt",
+      "fieldtype": "Section Break",
+      "label": "Tableau d'Amortissement Financier (DZD)"
+    },
+    {
+      "fieldname": "capital_initial",
+      "fieldtype": "Currency",
+      "label": "Capital Initial Emprunté (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "mensualite",
+      "fieldtype": "Currency",
+      "label": "Échéance / Mensualité (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_loan_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "capital_rembourse",
+      "fieldtype": "Currency",
+      "label": "Capital Cumulé Remboursé (DZD)",
+      "default": "0"
+    },
+    {
+      "fieldname": "interets_payes",
+      "fieldtype": "Currency",
+      "label": "Intérêts Cumulés Payés (661)",
+      "default": "0"
+    },
+    {
+      "fieldname": "solde_restant",
+      "fieldtype": "Currency",
+      "label": "Capital Restant Dû (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Emprunt et Dette",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "organisme"
+}

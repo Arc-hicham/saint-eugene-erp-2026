@@ -1,0 +1,154 @@
+{
+  "actions": [],
+  "autoname": "field:nom_client",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_identite",
+    "nom_client",
+    "type_client",
+    "delai_paiement_jours",
+    "cb_client_1",
+    "telephone",
+    "email",
+    "adresse",
+    "sb_fiscal",
+    "nif",
+    "nis",
+    "cb_client_2",
+    "rc",
+    "article_imposition"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_identite",
+      "fieldtype": "Section Break",
+      "label": "Identité du Client"
+    },
+    {
+      "fieldname": "nom_client",
+      "fieldtype": "Data",
+      "label": "Nom / Raison Sociale",
+      "reqd": 1,
+      "in_list_view": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "type_client",
+      "fieldtype": "Select",
+      "label": "Type Client",
+      "options": "Corporate\nAgence\nPassager",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Corporate"
+    },
+    {
+      "fieldname": "delai_paiement_jours",
+      "fieldtype": "Int",
+      "label": "Délai de Paiement (jours)",
+      "default": "30"
+    },
+    {
+      "fieldname": "cb_client_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "telephone",
+      "fieldtype": "Data",
+      "label": "Téléphone",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email"
+    },
+    {
+      "fieldname": "adresse",
+      "fieldtype": "Small Text",
+      "label": "Adresse Siège / Facturation"
+    },
+    {
+      "fieldname": "sb_fiscal",
+      "fieldtype": "Section Break",
+      "label": "Mentions Fiscales Algériennes (SCF / DGI)"
+    },
+    {
+      "fieldname": "nif",
+      "fieldtype": "Data",
+      "label": "NIF (N° Identification Fiscale)",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "nis",
+      "fieldtype": "Data",
+      "label": "NIS (N° Identification Statistique)"
+    },
+    {
+      "fieldname": "cb_client_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "rc",
+      "fieldtype": "Data",
+      "label": "Registre de Commerce (RC)"
+    },
+    {
+      "fieldname": "article_imposition",
+      "fieldtype": "Data",
+      "label": "Article d'Imposition (AI)"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Client",
+  "naming_rule": "By fieldname",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "search_fields": "type_client,nif"
+}

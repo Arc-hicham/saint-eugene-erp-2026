@@ -1,0 +1,20 @@
+{
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "Number Card",
+  "is_public": 1,
+  "is_standard": 1,
+  "module": "Saint Eugene",
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "owner": "Administrator",
+  "show_percentage_stats": 1,
+  "stats_time_interval": "Monthly",
+  "name": "SE CA Total",
+  "label": "CA Total HT (DZD)",
+  "type": "Document Type",
+  "document_type": "SE Facture Client",
+  "function": "Sum",
+  "aggregate_function_based_on": "montant_ht",
+  "filters_json": "[[\"SE Facture Client\",\"docstatus\",\"=\",1,false]]",
+  "color": "#16a34a"
+}

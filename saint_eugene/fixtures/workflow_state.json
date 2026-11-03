@@ -1,0 +1,26 @@
+[
+  {
+    "doctype": "Workflow State",
+    "name": "Brouillon",
+    "workflow_state_name": "Brouillon",
+    "style": ""
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "En attente signature DAF",
+    "workflow_state_name": "En attente signature DAF",
+    "style": "Warning"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Validée",
+    "workflow_state_name": "Validée",
+    "style": "Success"
+  },
+  {
+    "doctype": "Workflow State",
+    "name": "Rejetée",
+    "workflow_state_name": "Rejetée",
+    "style": "Danger"
+  }
+]

@@ -1,0 +1,141 @@
+{
+  "actions": [],
+  "autoname": "field:nom_compte",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_cpte",
+    "nom_compte",
+    "type_compte",
+    "compte_scf",
+    "cb_cpte_1",
+    "banque",
+    "numero_compte_rib",
+    "sb_soldes",
+    "solde_initial",
+    "cb_cpte_2",
+    "solde_actuel"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_cpte",
+      "fieldtype": "Section Break",
+      "label": "Compte de Trésorerie (Caisse ou Banque)"
+    },
+    {
+      "fieldname": "nom_compte",
+      "fieldtype": "Data",
+      "label": "Intitulé du Compte",
+      "reqd": 1,
+      "in_list_view": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "type_compte",
+      "fieldtype": "Select",
+      "label": "Type",
+      "options": "Caisse\nBanque",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "compte_scf",
+      "fieldtype": "Data",
+      "label": "Compte SCF",
+      "default": "512100",
+      "description": "Ex: 531000 (Caisse Hôtel) ou 512100 (Banque DZD)"
+    },
+    {
+      "fieldname": "cb_cpte_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "banque",
+      "fieldtype": "Data",
+      "label": "Établissement Bancaire",
+      "in_list_view": 1,
+      "depends_on": "eval:doc.type_compte=='Banque'"
+    },
+    {
+      "fieldname": "numero_compte_rib",
+      "fieldtype": "Data",
+      "label": "N° Compte / RIB",
+      "depends_on": "eval:doc.type_compte=='Banque'"
+    },
+    {
+      "fieldname": "sb_soldes",
+      "fieldtype": "Section Break",
+      "label": "Position en Dinars Algériens (DZD)"
+    },
+    {
+      "fieldname": "solde_initial",
+      "fieldtype": "Currency",
+      "label": "Solde d'Ouverture (01/01/2026)",
+      "reqd": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "cb_cpte_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "solde_actuel",
+      "fieldtype": "Currency",
+      "label": "Solde Disponible Actuel",
+      "read_only": 1,
+      "in_list_view": 1,
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Compte Tresorerie",
+  "naming_rule": "By fieldname",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

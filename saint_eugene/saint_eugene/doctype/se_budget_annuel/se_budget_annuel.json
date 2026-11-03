@@ -1,0 +1,152 @@
+{
+  "actions": [],
+  "autoname": "format:BUD-{mois}-{categorie}",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_bud",
+    "mois",
+    "categorie",
+    "type_flux",
+    "cb_bud_1",
+    "budget_prevu",
+    "realise",
+    "sb_bud_var",
+    "ecart_dzd",
+    "ecart_pct",
+    "cb_bud_2",
+    "statut_budget"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_bud",
+      "fieldtype": "Section Break",
+      "label": "Ligne Budgétaire Mensuelle - Exercice 2026"
+    },
+    {
+      "fieldname": "mois",
+      "fieldtype": "Select",
+      "label": "Mois",
+      "options": "2026-01\n2026-02\n2026-03\n2026-04\n2026-05\n2026-06\n2026-07\n2026-08\n2026-09\n2026-10\n2026-11\n2026-12",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "categorie",
+      "fieldtype": "Select",
+      "label": "Catégorie Budgétaire",
+      "options": "CA Hébergement\nCA Restauration\nSalaires\nAchats\nCharges",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "type_flux",
+      "fieldtype": "Select",
+      "label": "Nature du Poste",
+      "options": "Produit (CA)\nCharge (Dépense)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cb_bud_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "budget_prevu",
+      "fieldtype": "Currency",
+      "label": "Budget Prévu (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "realise",
+      "fieldtype": "Currency",
+      "label": "Réalisé Comptable Validé (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "sb_bud_var",
+      "fieldtype": "Section Break",
+      "label": "Analyse des Écarts (Contrôle de Gestion)"
+    },
+    {
+      "fieldname": "ecart_dzd",
+      "fieldtype": "Currency",
+      "label": "Écart (Réalisé - Prévu) en DZD",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "ecart_pct",
+      "fieldtype": "Percent",
+      "label": "Écart (%)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_bud_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "statut_budget",
+      "fieldtype": "Select",
+      "label": "Diagnostic Budgétaire",
+      "options": "Conforme\nObjectif Atteint\nSous-Performance\nDépassement",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Budget Annuel",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

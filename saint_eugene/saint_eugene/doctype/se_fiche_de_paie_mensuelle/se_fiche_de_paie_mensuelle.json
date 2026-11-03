@@ -1,0 +1,272 @@
+{
+  "actions": [],
+  "autoname": "format:PAIE-{mois}-{employe}",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_paie_emp",
+    "mois",
+    "employe",
+    "nom_employe",
+    "cb_paie_1",
+    "fonction",
+    "departement",
+    "sb_gains",
+    "salaire_base",
+    "primes",
+    "indemnites",
+    "cb_paie_brut",
+    "salaire_brut",
+    "charges_patronales_cnas",
+    "sb_retenues",
+    "auto_calcul_irg",
+    "retenue_cnas",
+    "retenue_irg",
+    "autres_retenues",
+    "cb_paie_net",
+    "total_retenues",
+    "net_a_payer",
+    "sb_paie_regl",
+    "mode_paiement",
+    "ref_paiement",
+    "cb_paie_st",
+    "statut",
+    "amended_from"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_paie_emp",
+      "fieldtype": "Section Break",
+      "label": "Période & Collaborateur"
+    },
+    {
+      "fieldname": "mois",
+      "fieldtype": "Select",
+      "label": "Mois de Paie",
+      "options": "2026-01\n2026-02\n2026-03\n2026-04\n2026-05\n2026-06\n2026-07\n2026-08\n2026-09\n2026-10\n2026-11\n2026-12",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Matricule Employé",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom et Prénom",
+      "read_only": 1,
+      "in_list_view": 1,
+      "fetch_from": "employe.nom_complet"
+    },
+    {
+      "fieldname": "cb_paie_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "fonction",
+      "fieldtype": "Data",
+      "label": "Fonction",
+      "read_only": 1,
+      "in_list_view": 1,
+      "fetch_from": "employe.fonction"
+    },
+    {
+      "fieldname": "departement",
+      "fieldtype": "Data",
+      "label": "Département",
+      "read_only": 1,
+      "in_standard_filter": 1,
+      "fetch_from": "employe.departement"
+    },
+    {
+      "fieldname": "sb_gains",
+      "fieldtype": "Section Break",
+      "label": "Rémunération Brute (DZD - SCF Classe 63)"
+    },
+    {
+      "fieldname": "salaire_base",
+      "fieldtype": "Currency",
+      "label": "Salaire de Base (DZD)",
+      "reqd": 1,
+      "fetch_from": "employe.salaire_base"
+    },
+    {
+      "fieldname": "primes",
+      "fieldtype": "Currency",
+      "label": "Primes Cotisables (PRI / Rendement Hôtelier)",
+      "default": "0"
+    },
+    {
+      "fieldname": "indemnites",
+      "fieldtype": "Currency",
+      "label": "Indemnités (Transport / Panier)",
+      "default": "0"
+    },
+    {
+      "fieldname": "cb_paie_brut",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "salaire_brut",
+      "fieldtype": "Currency",
+      "label": "Total Salaire Brut (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "charges_patronales_cnas",
+      "fieldtype": "Currency",
+      "label": "Quote-part Patronale CNAS (26%)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "sb_retenues",
+      "fieldtype": "Section Break",
+      "label": "Retenues Sociales & Fiscales Algérie (CNAS 9% / IRG)"
+    },
+    {
+      "fieldname": "auto_calcul_irg",
+      "fieldtype": "Check",
+      "label": "Calcul Automatique Barème IRG Algérie",
+      "default": "1"
+    },
+    {
+      "fieldname": "retenue_cnas",
+      "fieldtype": "Currency",
+      "label": "Retenue Sécurité Sociale CNAS (9%)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "retenue_irg",
+      "fieldtype": "Currency",
+      "label": "Retenue IRG Salariés",
+      "default": "0"
+    },
+    {
+      "fieldname": "autres_retenues",
+      "fieldtype": "Currency",
+      "label": "Avances / Acomptes / Autres Retenues",
+      "default": "0"
+    },
+    {
+      "fieldname": "cb_paie_net",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "total_retenues",
+      "fieldtype": "Currency",
+      "label": "Total des Retenues (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "net_a_payer",
+      "fieldtype": "Currency",
+      "label": "Net à Payer (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "sb_paie_regl",
+      "fieldtype": "Section Break",
+      "label": "Modalités de Versement"
+    },
+    {
+      "fieldname": "mode_paiement",
+      "fieldtype": "Select",
+      "label": "Mode de Paiement",
+      "options": "Virement\nChèque\nEspèces",
+      "reqd": 1,
+      "default": "Virement"
+    },
+    {
+      "fieldname": "ref_paiement",
+      "fieldtype": "Data",
+      "label": "Réf. Virement / Chèque"
+    },
+    {
+      "fieldname": "cb_paie_st",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "options": "Brouillon\nValidée\nPayée\nAnnulée",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Brouillon",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "amended_from",
+      "fieldtype": "Link",
+      "label": "Amendé depuis",
+      "options": "SE Fiche de Paie Mensuelle",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 1,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Fiche de Paie Mensuelle",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1,
+      "submit": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "nom_employe"
+}

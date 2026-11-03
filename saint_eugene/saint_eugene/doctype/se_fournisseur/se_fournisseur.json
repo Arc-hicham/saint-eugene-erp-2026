@@ -1,0 +1,140 @@
+{
+  "actions": [],
+  "autoname": "field:nom_fournisseur",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_frn",
+    "nom_fournisseur",
+    "categorie",
+    "cb_frn_1",
+    "telephone",
+    "email",
+    "adresse",
+    "sb_frn_fisc",
+    "nif",
+    "rc",
+    "cb_frn_2",
+    "rib"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_frn",
+      "fieldtype": "Section Break",
+      "label": "Identification Fournisseur"
+    },
+    {
+      "fieldname": "nom_fournisseur",
+      "fieldtype": "Data",
+      "label": "Raison Sociale Fournisseur",
+      "reqd": 1,
+      "in_list_view": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "categorie",
+      "fieldtype": "Select",
+      "label": "Catégorie d'Achat",
+      "options": "Alimentation & Boissons (F&B)\nProduits d'Accueil & Linge\nÉnergie & Eau (Sonelgaz/SEAAL)\nMaintenance & Technique\nTélécom & IT\nPrestations & Honoraires\nAutre",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "cb_frn_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "telephone",
+      "fieldtype": "Data",
+      "label": "Téléphone",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email"
+    },
+    {
+      "fieldname": "adresse",
+      "fieldtype": "Small Text",
+      "label": "Adresse"
+    },
+    {
+      "fieldname": "sb_frn_fisc",
+      "fieldtype": "Section Break",
+      "label": "Coordonnées Fiscales & Bancaires"
+    },
+    {
+      "fieldname": "nif",
+      "fieldtype": "Data",
+      "label": "NIF",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "rc",
+      "fieldtype": "Data",
+      "label": "Registre de Commerce (RC)"
+    },
+    {
+      "fieldname": "cb_frn_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "rib",
+      "fieldtype": "Data",
+      "label": "RIB Bancaire (20 chiffres)"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Fournisseur",
+  "naming_rule": "By fieldname",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "search_fields": "categorie,nif"
+}

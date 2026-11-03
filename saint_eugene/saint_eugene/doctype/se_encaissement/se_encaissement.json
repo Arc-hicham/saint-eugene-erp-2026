@@ -1,0 +1,178 @@
+{
+  "actions": [],
+  "autoname": "naming_series:",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_enc",
+    "naming_series",
+    "date_encaissement",
+    "client",
+    "facture_liee",
+    "cb_enc_1",
+    "montant",
+    "mode_paiement",
+    "compte_destination",
+    "ref_paiement",
+    "statut_cheque",
+    "statut",
+    "amended_from"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_enc",
+      "fieldtype": "Section Break",
+      "label": "Détails de l'Encaissement Client"
+    },
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Série Reçu",
+      "options": "ENC-.YYYY.-.#####",
+      "reqd": 1,
+      "default": "ENC-.YYYY.-.#####"
+    },
+    {
+      "fieldname": "date_encaissement",
+      "fieldtype": "Date",
+      "label": "Date d'Encaissement",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today"
+    },
+    {
+      "fieldname": "client",
+      "fieldtype": "Link",
+      "label": "Client",
+      "options": "SE Client",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "facture_liee",
+      "fieldtype": "Link",
+      "label": "Facture Client Liée",
+      "options": "SE Facture Client",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_enc_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "montant",
+      "fieldtype": "Currency",
+      "label": "Montant Encaissé (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "mode_paiement",
+      "fieldtype": "Select",
+      "label": "Mode de Règlement",
+      "options": "Espèces\nChèque\nVirement\nTPE",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "compte_destination",
+      "fieldtype": "Link",
+      "label": "Caisse / Banque Destination",
+      "options": "SE Compte Tresorerie",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "ref_paiement",
+      "fieldtype": "Data",
+      "label": "Réf. Paiement (N° Chèque / Virement / Ticket TPE)"
+    },
+    {
+      "fieldname": "statut_cheque",
+      "fieldtype": "Select",
+      "label": "Suivi Encaissement Chèque",
+      "options": "N/A\nEn portefeuille (Non encaissé)\nRemis en banque\nEncaissé\nRejeté",
+      "default": "N/A",
+      "depends_on": "eval:doc.mode_paiement=='Chèque'",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "options": "Brouillon\nValidé\nAnnulé",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Brouillon",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "amended_from",
+      "fieldtype": "Link",
+      "label": "Amendé depuis",
+      "options": "SE Encaissement",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 1,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Encaissement",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1,
+      "submit": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "client"
+}

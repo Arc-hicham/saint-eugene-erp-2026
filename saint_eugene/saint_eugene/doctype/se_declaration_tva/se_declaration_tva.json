@@ -1,0 +1,224 @@
+{
+  "actions": [],
+  "autoname": "format:G50-TVA-{mois}",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_g50",
+    "mois",
+    "date_limite_g50",
+    "cb_g50_1",
+    "precompte_anterieur",
+    "statut",
+    "sb_tva_calc",
+    "ca_ht",
+    "tva_collectee",
+    "tva_deductible_achats",
+    "tva_deductible_charges",
+    "tva_deductible",
+    "cb_g50_2",
+    "tva_a_payer",
+    "credit_tva",
+    "droits_timbre_collectes",
+    "taxe_sejour_collectee",
+    "total_g50_a_payer",
+    "date_paiement",
+    "solde_fiscal",
+    "amended_from"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_g50",
+      "fieldtype": "Section Break",
+      "label": "Déclaration Mensuelle G50 - Recette des Impôts (DGI Algérie)"
+    },
+    {
+      "fieldname": "mois",
+      "fieldtype": "Select",
+      "label": "Mois Fiscal",
+      "options": "2026-01\n2026-02\n2026-03\n2026-04\n2026-05\n2026-06\n2026-07\n2026-08\n2026-09\n2026-10\n2026-11\n2026-12",
+      "reqd": 1,
+      "in_list_view": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "date_limite_g50",
+      "fieldtype": "Date",
+      "label": "Échéance Légale Dépôt G50 (20 M+1)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cb_g50_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "precompte_anterieur",
+      "fieldtype": "Currency",
+      "label": "Précompte / Crédit TVA Mois Précédent (DZD)",
+      "default": "0"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut Fiscal",
+      "options": "Brouillon\nDéclarée (G50)\nPayée\nCrédit Reporté\nAnnulée",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Brouillon",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "sb_tva_calc",
+      "fieldtype": "Section Break",
+      "label": "Liquidation TVA, Droits de Timbre & Taxe de Séjour (Calcul Automatique)"
+    },
+    {
+      "fieldname": "ca_ht",
+      "fieldtype": "Currency",
+      "label": "Chiffre d'Affaires Taxable HT (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "tva_collectee",
+      "fieldtype": "Currency",
+      "label": "TVA Collectée sur Ventes (4457)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "tva_deductible_achats",
+      "fieldtype": "Currency",
+      "label": "TVA Déductible sur Achats (Factures Frn)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "tva_deductible_charges",
+      "fieldtype": "Currency",
+      "label": "TVA Déductible sur Services & Charges",
+      "read_only": 1
+    },
+    {
+      "fieldname": "tva_deductible",
+      "fieldtype": "Currency",
+      "label": "Total TVA Déductible + Précompte (4456)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_g50_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "tva_a_payer",
+      "fieldtype": "Currency",
+      "label": "TVA Nette à Payer (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "credit_tva",
+      "fieldtype": "Currency",
+      "label": "Crédit de TVA à Reporter (Précompte M+1)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "droits_timbre_collectes",
+      "fieldtype": "Currency",
+      "label": "Droits de Timbre Espèces Collectés (G50)",
+      "read_only": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "taxe_sejour_collectee",
+      "fieldtype": "Currency",
+      "label": "Taxe de Séjour 4★ Collectée (APC)",
+      "read_only": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "total_g50_a_payer",
+      "fieldtype": "Currency",
+      "label": "Total Bordereau G50 à Décaisser (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_paiement",
+      "fieldtype": "Date",
+      "label": "Date Effective de Règlement G50",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "solde_fiscal",
+      "fieldtype": "Currency",
+      "label": "Solde Fiscal Restant Dû (DZD)",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "amended_from",
+      "fieldtype": "Link",
+      "label": "Amendé depuis",
+      "options": "SE Declaration TVA",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 1,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Declaration TVA",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1,
+      "submit": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

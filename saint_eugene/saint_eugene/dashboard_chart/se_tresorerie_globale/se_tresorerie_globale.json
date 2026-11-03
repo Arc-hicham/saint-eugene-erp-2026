@@ -1,0 +1,19 @@
+{
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "Dashboard Chart",
+  "is_public": 1,
+  "is_standard": 1,
+  "module": "Saint Eugene",
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "number_of_groups": 0,
+  "owner": "Administrator",
+  "use_report_chart": 0,
+  "name": "SE Tresorerie Globale",
+  "chart_name": "SE Tresorerie Globale",
+  "chart_type": "Custom",
+  "source": "SE Source Tresorerie Globale",
+  "type": "Line",
+  "custom_options": "{\"colors\": [\"#0d9488\"], \"lineOptions\": {\"regionFill\": 1}}",
+  "filters_json": "{}"
+}

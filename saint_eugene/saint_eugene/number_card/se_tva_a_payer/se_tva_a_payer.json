@@ -1,0 +1,20 @@
+{
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "Number Card",
+  "is_public": 1,
+  "is_standard": 1,
+  "module": "Saint Eugene",
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "owner": "Administrator",
+  "show_percentage_stats": 1,
+  "stats_time_interval": "Monthly",
+  "name": "SE TVA a Payer",
+  "label": "TVA à Payer (G50)",
+  "type": "Document Type",
+  "document_type": "SE Declaration TVA",
+  "function": "Sum",
+  "aggregate_function_based_on": "solde_fiscal",
+  "filters_json": "[[\"SE Declaration TVA\",\"docstatus\",\"=\",1,false],[\"SE Declaration TVA\",\"solde_fiscal\",\">\",0,false]]",
+  "color": "#7c3aed"
+}

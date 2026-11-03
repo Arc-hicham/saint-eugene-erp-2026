@@ -1,0 +1,352 @@
+{
+  "charts": [
+    {
+      "chart_name": "SE Evolution CA et Charges",
+      "label": "Évolution mensuelle du CA et des Charges (DZD)"
+    },
+    {
+      "chart_name": "SE Tresorerie Globale",
+      "label": "Trésorerie Globale Caisses + Banques (DZD)"
+    },
+    {
+      "chart_name": "SE Budget vs Realise",
+      "label": "Budget Prévu vs Réalisé 2026 (DZD)"
+    },
+    {
+      "chart_name": "SE Taux Occupation Mensuel",
+      "label": "Taux d'Occupation Mensuel Moyen (%)"
+    }
+  ],
+  "content": "[{\"id\": \"hdr_alertes\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Pilotage & Alertes — Hôtel Saint Eugène 4★ (Exercice 2026 - DZD)</b></span>\", \"col\": 12}}, {\"id\": \"sh_echues\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Factures Clients Échues\", \"col\": 3}}, {\"id\": \"sh_partielles\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Factures Partielles\", \"col\": 3}}, {\"id\": \"sh_depassement\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dépassements Budget\", \"col\": 3}}, {\"id\": \"sh_new_enc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Nouvel Encaissement\", \"col\": 3}}, {\"id\": \"sp_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_kpis\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Indicateurs Clés de Performance (KPIs Financiers & SCF)</b></span>\", \"col\": 12}}, {\"id\": \"nc_0\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"CA Total HT (DZD)\", \"col\": 3}}, {\"id\": \"nc_1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"CA Hébergement HT\", \"col\": 3}}, {\"id\": \"nc_2\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"CA Restauration HT\", \"col\": 3}}, {\"id\": \"nc_3\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Encaissements (DZD)\", \"col\": 3}}, {\"id\": \"nc_4\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Décaissements (DZD)\", \"col\": 3}}, {\"id\": \"nc_5\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Créances Clients\", \"col\": 3}}, {\"id\": \"nc_6\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Dettes Fournisseurs\", \"col\": 3}}, {\"id\": \"nc_7\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trésorerie Disponible\", \"col\": 3}}, {\"id\": \"nc_8\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"TVA à Payer (G50)\", \"col\": 6}}, {\"id\": \"nc_9\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Résultat Mensuel SCF\", \"col\": 6}}, {\"id\": \"sp_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_charts\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Tableaux de Bord Graphiques 2026</b></span>\", \"col\": 12}}, {\"id\": \"ch_0\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Évolution mensuelle du CA et des Charges (DZD)\", \"col\": 6}}, {\"id\": \"ch_1\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Trésorerie Globale Caisses + Banques (DZD)\", \"col\": 6}}, {\"id\": \"ch_2\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Budget Prévu vs Réalisé 2026 (DZD)\", \"col\": 6}}, {\"id\": \"ch_3\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Taux d'Occupation Mensuel Moyen (%)\", \"col\": 6}}, {\"id\": \"sp_3\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hdr_modules\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Modules de Gestion Hôtelière & Comptable (SCF)</b></span>\", \"col\": 12}}, {\"id\": \"crd_fact\", \"type\": \"card\", \"data\": {\"card_name\": \"Facturation & Exploitation\", \"col\": 3}}, {\"id\": \"crd_treso\", \"type\": \"card\", \"data\": {\"card_name\": \"Trésorerie, Caisses & Banques\", \"col\": 3}}, {\"id\": \"crd_scf\", \"type\": \"card\", \"data\": {\"card_name\": \"Fiscalité SCF & Patrimoine\", \"col\": 3}}, {\"id\": \"crd_rh\", \"type\": \"card\", \"data\": {\"card_name\": \"RH, Paie & Budget 2026\", \"col\": 3}}]",
+  "creation": "2026-01-01 08:00:00.000000",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "for_user": "",
+  "hide_custom": 0,
+  "icon": "accounting",
+  "indicator_color": "blue",
+  "is_hidden": 0,
+  "label": "Direction Saint Eugene 2026",
+  "links": [
+    {
+      "type": "Card Break",
+      "label": "Facturation & Exploitation",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 0
+    },
+    {
+      "type": "Link",
+      "label": "Factures Clients",
+      "link_type": "DocType",
+      "link_to": "SE Facture Client",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Performance Hôtelière (Night Audit)",
+      "link_type": "DocType",
+      "link_to": "SE Performance Hoteliere",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Factures Fournisseurs",
+      "link_type": "DocType",
+      "link_to": "SE Facture Fournisseur",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Charges & Dépenses",
+      "link_type": "DocType",
+      "link_to": "SE Charge et Depense",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Clients (Corporate / Agences)",
+      "link_type": "DocType",
+      "link_to": "SE Client",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Fournisseurs",
+      "link_type": "DocType",
+      "link_to": "SE Fournisseur",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Card Break",
+      "label": "Trésorerie, Caisses & Banques",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 0
+    },
+    {
+      "type": "Link",
+      "label": "Encaissements Clients",
+      "link_type": "DocType",
+      "link_to": "SE Encaissement",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Décaissements",
+      "link_type": "DocType",
+      "link_to": "SE Decaissement",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Clôture Caisse Mensuelle",
+      "link_type": "DocType",
+      "link_to": "SE Caisse Mensuelle",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Opérations Bancaires",
+      "link_type": "DocType",
+      "link_to": "SE Operation Bancaire",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Rapprochement Bancaire",
+      "link_type": "DocType",
+      "link_to": "SE Rapprochement Bancaire",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Prévisions de Trésorerie (7j/30j/90j)",
+      "link_type": "DocType",
+      "link_to": "SE Prevision Tresorerie",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Comptes Caisses & Banques",
+      "link_type": "DocType",
+      "link_to": "SE Compte Tresorerie",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Card Break",
+      "label": "Fiscalité SCF & Patrimoine",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 0
+    },
+    {
+      "type": "Link",
+      "label": "Déclarations TVA (G50)",
+      "link_type": "DocType",
+      "link_to": "SE Declaration TVA",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Immobilisations & VNC",
+      "link_type": "DocType",
+      "link_to": "SE Immobilisation",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Emprunts & Dettes Bancaires",
+      "link_type": "DocType",
+      "link_to": "SE Emprunt et Dette",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Contrats & Abonnements",
+      "link_type": "DocType",
+      "link_to": "SE Contrat et Abonnement",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Card Break",
+      "label": "RH, Paie & Budget 2026",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 0
+    },
+    {
+      "type": "Link",
+      "label": "Budget Annuel 2026",
+      "link_type": "DocType",
+      "link_to": "SE Budget Annuel",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Fiches de Paie Mensuelles",
+      "link_type": "DocType",
+      "link_to": "SE Fiche de Paie Mensuelle",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Effectif & Collaborateurs",
+      "link_type": "DocType",
+      "link_to": "SE Employe",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    },
+    {
+      "type": "Link",
+      "label": "Paramètres Hôtel & Fiscalité (4★)",
+      "link_type": "DocType",
+      "link_to": "SE Parametres Hotel",
+      "hidden": 0,
+      "is_query_report": 0,
+      "onboard": 1
+    }
+  ],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "Direction Saint Eugene 2026",
+  "number_cards": [
+    {
+      "number_card_name": "SE CA Total",
+      "label": "CA Total HT (DZD)"
+    },
+    {
+      "number_card_name": "SE CA Hebergement",
+      "label": "CA Hébergement HT"
+    },
+    {
+      "number_card_name": "SE CA Restauration",
+      "label": "CA Restauration HT"
+    },
+    {
+      "number_card_name": "SE Encaissements",
+      "label": "Encaissements (DZD)"
+    },
+    {
+      "number_card_name": "SE Decaissements",
+      "label": "Décaissements (DZD)"
+    },
+    {
+      "number_card_name": "SE Creances Clients",
+      "label": "Créances Clients"
+    },
+    {
+      "number_card_name": "SE Dettes Fournisseurs",
+      "label": "Dettes Fournisseurs"
+    },
+    {
+      "number_card_name": "SE Tresorerie Disponible",
+      "label": "Trésorerie Disponible"
+    },
+    {
+      "number_card_name": "SE TVA a Payer",
+      "label": "TVA à Payer (G50)"
+    },
+    {
+      "number_card_name": "SE Resultat Mensuel",
+      "label": "Résultat Mensuel SCF"
+    }
+  ],
+  "owner": "Administrator",
+  "parent_page": "",
+  "public": 1,
+  "quick_lists": [],
+  "roles": [
+    {
+      "role": "System Manager"
+    },
+    {
+      "role": "Accounts Manager"
+    },
+    {
+      "role": "Accounts User"
+    }
+  ],
+  "sequence_id": 1.0,
+  "shortcuts": [
+    {
+      "label": "Factures Clients Échues",
+      "link_to": "SE Facture Client",
+      "type": "DocType",
+      "color": "Red",
+      "stats_filter": "{\"statut\": \"Échue\", \"docstatus\": 1}",
+      "format": "{} Échues"
+    },
+    {
+      "label": "Factures Partielles",
+      "link_to": "SE Facture Client",
+      "type": "DocType",
+      "color": "Orange",
+      "stats_filter": "{\"statut\": \"Partielle\", \"docstatus\": 1}",
+      "format": "{} Partielles"
+    },
+    {
+      "label": "Dépassements Budget",
+      "link_to": "SE Budget Annuel",
+      "type": "DocType",
+      "color": "Red",
+      "stats_filter": "{\"statut_budget\": \"Dépassement\"}",
+      "format": "{} Postes"
+    },
+    {
+      "label": "Nouvel Encaissement",
+      "link_to": "SE Encaissement",
+      "type": "DocType",
+      "color": "Green",
+      "doc_view": "New"
+    },
+    {
+      "label": "Paramètres Hôtel 4★",
+      "link_to": "SE Parametres Hotel",
+      "type": "DocType",
+      "color": "Blue"
+    }
+  ],
+  "title": "Direction Saint Eugène 2026"
+}

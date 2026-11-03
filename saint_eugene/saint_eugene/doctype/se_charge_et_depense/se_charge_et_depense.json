@@ -1,0 +1,188 @@
+{
+  "actions": [],
+  "autoname": "naming_series:",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_chg",
+    "naming_series",
+    "date_charge",
+    "nature",
+    "compte_scf",
+    "cb_chg_1",
+    "departement",
+    "fournisseur",
+    "description",
+    "sb_chg_mnt",
+    "montant_ht",
+    "taux_tva",
+    "cb_chg_2",
+    "montant_tva",
+    "montant_ttc",
+    "amended_from"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_chg",
+      "fieldtype": "Section Break",
+      "label": "Imputation Analytique & SCF (Classes 61 / 62 / 64)"
+    },
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Série",
+      "options": "CHG-.YYYY.-.#####",
+      "reqd": 1,
+      "default": "CHG-.YYYY.-.#####"
+    },
+    {
+      "fieldname": "date_charge",
+      "fieldtype": "Date",
+      "label": "Date de la Charge",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today"
+    },
+    {
+      "fieldname": "nature",
+      "fieldtype": "Select",
+      "label": "Nature de la Charge",
+      "options": "Électricité & Gaz (Sonelgaz)\nEau (SEAAL)\nInternet & Télécom\nMaintenance & Réparations\nAssurances\nMarketing & Commissions OTA\nHonoraires (CAC / Conseil)\nImpôts & Taxes Locales\nFrais Généraux",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "compte_scf",
+      "fieldtype": "Data",
+      "label": "Compte SCF",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cb_chg_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "departement",
+      "fieldtype": "Select",
+      "label": "Département Analytique",
+      "options": "Hébergement\nRestauration\nTechnique & Maintenance\nAdministration Générale\nCommercial & Marketing",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "fournisseur",
+      "fieldtype": "Link",
+      "label": "Fournisseur / Prestataire",
+      "options": "SE Fournisseur",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Small Text",
+      "label": "Détail / Référence Justificatif"
+    },
+    {
+      "fieldname": "sb_chg_mnt",
+      "fieldtype": "Section Break",
+      "label": "Montants (DZD)"
+    },
+    {
+      "fieldname": "montant_ht",
+      "fieldtype": "Currency",
+      "label": "Montant HT (DZD)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "taux_tva",
+      "fieldtype": "Percent",
+      "label": "TVA (%)",
+      "reqd": 1,
+      "default": "19"
+    },
+    {
+      "fieldname": "cb_chg_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "montant_tva",
+      "fieldtype": "Currency",
+      "label": "Montant TVA (DZD)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "montant_ttc",
+      "fieldtype": "Currency",
+      "label": "Montant TTC (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "amended_from",
+      "fieldtype": "Link",
+      "label": "Amendé depuis",
+      "options": "SE Charge et Depense",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 1,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Charge et Depense",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1,
+      "submit": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "nature"
+}

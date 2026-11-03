@@ -1,0 +1,162 @@
+{
+  "actions": [],
+  "autoname": "format:PERF-{date_jour}",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_perf",
+    "date_jour",
+    "chambres_disponibles",
+    "chambres_vendues",
+    "cb_perf_1",
+    "taux_occupation",
+    "adr",
+    "revpar",
+    "sb_perf_rev",
+    "ca_hebergement",
+    "ca_restaurant",
+    "cb_perf_2",
+    "autres_revenus",
+    "ca_total_jour"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_perf",
+      "fieldtype": "Section Break",
+      "label": "Rapport Quotidien d'Exploitation (Night Audit)"
+    },
+    {
+      "fieldname": "date_jour",
+      "fieldtype": "Date",
+      "label": "Date d'Exploitation",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today",
+      "unique": 1
+    },
+    {
+      "fieldname": "chambres_disponibles",
+      "fieldtype": "Int",
+      "label": "Chambres Disponibles",
+      "reqd": 1,
+      "default": "84"
+    },
+    {
+      "fieldname": "chambres_vendues",
+      "fieldtype": "Int",
+      "label": "Chambres Vendues (Occupées)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_perf_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "taux_occupation",
+      "fieldtype": "Percent",
+      "label": "Taux d'Occupation (%)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "adr",
+      "fieldtype": "Currency",
+      "label": "ADR - Prix Moyen Chambre (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "revpar",
+      "fieldtype": "Currency",
+      "label": "RevPAR - Revenu par Chambre Dispo (DZD)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "sb_perf_rev",
+      "fieldtype": "Section Break",
+      "label": "Ventilation du Chiffre d'Affaires Journalier HT (DZD)"
+    },
+    {
+      "fieldname": "ca_hebergement",
+      "fieldtype": "Currency",
+      "label": "CA Hébergement (Rooms)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "ca_restaurant",
+      "fieldtype": "Currency",
+      "label": "CA Restauration & Room Service (F&B)",
+      "in_list_view": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "cb_perf_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "autres_revenus",
+      "fieldtype": "Currency",
+      "label": "Autres Revenus (Séminaires, Blanchisserie, Minibar)",
+      "default": "0"
+    },
+    {
+      "fieldname": "ca_total_jour",
+      "fieldtype": "Currency",
+      "label": "CA Total Journée (DZD)",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Performance Hoteliere",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "date_jour",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

@@ -1,0 +1,177 @@
+{
+  "actions": [],
+  "autoname": "naming_series:",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_opb",
+    "naming_series",
+    "compte_bancaire",
+    "banque",
+    "date_operation",
+    "cb_opb_1",
+    "type_operation",
+    "statut_pointage",
+    "document_source",
+    "sb_opb_mnt",
+    "libelle",
+    "cb_opb_2",
+    "debit",
+    "credit",
+    "solde_progressif"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_opb",
+      "fieldtype": "Section Break",
+      "label": "Mouvement Bancaire"
+    },
+    {
+      "fieldname": "naming_series",
+      "fieldtype": "Select",
+      "label": "Série",
+      "options": "OPB-.YYYY.-.#####",
+      "reqd": 1,
+      "default": "OPB-.YYYY.-.#####"
+    },
+    {
+      "fieldname": "compte_bancaire",
+      "fieldtype": "Link",
+      "label": "Compte Bancaire",
+      "options": "SE Compte Tresorerie",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "banque",
+      "fieldtype": "Data",
+      "label": "Banque",
+      "read_only": 1,
+      "in_list_view": 1,
+      "fetch_from": "compte_bancaire.banque"
+    },
+    {
+      "fieldname": "date_operation",
+      "fieldtype": "Date",
+      "label": "Date d'Opération",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today"
+    },
+    {
+      "fieldname": "cb_opb_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "type_operation",
+      "fieldtype": "Select",
+      "label": "Type d'Opération",
+      "options": "Virement Reçu\nVirement Émis\nRemise Chèque\nChèque Débité\nEncaissement TPE/CIB\nFrais & Commissions Bancaires\nPrélèvement Échéance Emprunt",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "statut_pointage",
+      "fieldtype": "Select",
+      "label": "Statut Pointage",
+      "options": "Non pointé\nPointé\nEn écart",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Non pointé"
+    },
+    {
+      "fieldname": "document_source",
+      "fieldtype": "Data",
+      "label": "Pièce Comptable Liée",
+      "read_only": 1
+    },
+    {
+      "fieldname": "sb_opb_mnt",
+      "fieldtype": "Section Break",
+      "label": "Montants & Libellé (DZD)"
+    },
+    {
+      "fieldname": "libelle",
+      "fieldtype": "Data",
+      "label": "Libellé de l'Écriture",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_opb_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "debit",
+      "fieldtype": "Currency",
+      "label": "Débit / Sortie (DZD)",
+      "in_list_view": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "credit",
+      "fieldtype": "Currency",
+      "label": "Crédit / Entrée (DZD)",
+      "in_list_view": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "solde_progressif",
+      "fieldtype": "Currency",
+      "label": "Solde Comptable après Opération (DZD)",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Operation Bancaire",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}

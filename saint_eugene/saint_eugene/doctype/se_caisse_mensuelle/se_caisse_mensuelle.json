@@ -1,0 +1,208 @@
+{
+  "actions": [],
+  "autoname": "format:CAISSE-{mois}-{compte_caisse}",
+  "creation": "2026-01-01 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_caisse",
+    "mois",
+    "compte_caisse",
+    "cb_caisse_1",
+    "solde_initial",
+    "statut_validation",
+    "sb_caisse_flux",
+    "total_encaissements",
+    "total_decaissements",
+    "solde_theorique",
+    "cb_caisse_2",
+    "solde_physique",
+    "ecart",
+    "sb_caisse_justif",
+    "justification",
+    "cb_caisse_sig",
+    "valide_par",
+    "date_validation",
+    "amended_from"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_caisse",
+      "fieldtype": "Section Break",
+      "label": "Période & Caisse Hôtelière"
+    },
+    {
+      "fieldname": "mois",
+      "fieldtype": "Select",
+      "label": "Mois",
+      "options": "2026-01\n2026-02\n2026-03\n2026-04\n2026-05\n2026-06\n2026-07\n2026-08\n2026-09\n2026-10\n2026-11\n2026-12",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "compte_caisse",
+      "fieldtype": "Link",
+      "label": "Caisse Concernée",
+      "options": "SE Compte Tresorerie",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_caisse_1",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "solde_initial",
+      "fieldtype": "Currency",
+      "label": "Solde Initial du Mois (DZD)",
+      "reqd": 1
+    },
+    {
+      "fieldname": "statut_validation",
+      "fieldtype": "Select",
+      "label": "État du PV de Caisse",
+      "options": "Brouillon\nEn attente signature DAF\nValidée\nRejetée\nAnnulée",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Brouillon",
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "sb_caisse_flux",
+      "fieldtype": "Section Break",
+      "label": "Flux du Mois & Contrôle Physique (DZD)"
+    },
+    {
+      "fieldname": "total_encaissements",
+      "fieldtype": "Currency",
+      "label": "Total Encaissements Caisse",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "total_decaissements",
+      "fieldtype": "Currency",
+      "label": "Total Décaissements Caisse",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "solde_theorique",
+      "fieldtype": "Currency",
+      "label": "Solde Théorique Comptable",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_caisse_2",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "solde_physique",
+      "fieldtype": "Currency",
+      "label": "Solde Physique Compté (Billetage)",
+      "reqd": 1
+    },
+    {
+      "fieldname": "ecart",
+      "fieldtype": "Currency",
+      "label": "Écart de Caisse (Physique - Théorique)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "sb_caisse_justif",
+      "fieldtype": "Section Break",
+      "label": "Justification & Signature de Clôture"
+    },
+    {
+      "fieldname": "justification",
+      "fieldtype": "Small Text",
+      "label": "Justification de l'Écart / Observations PV"
+    },
+    {
+      "fieldname": "cb_caisse_sig",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "valide_par",
+      "fieldtype": "Link",
+      "label": "Signé / Validé par",
+      "options": "User",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "date_validation",
+      "fieldtype": "Datetime",
+      "label": "Date & Heure de Signature",
+      "read_only": 1,
+      "allow_on_submit": 1
+    },
+    {
+      "fieldname": "amended_from",
+      "fieldtype": "Link",
+      "label": "Amendé depuis",
+      "options": "SE Caisse Mensuelle",
+      "read_only": 1
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 1,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-01-01 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Caisse Mensuelle",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1,
+      "submit": 1,
+      "cancel": 1,
+      "amend": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1,
+      "submit": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1
+}
