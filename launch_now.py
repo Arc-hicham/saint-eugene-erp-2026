@@ -345,23 +345,23 @@ def build_initial_seed_db() -> dict:
         )
 
     perf_samples = [
-        ("2026-01-15", 56, 1008000.0, 385000.0, 65000.0),
-        ("2026-02-15", 61, 1128500.0, 420000.0, 80000.0),
-        ("2026-03-15", 53, 954000.0, 360000.0, 95000.0),
-        ("2026-04-15", 65, 1235000.0, 460000.0, 110000.0),
-        ("2026-05-15", 70, 1365000.0, 510000.0, 140000.0),
-        ("2026-06-15", 74, 1480000.0, 560000.0, 150000.0),
+        ("2026-01-15", 30, 540000.0, 385000.0, 65000.0),
+        ("2026-02-15", 33, 610500.0, 420000.0, 80000.0),
+        ("2026-03-15", 29, 522000.0, 360000.0, 95000.0),
+        ("2026-04-15", 35, 665000.0, 460000.0, 110000.0),
+        ("2026-05-15", 38, 741000.0, 510000.0, 140000.0),
+        ("2026-06-15", 40, 800000.0, 560000.0, 150000.0),
     ]
     for d_jour, vendues, ca_h, ca_r, autres in perf_samples:
         db["SE Performance Hoteliere"].append(
             {
                 "name": f"PERF-{d_jour}",
                 "date_jour": d_jour,
-                "chambres_disponibles": 84,
+                "chambres_disponibles": 45,
                 "chambres_vendues": vendues,
-                "taux_occupation": round((vendues / 84.0) * 100.0, 2),
+                "taux_occupation": round((vendues / 45.0) * 100.0, 2),
                 "adr": round(ca_h / vendues, 2),
-                "revpar": round(ca_h / 84.0, 2),
+                "revpar": round(ca_h / 45.0, 2),
                 "ca_hebergement": ca_h,
                 "ca_restaurant": ca_r,
                 "autres_revenus": autres,
@@ -908,7 +908,7 @@ const NAV_GROUPS = [
     title: "Facturation & Exploitation",
     items: [
       { label: "🧾 Factures Clients (SCF 70)", doctype: "SE Facture Client" },
-      { label: "🏨 Performance Hôtelière (84 ch.)", doctype: "SE Performance Hoteliere" },
+      { label: "🏨 Performance Hôtelière (45 ch.)", doctype: "SE Performance Hoteliere" },
       { label: "📥 Factures Fournisseurs (SCF 60)", doctype: "SE Facture Fournisseur" },
       { label: "⚡ Charges & Dépenses (61/62)", doctype: "SE Charge et Depense" },
       { label: "🏢 Clients (Corporate / Agences)", doctype: "SE Client" },

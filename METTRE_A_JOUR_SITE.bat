@@ -18,6 +18,7 @@ echo.
 echo [2/2] Envoi des modifications sur GitHub Pages...
 git add -A
 git commit -m "Update titles, configuration and data for Saint Eugene ERP 2026"
+git pull --rebase origin main
 git push origin main
 
 echo.

@@ -40,7 +40,7 @@
       "fieldtype": "Int",
       "label": "Chambres Disponibles",
       "reqd": 1,
-      "default": "84"
+      "default": "45"
     },
     {
       "fieldname": "chambres_vendues",

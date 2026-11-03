@@ -17,6 +17,7 @@ if "%NEW_PASS%"=="" (
 python encrypt_web_portal.py "%NEW_PASS%"
 git add index.html
 git commit -m "Update encrypted access portal password"
+git pull --rebase origin main
 git push origin main
 
 echo.

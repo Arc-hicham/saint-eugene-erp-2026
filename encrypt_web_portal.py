@@ -631,7 +631,7 @@ const NAV_GROUPS = [
     title: "Facturation & Exploitation",
     items: [
       {{ label: "🧾 Factures Clients (SCF 70)", doctype: "SE Facture Client" }},
-      {{ label: "🏨 Performance Hôtelière (84 ch.)", doctype: "SE Performance Hoteliere" }},
+      {{ label: "🏨 Performance Hôtelière (45 ch.)", doctype: "SE Performance Hoteliere" }},
       {{ label: "📥 Factures Fournisseurs (SCF 60)", doctype: "SE Facture Fournisseur" }},
       {{ label: "⚡ Charges & Dépenses (61/62)", doctype: "SE Charge et Depense" }},
       {{ label: "🏢 Clients (Corporate / Agences)", doctype: "SE Client" }},

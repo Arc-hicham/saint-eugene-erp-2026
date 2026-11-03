@@ -68,7 +68,7 @@
       "fieldtype": "Int",
       "label": "Capacité Totale (Chambres Disponibles)",
       "reqd": 1,
-      "default": "84"
+      "default": "45"
     },
     {
       "fieldname": "cb_id_1",
