@@ -1020,7 +1020,7 @@ function showWorkspace() {
     <div class="chart-grid">
       <div class="chart-box"><h4>Évolution Mensuelle du CA HT vs Charges & Salaires (DZD)</h4><canvas id="chCaCharges" height="130"></canvas></div>
       <div class="chart-box"><h4>Pilotage Budgétaire 2026 — Prévu vs Réalisé (Cumul T1 DZD)</h4><canvas id="chBudget" height="130"></canvas></div>
-      <div class="chart-box"><h4>Taux d'Occupation Mensuel Moyen (%) — Capacité 84 Chambres</h4><canvas id="chOcc" height="130"></canvas></div>
+      <div class="chart-box"><h4>Taux d'Occupation Mensuel Moyen (%) — Capacité 45 Chambres</h4><canvas id="chOcc" height="130"></canvas></div>
       <div class="chart-box"><h4>RevPAR Mensuel Moyen (Revenu par Chambre Disponible en DZD)</h4><canvas id="chRevpar" height="130"></canvas></div>
     </div>
   `;
