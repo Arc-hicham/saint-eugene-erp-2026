@@ -66,7 +66,14 @@ def encrypt_bundle(password: str, payload_obj: dict) -> dict:
 
 
 def main() -> None:
-    password = sys.argv[1] if len(sys.argv) > 1 else "SaintEugene2026"
+    pw_file = APP_ROOT / ".portal_password.txt"
+    if len(sys.argv) > 1 and sys.argv[1].strip():
+        password = sys.argv[1].strip()
+        pw_file.write_text(password, encoding="utf-8")
+    elif pw_file.exists():
+        password = pw_file.read_text(encoding="utf-8").strip() or "SaintEugene2026"
+    else:
+        password = "SaintEugene2026"
     initial_db = build_initial_seed_db()
     encrypted = encrypt_bundle(password, {"schemas": SCHEMAS, "initial_db": initial_db})
     encrypted_json = json.dumps(encrypted)
@@ -585,17 +592,27 @@ function lockSession() {{
 }}
 
 function loadDB() {{
+  const base = JSON.parse(JSON.stringify(INITIAL_DB));
   try {{
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("saint_eugene_erp_2026_db_v2");
     if (raw) {{
-      const parsed = JSON.parse(raw);
-      recomputeAllLinks(parsed);
-      return parsed;
+      const saved = JSON.parse(raw);
+      Object.keys(saved).forEach(dt => {{
+        if (dt === "SE Parametres Hotel" || dt === "SE Performance Hoteliere") {{
+          const baseNames = new Set((base[dt] || []).map(r => r.name));
+          const userAdded = (saved[dt] || []).filter(r => !baseNames.has(r.name));
+          base[dt] = [...userAdded, ...(base[dt] || [])];
+        }} else if (Array.isArray(saved[dt]) && saved[dt].length > 0) {{
+          base[dt] = saved[dt];
+        }}
+      }});
     }}
   }} catch (e) {{}}
-  const copy = JSON.parse(JSON.stringify(INITIAL_DB));
-  recomputeAllLinks(copy);
-  return copy;
+  recomputeAllLinks(base);
+  try {{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
+  }} catch (e) {{}}
+  return base;
 }}
 
 function saveDB() {{
