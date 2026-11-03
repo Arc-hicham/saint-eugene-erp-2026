@@ -680,6 +680,15 @@ function pillClass(st) {{
   return "gray";
 }}
 
+function getNavLabel(doctype) {{
+  for (const g of NAV_GROUPS) {{
+    for (const item of g.items) {{
+      if (item.doctype === doctype) return item.label;
+    }}
+  }}
+  return doctype;
+}}
+
 function renderSidebar(activeKey = "workspace") {{
   const nav = document.getElementById("sidebarNav");
   let html = "";
@@ -781,7 +790,8 @@ function showList(doctype, search = "") {{
   renderSidebar(doctype);
   const schema = SCHEMAS[doctype];
   const rows = DB[doctype] || [];
-  document.getElementById("viewTitle").textContent = `${{doctype}} (${{rows.length}} enregistrements)`;
+  const labelTitle = getNavLabel(doctype);
+  document.getElementById("viewTitle").textContent = `${{labelTitle}} (${{rows.length}} enregistrements)`;
 
   const listFields = schema.fields.filter(f => f.in_list_view && !["Section Break", "Column Break", "Table"].includes(f.fieldtype)).slice(0, 6);
   const filtered = rows.filter(r => !search || JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
@@ -809,8 +819,8 @@ function showList(doctype, search = "") {{
   document.getElementById("mainContent").innerHTML = `
     <div class="table-card">
       <div class="table-toolbar">
-        <input class="search-input" placeholder="Rechercher dans ${{doctype}}..." value="${{search}}" oninput="showList('${{doctype}}', this.value)">
-        <button class="btn btn-primary" onclick="openNewDoc('${{doctype}}')">+ Nouveau (${{doctype}})</button>
+        <input class="search-input" placeholder="Rechercher dans ${{labelTitle}}..." value="${{search}}" oninput="showList('${{doctype}}', this.value)">
+        <button class="btn btn-primary" onclick="openNewDoc('${{doctype}}')">+ Nouveau (${{labelTitle}})</button>
       </div>
       <table class="frappe-list">
         <thead><tr>${{thHtml}}</tr></thead>
@@ -842,7 +852,7 @@ function renderDocModal(doctype, doc, isNew) {{
   CURRENT_DOCTYPE = doctype;
   CURRENT_DOC = doc;
   const schema = SCHEMAS[doctype];
-  document.getElementById("modalTitle").textContent = `${{isNew ? "Nouveau" : doc.name}} — ${{doctype}}`;
+  document.getElementById("modalTitle").textContent = `${{isNew ? "Nouveau" : doc.name}} — ${{getNavLabel(doctype)}}`;
 
   let formHtml = `<div class="form-grid">`;
   schema.fields.forEach(f => {{
