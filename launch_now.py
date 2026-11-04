@@ -1351,6 +1351,58 @@ function getArticleCategory(article) {
   return "Restauration";
 }
 
+
+function formatDzdInWords(montant) {
+  const val = Math.abs(Number(montant) || 0);
+  const dinars = Math.floor(val);
+  const centimes = Math.round((val - dinars) * 100);
+  const units = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf",
+    "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+  const tens = ["", "", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"];
+  function convertUnder100(n) {
+    if (n < 20) return units[n];
+    const t = Math.floor(n / 10);
+    const u = n % 10;
+    if (t === 7) return u === 1 ? "soixante et onze" : ("soixante-" + units[10 + u]);
+    if (t === 8) return u === 0 ? "quatre-vingts" : ("quatre-vingt-" + units[u]);
+    if (t === 9) return "quatre-vingt-" + units[10 + u];
+    if (u === 1) return tens[t] + " et un";
+    return u === 0 ? tens[t] : (tens[t] + "-" + units[u]);
+  }
+  function convertUnder1000(n) {
+    if (n === 0) return "";
+    const h = Math.floor(n / 100);
+    const r = n % 100;
+    let res = "";
+    if (h === 1) res = "cent";
+    else if (h > 1) res = units[h] + " cent" + (r === 0 ? "s" : "");
+    if (r > 0) res = res ? (res + " " + convertUnder100(r)) : convertUnder100(r);
+    return res;
+  }
+  function intToFrench(n) {
+    if (n === 0) return "zéro";
+    let res = "";
+    const milliards = Math.floor(n / 1000000000);
+    let rem = n % 1000000000;
+    const millions = Math.floor(rem / 1000000);
+    rem = rem % 1000000;
+    const mille = Math.floor(rem / 1000);
+    rem = rem % 1000;
+    if (milliards > 0) res += convertUnder1000(milliards) + " milliard" + (milliards > 1 ? "s" : "") + " ";
+    if (millions > 0) res += convertUnder1000(millions) + " million" + (millions > 1 ? "s" : "") + " ";
+    if (mille === 1) res += "mille ";
+    else if (mille > 1) res += convertUnder1000(mille) + " mille ";
+    if (rem > 0) res += convertUnder1000(rem);
+    return res.trim();
+  }
+  const dinarsTxt = intToFrench(dinars);
+  const capDinars = dinarsTxt.charAt(0).toUpperCase() + dinarsTxt.slice(1);
+  const dev = dinars <= 1 ? "Dinar Algérien" : "Dinars Algériens";
+  let phrase = capDinars + " " + dev;
+  if (centimes > 0) phrase += " et " + intToFrench(centimes) + " " + (centimes === 1 ? "Centime" : "Centimes");
+  return phrase;
+}
+
 function computeInvoiceDocClient(doc, cfg) {
   cfg = cfg || {};
   const tarifTs = Number(cfg.taxe_sejour_nuitee_adulte || 500);
@@ -2386,10 +2438,25 @@ class SaintEugeneHandler(BaseHTTPRequestHandler):
 
 def main():
     port = 8080
-    server = HTTPServer(("127.0.0.1", port), SaintEugeneHandler)
+    import socket
+    def _get_lan_ip():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(('10.254.254.254', 1))
+            ip = s.getsockname()[0]
+        except Exception:
+            ip = '127.0.0.1'
+        finally:
+            s.close()
+        return ip
+
+    lan_ip = _get_lan_ip()
+    server = HTTPServer(("0.0.0.0", port), SaintEugeneHandler)
+    url_lan = f"http://{lan_ip}:{port}" 
     url = f"http://localhost:{port}"
     print(f"==================================================================")
-    print(f" Saint Eugène ERP 2026 est actif sur : {url}")
+    print(f" Saint Eugène ERP 2026 est actif sur PC  : {url}")
+    print(f" Accès direct depuis votre Téléphone (Wi-Fi) : {url_lan}")
     print(f"==================================================================")
     if "--no-browser" not in sys.argv:
         try:

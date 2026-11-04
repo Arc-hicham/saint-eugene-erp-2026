@@ -57,6 +57,21 @@ function doPost(e) {
     const payload = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     syncAllToSpreadsheet(ss, payload);
+
+    // Sauvegarde miroir pour synchronisation multi-appareils (Téléphone <-> PC)
+    let syncSheet = ss.getSheetByName("_SYNC_DB_");
+    if (!syncSheet) {
+      syncSheet = ss.insertSheet("_SYNC_DB_");
+      try { syncSheet.hideSheet(); } catch(err) {}
+    }
+    const syncData = JSON.stringify({
+      db: payload.db || {},
+      history: payload.history || [],
+      last_event: payload.last_event || null,
+      timestamp: new Date().toISOString()
+    });
+    syncSheet.getRange(1, 1).setValue(syncData);
+
     return ContentService.createTextOutput(JSON.stringify({ status: "ok", timestamp: new Date().toISOString() }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
@@ -66,11 +81,28 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({
-    status: "online",
-    hotel: "SPA HÔTEL SAINT EUGÈNE 4★ - ALGER",
-    spreadsheet_id: SPREADSHEET_ID
-  })).setMimeType(ContentService.MimeType.JSON);
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let syncSheet = ss.getSheetByName("_SYNC_DB_");
+    let syncData = null;
+    if (syncSheet) {
+      const val = syncSheet.getRange(1, 1).getValue();
+      if (val) {
+        try { syncData = JSON.parse(val); } catch(err) {}
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "online",
+      hotel: "SPA HÔTEL SAINT EUGÈNE 4★ - ALGER",
+      spreadsheet_id: SPREADSHEET_ID,
+      data: syncData
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      message: String(err)
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 function syncAllToSpreadsheet(ss, payload) {

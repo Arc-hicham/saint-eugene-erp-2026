@@ -142,6 +142,21 @@ function doPost(e) {{
     const payload = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     syncAllToSpreadsheet(ss, payload);
+
+    // Sauvegarde miroir pour synchronisation multi-appareils (Téléphone <-> PC)
+    let syncSheet = ss.getSheetByName("_SYNC_DB_");
+    if (!syncSheet) {{
+      syncSheet = ss.insertSheet("_SYNC_DB_");
+      try {{ syncSheet.hideSheet(); }} catch(err) {{}}
+    }}
+    const syncData = JSON.stringify({{
+      db: payload.db || {{}},
+      history: payload.history || [],
+      last_event: payload.last_event || null,
+      timestamp: new Date().toISOString()
+    }});
+    syncSheet.getRange(1, 1).setValue(syncData);
+
     return ContentService.createTextOutput(JSON.stringify({{ status: "ok", timestamp: new Date().toISOString() }}))
       .setMimeType(ContentService.MimeType.JSON);
   }} catch (err) {{
@@ -151,11 +166,28 @@ function doPost(e) {{
 }}
 
 function doGet(e) {{
-  return ContentService.createTextOutput(JSON.stringify({{
-    status: "online",
-    hotel: "SPA HÔTEL SAINT EUGÈNE 4★ - ALGER",
-    spreadsheet_id: SPREADSHEET_ID
-  }})).setMimeType(ContentService.MimeType.JSON);
+  try {{
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let syncSheet = ss.getSheetByName("_SYNC_DB_");
+    let syncData = null;
+    if (syncSheet) {{
+      const val = syncSheet.getRange(1, 1).getValue();
+      if (val) {{
+        try {{ syncData = JSON.parse(val); }} catch(err) {{}}
+      }}
+    }}
+    return ContentService.createTextOutput(JSON.stringify({{
+      status: "online",
+      hotel: "SPA HÔTEL SAINT EUGÈNE 4★ - ALGER",
+      spreadsheet_id: SPREADSHEET_ID,
+      data: syncData
+    }})).setMimeType(ContentService.MimeType.JSON);
+  }} catch (err) {{
+    return ContentService.createTextOutput(JSON.stringify({{
+      status: "error",
+      message: String(err)
+    }})).setMimeType(ContentService.MimeType.JSON);
+  }}
 }}
 
 function syncAllToSpreadsheet(ss, payload) {{
@@ -1117,6 +1149,119 @@ function loadDB() {{
   return base;
 }}
 
+
+async function pullFromGoogleSheet(silent = false) {{
+  const webhookUrl = (localStorage.getItem(WEBHOOK_KEY) || "").trim();
+  if (!webhookUrl) {{
+    if (!silent) showToast("⚠️ Veuillez d'abord renseigner l'URL Web App dans le centre Google Sheet !");
+    return false;
+  }}
+  try {{
+    if (!silent) showToast("⏳ Récupération des données depuis Google Sheet...");
+    const url = webhookUrl + (webhookUrl.includes("?") ? "&" : "?") + "action=pull&_t=" + Date.now();
+    const resp = await fetch(url, {{ method: "GET" }});
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    const json = await resp.json();
+    if (json && json.data && json.data.db) {{
+      const remoteDb = json.data.db;
+      Object.keys(remoteDb).forEach(dt => {{
+        if (!DB[dt]) DB[dt] = [];
+        const localMap = new Map((DB[dt] || []).map(r => [r.name, r]));
+        (remoteDb[dt] || []).forEach(remDoc => {{
+          const locDoc = localMap.get(remDoc.name);
+          if (!locDoc) {{
+            DB[dt].unshift(remDoc);
+          }} else {{
+            const dRem = remDoc.date_modification || "";
+            const dLoc = locDoc.date_modification || "";
+            if (dRem >= dLoc) {{
+              Object.assign(locDoc, remDoc);
+            }}
+          }}
+        }});
+      }});
+      if (json.data.history && Array.isArray(json.data.history)) {{
+        const histMap = new Map((DB["SE Historique Modifications"] || []).map(h => [h.id, h]));
+        json.data.history.forEach(h => {{
+          if (!histMap.has(h.id)) {{
+            DB["SE Historique Modifications"].unshift(h);
+          }}
+        }});
+      }}
+      recomputeAllLinks(DB);
+      try {{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }} catch(e) {{}}
+      renderSidebar(CURRENT_DOCTYPE);
+      if (CURRENT_DOCTYPE) showList(CURRENT_DOCTYPE, false);
+      else showWorkspace();
+      if (!silent) showToast("✅ Synchronisation réussie ! Vos données sont à jour avec le Téléphone et le PC.");
+      return true;
+    }} else {{
+      if (!silent) showToast("ℹ️ Google Sheet connecté mais aucune sauvegarde _SYNC_DB_ trouvée pour l'instant.");
+      return false;
+    }}
+  }} catch (e) {{
+    console.warn("Pull Google Sheet error:", e);
+    if (!silent) showToast("⚠️ Impossible de joindre Google Sheet (Vérifiez le déploiement Web App 'Tout le monde').");
+    return false;
+  }}
+}}
+
+async function syncBothWaysGoogleSheet() {{
+  const webhookUrl = (localStorage.getItem(WEBHOOK_KEY) || "").trim();
+  if (!webhookUrl) {{
+    showGoogleSheetBackupCenter();
+    showToast("⚠️ Configurez l'URL Web App Google Sheet pour synchroniser automatiquement.");
+    return;
+  }}
+  showToast("⏳ Synchronisation Téléphone ↔ PC ↔ Google Sheet en cours...");
+  triggerGoogleSheetAutoBackup({{ action: "Synchronisation Bidirectionnelle", date: nowAlgeriaTimestamp() }});
+  setTimeout(async () => {{
+    await pullFromGoogleSheet(false);
+  }}, 1500);
+}}
+
+function exportSyncJson() {{
+  const payload = {{
+    db: DB,
+    history: DB["SE Historique Modifications"] || [],
+    export_date: nowAlgeriaTimestamp(),
+    user: CURRENT_USER_ROLE
+  }};
+  const str = JSON.stringify(payload, null, 2);
+  const blob = new Blob([str], {{ type: "application/json" }});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `saint_eugene_sync_${{Date.now()}}.json`;
+  a.click();
+  showToast("📥 Fichier de synchronisation téléchargé ! Transférez-le sur votre autre appareil.");
+}}
+
+function importSyncJsonFile(inputEl) {{
+  const file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {{
+    try {{
+      const parsed = JSON.parse(e.target.result);
+      if (parsed.db) {{
+        DB = parsed.db;
+        if (parsed.history) DB["SE Historique Modifications"] = parsed.history;
+        recomputeAllLinks(DB);
+        try {{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }} catch(err) {{}}
+        renderSidebar(CURRENT_DOCTYPE);
+        if (CURRENT_DOCTYPE) showList(CURRENT_DOCTYPE, false);
+        else showWorkspace();
+        showToast("✅ Synchronisation importée avec succès ! La base est à jour.");
+      }} else {{
+        alert("Fichier JSON invalide (clé 'db' manquante).");
+      }}
+    }} catch(err) {{
+      alert("Erreur de lecture du fichier JSON : " + err.message);
+    }}
+  }};
+  reader.readAsText(file);
+}}
+
 function saveDB(lastEvent = null) {{
   recomputeAllLinks(DB);
   try {{
@@ -1992,6 +2137,23 @@ function showGoogleSheetBackupCenter() {{
         </div>
       </div>
 
+      <div style="margin-top:14px;padding:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:12px;">
+        <div style="font-size:12.5px;font-weight:700;color:#1e3a8a;margin-bottom:6px;">
+          📱 Synchronisation Multi-Appareils (Téléphone ↔ Ordinateur) :
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-primary" onclick="syncBothWaysGoogleSheet()">🔄 Synchroniser Téléphone ↔ PC (via Google Sheet)</button>
+          <button class="btn btn-gold" onclick="exportSyncJson()">📤 Exporter Données (Fichier JSON)</button>
+          <label class="btn" style="cursor:pointer;background:#fff;border-color:#cbd5e1;display:inline-flex;align-items:center;">
+            📥 Importer Données (JSON)
+            <input type="file" accept=".json" style="display:none;" onchange="importSyncJsonFile(this)">
+          </label>
+        </div>
+        <div style="font-size:11.5px;color:#1e40af;margin-top:8px;line-height:1.5;">
+          🌐 <b>Accès Direct Réseau Wi-Fi :</b> Si votre téléphone et ce PC sont connectés au même réseau Wi-Fi, ouvrez directement l'adresse <b><a href="http://192.168.1.28:8080" target="_blank" style="color:#1d4ed8;font-weight:700;">http://192.168.1.28:8080</a></b> sur le navigateur de votre téléphone ! Toutes vos actions seront directement et instantanément synchronisées sur votre PC.
+        </div>
+      </div>
+
       <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;">
         <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;">
           ⚡ Connexion Automatique Temps Réel (Google Apps Script Web App) :
@@ -2307,6 +2469,58 @@ function getArticleCategory(article) {{
   if (ROOM_TYPES.includes(article)) return "Hébergement";
   if (article === "Location de salle") return "Séminaires & Banquets";
   return "Restauration";
+}}
+
+
+function formatDzdInWords(montant) {{
+  const val = Math.abs(Number(montant) || 0);
+  const dinars = Math.floor(val);
+  const centimes = Math.round((val - dinars) * 100);
+  const units = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf",
+    "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+  const tens = ["", "", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"];
+  function convertUnder100(n) {{
+    if (n < 20) return units[n];
+    const t = Math.floor(n / 10);
+    const u = n % 10;
+    if (t === 7) return u === 1 ? "soixante et onze" : ("soixante-" + units[10 + u]);
+    if (t === 8) return u === 0 ? "quatre-vingts" : ("quatre-vingt-" + units[u]);
+    if (t === 9) return "quatre-vingt-" + units[10 + u];
+    if (u === 1) return tens[t] + " et un";
+    return u === 0 ? tens[t] : (tens[t] + "-" + units[u]);
+  }}
+  function convertUnder1000(n) {{
+    if (n === 0) return "";
+    const h = Math.floor(n / 100);
+    const r = n % 100;
+    let res = "";
+    if (h === 1) res = "cent";
+    else if (h > 1) res = units[h] + " cent" + (r === 0 ? "s" : "");
+    if (r > 0) res = res ? (res + " " + convertUnder100(r)) : convertUnder100(r);
+    return res;
+  }}
+  function intToFrench(n) {{
+    if (n === 0) return "zéro";
+    let res = "";
+    const milliards = Math.floor(n / 1000000000);
+    let rem = n % 1000000000;
+    const millions = Math.floor(rem / 1000000);
+    rem = rem % 1000000;
+    const mille = Math.floor(rem / 1000);
+    rem = rem % 1000;
+    if (milliards > 0) res += convertUnder1000(milliards) + " milliard" + (milliards > 1 ? "s" : "") + " ";
+    if (millions > 0) res += convertUnder1000(millions) + " million" + (millions > 1 ? "s" : "") + " ";
+    if (mille === 1) res += "mille ";
+    else if (mille > 1) res += convertUnder1000(mille) + " mille ";
+    if (rem > 0) res += convertUnder1000(rem);
+    return res.trim();
+  }}
+  const dinarsTxt = intToFrench(dinars);
+  const capDinars = dinarsTxt.charAt(0).toUpperCase() + dinarsTxt.slice(1);
+  const dev = dinars <= 1 ? "Dinar Algérien" : "Dinars Algériens";
+  let phrase = capDinars + " " + dev;
+  if (centimes > 0) phrase += " et " + intToFrench(centimes) + " " + (centimes === 1 ? "Centime" : "Centimes");
+  return phrase;
 }}
 
 function computeInvoiceDocClient(doc, cfg) {{
