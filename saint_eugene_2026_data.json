@@ -1580,22 +1580,6 @@
   ],
   "SE Employe": [
     {
-      "name": "EMP-2026-0016",
-      "nom": "Mansouri",
-      "prenom": "Karim",
-      "nom_complet": "Karim Mansouri",
-      "departement": "Technique & Sécurité",
-      "fonction": "Chef Maintenance Hôtel",
-      "type_contrat": "CDI",
-      "date_embauche": "2026-03-04",
-      "date_recrutement": "2026-03-04",
-      "statut_professionnel": "Actif",
-      "situation": "Actif",
-      "salaire_base_contractuel": 75000,
-      "n_assurance": "169012345678",
-      "nin": "109876543210987654"
-    },
-    {
       "name": "SE-EMP-0001",
       "nom_complet": "Karim Benali",
       "fonction": "Directeur d'Exploitation",
@@ -2738,8 +2722,8 @@
           "date_arrivee": "2026-02-10",
           "date_depart": "2026-02-12",
           "nuitees": 2,
-          "nb_personnes": 24,
-          "taxe_sejour": 20000.0,
+          "nb_personnes": 20,
+          "taxe_sejour": 16000.0,
           "total_ttc_sejour": 2100000.0
         },
         {
@@ -2748,8 +2732,8 @@
           "date_arrivee": "2026-02-12",
           "date_depart": "2026-02-14",
           "nuitees": 2,
-          "nb_personnes": 36,
-          "taxe_sejour": 30000.0,
+          "nb_personnes": 30,
+          "taxe_sejour": 24000.0,
           "total_ttc_sejour": 2800000.0
         }
       ],
@@ -3092,8 +3076,8 @@
           "date_arrivee": "2026-11-15",
           "date_depart": "2026-11-18",
           "nuitees": 3,
-          "nb_personnes": 30,
-          "taxe_sejour": 37500.0,
+          "nb_personnes": 25,
+          "taxe_sejour": 30000.0,
           "total_ttc_sejour": 2160000.0
         },
         {
@@ -3102,8 +3086,8 @@
           "date_arrivee": "2026-11-15",
           "date_depart": "2026-11-18",
           "nuitees": 3,
-          "nb_personnes": 30,
-          "taxe_sejour": 37500.0,
+          "nb_personnes": 25,
+          "taxe_sejour": 30000.0,
           "total_ttc_sejour": 720000.0
         }
       ],

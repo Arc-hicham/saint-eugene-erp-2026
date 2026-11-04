@@ -1825,6 +1825,9 @@ function renderInvoiceLinesRows(doc) {
       </td>
       <td id="inv_ht_${idx}" style="padding:6px;text-align:right;color:#334155;font-variant-numeric:tabular-nums;">${fmtDZD(ln.montant_ht || 0)}</td>
       <td id="inv_tva_${idx}" style="padding:6px;text-align:center;font-size:11px;color:#64748b;">${ln.taux_tva || 9}%</td>
+      <td style="padding:6px;">
+        <input type="text" placeholder="Remarque, n° BC..." value="${ln.obs || ln.observation || ln.remarque || ''}" oninput="CURRENT_DOC.lignes[${idx}].obs=this.value; CURRENT_DOC.lignes[${idx}].observation=this.value; CURRENT_DOC.lignes[${idx}].remarque=this.value;" style="width:100%;box-sizing:border-box;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;">
+      </td>
       <td style="padding:6px;text-align:center;">
         <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceLine(${idx})" title="Supprimer la ligne">✕</button>
       </td>
@@ -2014,6 +2017,10 @@ function renderInvoiceModal(doctype, doc, isNew) {
         <input type="date" id="inv_date_echeance" value="${doc.date_echeance || doc.date_validite || '2026-11-25'}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
       </div>
       <div class="form-group">
+        <label>N° Bon de Commande (BC) / Réf. Commande</label>
+        <input type="text" id="inv_bon_commande" placeholder="Ex: BC-2026/045 ou Réf Client..." value="${doc.bon_commande || doc.num_bon_commande || ''}" onchange="CURRENT_DOC.bon_commande=this.value; CURRENT_DOC.num_bon_commande=this.value;">
+      </div>
+      <div class="form-group">
         <label>Mode de Paiement Prévu *</label>
         <select id="inv_mode_paiement" onchange="CURRENT_DOC.mode_paiement_prevu=this.value; onInvoiceFormUpdate();">
           <option value="Virement" ${doc.mode_paiement_prevu === "Virement" ? "selected" : ""}>Virement Bancaire (Sans timbre)</option>
@@ -2131,6 +2138,11 @@ function renderInvoiceModal(doctype, doc, isNew) {
 
 
 async function saveInvoiceDoc() {
+  const bcInput = document.getElementById("inv_bon_commande");
+  if (bcInput) {
+    CURRENT_DOC.bon_commande = bcInput.value.trim();
+    CURRENT_DOC.num_bon_commande = bcInput.value.trim();
+  }
   const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {});
   const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {};
   computeInvoiceDocClient(CURRENT_DOC, cfg);

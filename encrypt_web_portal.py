@@ -3125,6 +3125,10 @@ function renderInvoiceModal(doctype, doc, isNew) {{
         <input type="date" id="inv_date_echeance" value="${{doc.date_echeance || doc.date_validite || '2026-11-25'}}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
       </div>
       <div class="form-group">
+        <label>N° Bon de Commande (BC) / Réf. Commande</label>
+        <input type="text" id="inv_bon_commande" placeholder="Ex: BC-2026/045 ou Réf Client..." value="${{doc.bon_commande || doc.num_bon_commande || ''}}" onchange="CURRENT_DOC.bon_commande=this.value; CURRENT_DOC.num_bon_commande=this.value;">
+      </div>
+      <div class="form-group">
         <label>Mode de Paiement Prévu *</label>
         <select id="inv_mode_paiement" onchange="CURRENT_DOC.mode_paiement_prevu=this.value; onInvoiceFormUpdate();">
           <option value="Virement" ${{doc.mode_paiement_prevu === "Virement" ? "selected" : ""}}>Virement Bancaire (Sans timbre)</option>
@@ -3242,6 +3246,11 @@ function renderInvoiceModal(doctype, doc, isNew) {{
 
 
 async function saveInvoiceDoc() {{
+  const bcInput = document.getElementById("inv_bon_commande");
+  if (bcInput) {{
+    CURRENT_DOC.bon_commande = bcInput.value.trim();
+    CURRENT_DOC.num_bon_commande = bcInput.value.trim();
+  }}
   const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
   const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {{}};
   computeInvoiceDocClient(CURRENT_DOC, cfg);
@@ -3564,6 +3573,7 @@ function openPrintPreview() {{
         <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;">${{ln.taux_tva || 9}}%</td>
         <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:right;">${{fmtDZD(ln.montant_tva || 0)}}</td>
         <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:bold;">${{fmtDZD(tot)}}</td>
+        <td style="padding:7px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#475569;">${{ln.obs || ln.observation || ln.remarque || '—'}}</td>
       </tr>`;
     }});
 

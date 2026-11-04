@@ -1,6 +1,7 @@
 /* ==============================================================================
    MODULE RH & PAIE — HÔTEL SAINT EUGÈNE 4★ ALGER
    Architecture épurée, ultra-rapide, intuitive et optimisée mobile & desktop
+   Gestion Date d'Entrée / Date de Sortie avec exclusion automatique de la masse salariale
    Conformité Code du Travail Algérien (Loi 90-11) & Normes SCF Algérie
    ============================================================================== */
 
@@ -36,6 +37,16 @@
     const now = new Date();
     const t = new Date(targetDate);
     return Math.ceil((t - now) / (1000 * 60 * 60 * 24));
+  }
+
+  // RÈGLE MÉTIER FONDAMENTALE : Détecter si le salarié est encore dans l'hôtel
+  // Si Date de Sortie renseignée OU Statut === 'Sorti' => L'employé a quitté l'hôtel
+  function rhIsEmployeEnPoste(e){
+    if(!e) return false;
+    if(e.date_sortie && String(e.date_sortie).trim() !== "") return false;
+    const sit = String(e.statut_professionnel || e.situation || "").trim();
+    if(sit === "Sorti") return false;
+    return true;
   }
 
   // Barème IRG Algérien officiel
@@ -77,7 +88,7 @@
 
   // Sauvegarde universelle asynchrone garantie
   async function rhSaveDoc(doctype, doc, isNew=false){
-    // 1. Mise à jour de toutes les instances en mémoire
+    // 1. Mise à jour immédiate en mémoire
     const targetDb = rhGetDb();
     if(targetDb){
       if(!targetDb[doctype]) targetDb[doctype] = [];
@@ -169,6 +180,7 @@
   // En-tête principal épuré avec bouton RETOUR AU TABLEAU DE BORD ERP
   function rhRenderHeader(){
     const emps = rhGetRows("SE Employe");
+    const enPosteCount = emps.filter(rhIsEmployeEnPoste).length;
     const activeTab = RH_STATE.activeTab;
 
     return `
@@ -196,7 +208,7 @@
             📊 1. Tableau de Bord RH
           </button>
           <button onclick="window.rhGoTab('employees')" style="background:${activeTab === 'employees' ? '#d97706' : '#1e293b'};color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
-            👥 2. Salariés & Fiches (${emps.length})
+            👥 2. Salariés (${enPosteCount} en poste / ${emps.length} total)
           </button>
           <button onclick="window.rhGoTab('payroll')" style="background:${activeTab === 'payroll' ? '#d97706' : '#1e293b'};color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
             ⚡ 3. Centre de Paie & Bulletins
@@ -227,48 +239,57 @@
 
   /* ==============================================================================
      1. VUE TABLEAU DE BORD SIMPLIFIÉ
+     Calcul de Masse Salariale STRICTEMENT sur les salariés EN POSTE (Hors sortis)
      ============================================================================== */
   function rhRenderDashboardView(){
     const emps = rhGetRows("SE Employe");
-    const paies = rhGetRows("SE Fiche de Paie Mensuelle");
     const contrats = rhGetRows("SE Contrat RH");
 
     const totalStaff = emps.length;
-    const actifs = emps.filter(e => (e.statut_professionnel || e.situation) === "Actif" || (!e.statut_professionnel && !e.situation)).length;
-    const sortis = emps.filter(e => (e.statut_professionnel || e.situation) === "Sorti").length;
-    const nonDeclares = emps.filter(e => (e.statut_professionnel || e.situation) === "Non déclaré").length;
+    const enPosteEmps = emps.filter(rhIsEmployeEnPoste);
+    const sortisEmps = emps.filter(e => !rhIsEmployeEnPoste(e));
 
-    const masseContractuelle = emps.reduce((acc, e) => acc + (Number(e.salaire_base_contractuel) || 0), 0);
-    const cnasPatronale = Math.round(masseContractuelle * 0.26);
+    const actifs = enPosteEmps.filter(e => (e.statut_professionnel || e.situation) === "Actif" || (!e.statut_professionnel && !e.situation)).length;
+    const nonDeclares = enPosteEmps.filter(e => (e.statut_professionnel || e.situation) === "Non déclaré").length;
+    const sortis = sortisEmps.length;
 
-    // Contrats à expiration < 30j
-    const contratsExp = contrats.filter(c => c.statut === "Actif" && c.type_contrat === "CDD" && rhDaysDiff(c.date_fin) <= 30 && rhDaysDiff(c.date_fin) >= 0);
+    // LOGIQUE IMPORTANTE : La masse salariale contractuelle additionne UNIQUEMENT les salariés en poste !
+    // Si un employé a une Date de Sortie (ou est Sorti), son salaire est EXCLU de la masse salariale active !
+    const masseContractuelleActive = enPosteEmps.reduce((acc, e) => acc + (Number(e.salaire_base_contractuel) || 0), 0);
+    const cnasPatronaleActive = Math.round(masseContractuelleActive * 0.26);
+
+    // Contrats CDD à expiration < 30j (uniquement pour les salariés toujours en poste)
+    const contratsExp = contrats.filter(c => {
+      const emp = emps.find(x => x.name === c.employe);
+      if(emp && !rhIsEmployeEnPoste(emp)) return false;
+      return c.statut === "Actif" && c.type_contrat === "CDD" && rhDaysDiff(c.date_fin) <= 30 && rhDaysDiff(c.date_fin) >= 0;
+    });
 
     return `
       <!-- Cartes KPI Essentielles -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:20px;">
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;">Effectif Total Hôtel</div>
-          <div style="font-size:28px;font-weight:800;color:#0f172a;margin:4px 0;">${totalStaff}</div>
-          <div style="font-size:12px;color:#059669;font-weight:600;">🟢 ${actifs} Actifs • 🔴 ${sortis} Sortis • 🟠 ${nonDeclares} Non déclarés</div>
+          <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;">Effectif Actif en Poste</div>
+          <div style="font-size:28px;font-weight:800;color:#0f172a;margin:4px 0;">${enPosteEmps.length} <span style="font-size:14px;color:#64748b;font-weight:500;">/ ${totalStaff} total</span></div>
+          <div style="font-size:12px;color:#059669;font-weight:600;">🟢 ${actifs} Actifs • 🔴 ${sortis} Sortis de l'hôtel • 🟠 ${nonDeclares} Non déclarés</div>
         </div>
 
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;">Masse Salariale Contractuelle</div>
-          <div style="font-size:20px;font-weight:800;color:#0284c7;margin:4px 0;">${rhFmtMoney(masseContractuelle)}</div>
-          <div style="font-size:11px;color:#64748b;">Salaires de base bruts</div>
+          <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;">Masse Salariale Active (Salariés en Poste)</div>
+          <div style="font-size:20px;font-weight:800;color:#0284c7;margin:4px 0;">${rhFmtMoney(masseContractuelleActive)}</div>
+          <div style="font-size:11px;color:#059669;font-weight:600;">✅ Exclut automatiquement les ${sortis} salariés sortis</div>
         </div>
 
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;">Cotisations CNAS (26% Patronale)</div>
-          <div style="font-size:20px;font-weight:800;color:#d97706;margin:4px 0;">${rhFmtMoney(cnasPatronale)}</div>
-          <div style="font-size:11px;color:#64748b;">Charges sociales employeur</div>
+          <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;">Cotisations CNAS (26% Patronale Active)</div>
+          <div style="font-size:20px;font-weight:800;color:#d97706;margin:4px 0;">${rhFmtMoney(cnasPatronaleActive)}</div>
+          <div style="font-size:11px;color:#64748b;">Charges sociales du personnel en poste</div>
         </div>
 
         <div style="background:#fff;border:1px solid ${contratsExp.length > 0 ? '#fecaca' : '#e2e8f0'};border-radius:10px;padding:16px;">
           <div style="font-size:11px;color:${contratsExp.length > 0 ? '#dc2626' : '#64748b'};font-weight:700;text-transform:uppercase;">Contrats à Échéance (< 30j)</div>
           <div style="font-size:28px;font-weight:800;color:${contratsExp.length > 0 ? '#dc2626' : '#059669'};margin:4px 0;">${contratsExp.length}</div>
-          <div style="font-size:11px;color:#64748b;">Renouvellement ou fin</div>
+          <div style="font-size:11px;color:#64748b;">Salariés actifs à renouveler</div>
         </div>
       </div>
 
@@ -277,14 +298,20 @@
         <!-- Alertes RH -->
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
           <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-            <span>🔔</span> <span>Alertes du Personnel</span>
+            <span>🔔</span> <span>État du Personnel & Mouvements</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;">
+            ${sortis > 0 ? `
+              <div style="background:#f1f5f9;border:1px solid #cbd5e1;padding:10px;border-radius:6px;font-size:12px;color:#334155;">
+                <strong>ℹ️ Salariés Sortis :</strong> ${sortis} collaborateur(s) ont quitté l'établissement et sont retirés du calcul de paie.
+              </div>
+            ` : ''}
+
             ${contratsExp.length > 0 ? `
               <div style="background:#fee2e2;border:1px solid #fecaca;padding:10px;border-radius:6px;font-size:12px;color:#991b1b;">
                 <strong>⚠️ Échéance Contrat CDD :</strong> ${contratsExp[0].nom_complet || contratsExp[0].employe} expire le ${rhFmtDate(contratsExp[0].date_fin)}.
               </div>
-            ` : `<div style="font-size:12px;color:#059669;padding:6px;">✅ Tous les contrats CDD sont à jour.</div>`}
+            ` : `<div style="font-size:12px;color:#059669;padding:6px;">✅ Tous les contrats actifs sont à jour.</div>`}
 
             ${nonDeclares > 0 ? `
               <div style="background:#fffbeb;border:1px solid #fde68a;padding:10px;border-radius:6px;font-size:12px;color:#92400e;">
@@ -304,7 +331,7 @@
               ➕ Nouveau Salarié
             </button>
             <button onclick="window.rhGoTab('payroll')" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px;font-size:12px;font-weight:700;color:#0f172a;cursor:pointer;text-align:left;">
-              ⚡ Calculer la Paie
+              ⚡ Calculer la Paie (En poste)
             </button>
             <button onclick="window.rhGoTab('employees')" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px;font-size:12px;font-weight:700;color:#0f172a;cursor:pointer;text-align:left;">
               🪪 Liste des Salariés
@@ -319,12 +346,13 @@
   }
 
   // Rendu du badge de situation
-  function rhRenderSituationBadge(sit){
+  function rhRenderSituationBadge(sit, dateSortie){
+    if(dateSortie && String(dateSortie).trim() !== "" || sit === "Sorti"){
+      return `<span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:6px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;gap:4px;">🔴 Sorti</span>`;
+    }
     const s = String(sit || "Actif").trim();
     if(s === "Actif"){
       return `<span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:6px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;gap:4px;">🟢 Actif</span>`;
-    } else if(s === "Sorti"){
-      return `<span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:6px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;gap:4px;">🔴 Sorti</span>`;
     } else if(s === "Non déclaré"){
       return `<span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:6px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;gap:4px;">🟠 Non déclaré</span>`;
     }
@@ -332,7 +360,7 @@
   }
 
   /* ==============================================================================
-     2. VUE SALARIÉS & DOSSIERS RH (Avec Date de Recrutement & Situation)
+     2. VUE SALARIÉS & DOSSIERS RH (Avec Date d'Entrée & Date de Sortie)
      ============================================================================== */
   function rhRenderEmployeesView(){
     const emps = rhGetRows("SE Employe");
@@ -340,8 +368,12 @@
     const filterSit = RH_STATE.filterSituation || "TOUS";
 
     const filtered = emps.filter(e => {
-      const sit = e.statut_professionnel || e.situation || "Actif";
-      if(filterSit !== "TOUS" && sit !== filterSit) return false;
+      const isEnPoste = rhIsEmployeEnPoste(e);
+      const sit = !isEnPoste ? "Sorti" : (e.statut_professionnel || e.situation || "Actif");
+      if(filterSit === "Actif" && !isEnPoste) return false;
+      if(filterSit === "Sorti" && isEnPoste) return false;
+      if(filterSit === "Non déclaré" && sit !== "Non déclaré") return false;
+
       const q = (e.name + " " + (e.nom_complet||"") + " " + (e.departement||"") + " " + (e.fonction||"") + " " + sit).toLowerCase();
       return q.includes(search);
     });
@@ -351,17 +383,17 @@
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
           <div>
             <h3 style="margin:0;font-size:16px;color:#0f172a;">Effectif du Personnel (${emps.length} Collaborateurs)</h3>
-            <div style="font-size:12px;color:#64748b;">Gestion des fiches individuelles, dates de recrutement et situations (Actif / Sorti / Non déclaré).</div>
+            <div style="font-size:12px;color:#64748b;">Suivi des dates d'entrée et de sortie. Les salariés ayant une date de sortie sont exclus de la masse salariale.</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <!-- Filtre par Situation -->
             <select onchange="window.rhFilterSituation(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-weight:600;background:#fff;cursor:pointer;">
-              <option value="TOUS" ${filterSit === 'TOUS' ? 'selected' : ''}>Toutes situations</option>
-              <option value="Actif" ${filterSit === 'Actif' ? 'selected' : ''}>🟢 Actifs seulement</option>
-              <option value="Sorti" ${filterSit === 'Sorti' ? 'selected' : ''}>🔴 Sortis</option>
+              <option value="TOUS" ${filterSit === 'TOUS' ? 'selected' : ''}>Toutes situations (${emps.length})</option>
+              <option value="Actif" ${filterSit === 'Actif' ? 'selected' : ''}>🟢 En poste uniquement (${emps.filter(rhIsEmployeEnPoste).length})</option>
+              <option value="Sorti" ${filterSit === 'Sorti' ? 'selected' : ''}>🔴 Sortis de l'hôtel (${emps.filter(e => !rhIsEmployeEnPoste(e)).length})</option>
               <option value="Non déclaré" ${filterSit === 'Non déclaré' ? 'selected' : ''}>🟠 Non déclarés</option>
             </select>
-            <input type="text" placeholder="🔍 Rechercher matricule, nom..." value="${RH_STATE.filterSearch}" oninput="window.rhSearchEmp(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;width:200px;">
+            <input type="text" placeholder="🔍 Rechercher salarié, poste..." value="${RH_STATE.filterSearch}" oninput="window.rhSearchEmp(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;width:200px;">
             <button onclick="window.rhModalNouveauSalarie()" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
               ➕ Ajouter un Salarié
             </button>
@@ -377,7 +409,8 @@
                 <th style="padding:10px;">Département</th>
                 <th style="padding:10px;">Fonction</th>
                 <th style="padding:10px;">Contrat</th>
-                <th style="padding:10px;">Date Recrutement</th>
+                <th style="padding:10px;">Date d'Entrée</th>
+                <th style="padding:10px;">Date de Sortie</th>
                 <th style="padding:10px;">Salaire Base</th>
                 <th style="padding:10px;">Situation</th>
                 <th style="padding:10px;">N° CNAS</th>
@@ -388,21 +421,32 @@
     `;
 
     if(filtered.length === 0){
-      html += `<tr><td colspan="10" style="padding:30px;text-align:center;color:#64748b;">Aucun salarié trouvé. Cliquez sur "Ajouter un Salarié" pour en enregistrer un.</td></tr>`;
+      html += `<tr><td colspan="11" style="padding:30px;text-align:center;color:#64748b;">Aucun salarié trouvé dans cette sélection.</td></tr>`;
     } else {
       filtered.forEach(e => {
-        const dateRecrut = e.date_embauche || e.date_recrutement;
-        const situation = e.statut_professionnel || e.situation || "Actif";
+        const isEnPoste = rhIsEmployeEnPoste(e);
+        const dateEntree = e.date_embauche || e.date_entree || e.date_recrutement;
+        const dateSortie = e.date_sortie;
+        const situation = !isEnPoste ? "Sorti" : (e.statut_professionnel || e.situation || "Actif");
+
         html += `
-          <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:10px;font-weight:700;color:#0284c7;">${e.name}</td>
-            <td style="padding:10px;font-weight:700;color:#0f172a;">${e.nom_complet || (e.prenom + ' ' + e.nom)}</td>
+          <tr style="border-bottom:1px solid #f1f5f9;background:${!isEnPoste ? '#fff5f5' : '#ffffff'};">
+            <td style="padding:10px;font-weight:700;color:${isEnPoste ? '#0284c7' : '#94a3b8'};">${e.name}</td>
+            <td style="padding:10px;font-weight:700;color:#0f172a;">
+              ${e.nom_complet || (e.prenom + ' ' + e.nom)}
+              ${!isEnPoste ? `<span style="font-size:10px;color:#dc2626;font-weight:600;margin-left:4px;">(A quitté l'hôtel)</span>` : ''}
+            </td>
             <td style="padding:10px;">${e.departement || '—'}</td>
             <td style="padding:10px;">${e.fonction || '—'}</td>
             <td style="padding:10px;"><span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:4px;font-weight:700;">${e.type_contrat || 'CDI'}</span></td>
-            <td style="padding:10px;font-weight:600;color:#334155;">${rhFmtDate(dateRecrut)}</td>
-            <td style="padding:10px;font-weight:600;">${rhFmtMoney(e.salaire_base_contractuel)}</td>
-            <td style="padding:10px;">${rhRenderSituationBadge(situation)}</td>
+            <td style="padding:10px;font-weight:600;color:#1e293b;">${rhFmtDate(dateEntree)}</td>
+            <td style="padding:10px;font-weight:700;color:${dateSortie ? '#dc2626' : '#059669'};">
+              ${dateSortie ? `🚪 ${rhFmtDate(dateSortie)}` : '<span style="color:#059669;font-weight:600;">— En poste</span>'}
+            </td>
+            <td style="padding:10px;font-weight:600;${!isEnPoste ? 'text-decoration:line-through;color:#94a3b8;' : ''}">
+              ${rhFmtMoney(e.salaire_base_contractuel)}
+            </td>
+            <td style="padding:10px;">${rhRenderSituationBadge(situation, dateSortie)}</td>
             <td style="padding:10px;color:${e.n_assurance ? '#475569' : '#dc2626'};font-weight:${e.n_assurance ? '400' : '600'};">
               ${e.n_assurance || (situation === 'Non déclaré' ? 'Non déclaré' : '—')}
             </td>
@@ -458,10 +502,11 @@
   };
 
   /* ==============================================================================
-     3. VUE CENTRE DE PAIE & BULLETINS
+     3. VUE CENTRE DE PAIE & BULLETINS (Calcul UNIQUEMENT pour les salariés en poste)
      ============================================================================== */
   function rhRenderPayrollView(){
     const emps = rhGetRows("SE Employe");
+    const enPosteEmps = emps.filter(rhIsEmployeEnPoste);
     const paies = rhGetRows("SE Fiche de Paie Mensuelle").filter(p => p.periode === RH_STATE.payrollPeriod);
 
     const masseBrute = paies.reduce((a, b) => a + (Number(b.salaire_brut) || 0), 0);
@@ -474,7 +519,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
           <div>
             <h3 style="margin:0;font-size:16px;color:#0f172a;">Gestion de la Paie (${RH_STATE.payrollPeriod})</h3>
-            <div style="font-size:12px;color:#64748b;">Calcul automatique, retenues CNAS (9%), IRG et impression des bulletins officiels.</div>
+            <div style="font-size:12px;color:#64748b;">Calcul automatique sur les <strong>${enPosteEmps.length} salariés en poste</strong>. Les salariés ayant quitté l'hôtel sont exclus.</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
             <select onchange="window.rhChangePeriod(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:700;">
@@ -483,7 +528,7 @@
               <option value="2026-01" ${RH_STATE.payrollPeriod === "2026-01" ? "selected" : ""}>Janvier 2026</option>
             </select>
             <button onclick="window.rhCalculerPaieMasse()" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;">
-              ⚡ Calculer Tous les Bulletins
+              ⚡ Calculer la Paie (${enPosteEmps.length} Salariés en poste)
             </button>
           </div>
         </div>
@@ -491,7 +536,7 @@
         <!-- Synthèse -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:18px;">
           <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0;">
-            <div style="font-size:11px;color:#64748b;font-weight:700;">MASSE BRUTE</div>
+            <div style="font-size:11px;color:#64748b;font-weight:700;">MASSE BRUTE DU MOIS</div>
             <div style="font-size:18px;font-weight:800;color:#0f172a;">${rhFmtMoney(masseBrute)}</div>
           </div>
           <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0;">
@@ -525,7 +570,7 @@
     `;
 
     if(paies.length === 0){
-      html += `<tr><td colspan="8" style="padding:30px;text-align:center;color:#64748b;">Aucun bulletin calculé pour ce mois. Cliquez sur "Calculer Tous les Bulletins".</td></tr>`;
+      html += `<tr><td colspan="8" style="padding:30px;text-align:center;color:#64748b;">Aucun bulletin calculé pour ce mois. Cliquez sur "Calculer la Paie".</td></tr>`;
     } else {
       paies.forEach(p => {
         html += `
@@ -557,8 +602,8 @@
   window.rhCalculerPaieMasse = function(){
     const db = rhGetDb();
     if(!db["SE Fiche de Paie Mensuelle"]) db["SE Fiche de Paie Mensuelle"] = [];
-    // Uniquement les salariés Actifs ou Non déclarés (pas les sortis)
-    const emps = (db["SE Employe"] || []).filter(e => (e.statut_professionnel || e.situation) !== "Sorti");
+    // UNIQUEMENT LES SALARIÉS EN POSTE (Ceux avec Date de Sortie sont EXCLUS)
+    const emps = (db["SE Employe"] || []).filter(rhIsEmployeEnPoste);
     const per = RH_STATE.payrollPeriod;
 
     emps.forEach(e => {
@@ -595,7 +640,7 @@
       else db["SE Fiche de Paie Mensuelle"].push(fiche);
     });
 
-    rhNotify(`⚡ Calcul terminé : ${emps.length} bulletins calculés pour ${per}`, "success");
+    rhNotify(`⚡ Calcul terminé : ${emps.length} bulletins calculés pour ${per} (salariés sortis exclus)`, "success");
     rhRenderActiveView();
   };
 
@@ -603,13 +648,13 @@
      4. VUE CNAS & CONGÉS
      ============================================================================== */
   function rhRenderCnasView(){
-    const emps = rhGetRows("SE Employe");
+    const emps = rhGetRows("SE Employe").filter(rhIsEmployeEnPoste);
     const declarations = rhGetRows("SE Declaration CNAS");
 
     return `
       <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;">
         <h3 style="margin:0 0 4px 0;font-size:16px;color:#0f172a;">Sécurité Sociale (CNAS) & Droits à Congés</h3>
-        <div style="font-size:12px;color:#64748b;margin-bottom:16px;">Déclarations réglementaires et soldes de congés (2.5 jours/mois selon Loi 90-11).</div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:16px;">Déclarations réglementaires et soldes de congés des salariés en activité.</div>
 
         <!-- Déclarations CNAS -->
         <div style="margin-bottom:24px;">
@@ -642,7 +687,7 @@
 
         <!-- Soldes Congés -->
         <div>
-          <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:8px;">Soldes de Congés par Salarié</div>
+          <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:8px;">Soldes de Congés par Salarié (En activité)</div>
           <table style="width:100%;font-size:12px;border-collapse:collapse;border:1px solid #e2e8f0;">
             <thead>
               <tr style="background:#f1f5f9;color:#475569;text-align:left;">
@@ -671,7 +716,7 @@
   }
 
   /* ==============================================================================
-     MODAL NOUVEAU SALARIÉ (Avec Date de Recrutement & Situation)
+     MODAL NOUVEAU SALARIÉ (Date d'Entrée & Date de Sortie)
      ============================================================================== */
   window.rhModalNouveauSalarie = function(){
     const modalId = "rh-modal-nouveau";
@@ -685,7 +730,6 @@
     modal.style.display = "flex";
 
     const emps = rhGetRows("SE Employe");
-    // Calcul automatique du prochain matricule réel
     let maxId = 0;
     emps.forEach(e => {
       const m = String(e.name || "").match(/(\d+)$/);
@@ -695,7 +739,7 @@
     const todayStr = new Date().toISOString().split("T")[0];
 
     modal.innerHTML = `
-      <div style="background:#fff;border-radius:12px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px;">
           <div>
             <h3 style="margin:0;font-size:18px;color:#0f172a;">➕ Nouveau Salarié Hôtel</h3>
@@ -706,25 +750,32 @@
         <form id="form-simple-emp" onsubmit="window.rhSubmitNouveauSalarie(event, '${nextMatricule}')" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;">
           <div>
             <label style="font-weight:700;display:block;margin-bottom:4px;">Nom de famille :</label>
-            <input name="nom" required placeholder="Ex: Bakir" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+            <input name="nom" required placeholder="Ex: Benali" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
           <div>
             <label style="font-weight:700;display:block;margin-bottom:4px;">Prénom :</label>
-            <input name="prenom" required placeholder="Ex: Hicham" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+            <input name="prenom" required placeholder="Ex: Sami" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
 
-          <!-- DATE DE RECRUTEMENT -->
+          <!-- DATE D'ENTRÉE -->
           <div>
-            <label style="font-weight:700;display:block;margin-bottom:4px;color:#0284c7;">📅 Date de Recrutement :</label>
-            <input name="date_embauche" type="date" required value="${todayStr}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:600;">
+            <label style="font-weight:700;display:block;margin-bottom:4px;color:#059669;">📅 Date d'Entrée (Embauche) * :</label>
+            <input name="date_embauche" type="date" required value="${todayStr}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #059669;border-radius:6px;font-weight:600;">
           </div>
 
-          <!-- SITUATION : ACTIF / SORTI / NON DÉCLARÉ -->
+          <!-- DATE DE SORTIE (OPTIONNELLE) -->
+          <div>
+            <label style="font-weight:700;display:block;margin-bottom:4px;color:#dc2626;">🚪 Date de Sortie (si départ) :</label>
+            <input name="date_sortie" id="input_new_date_sortie" type="date" onchange="window.rhOnDateSortieChange(this.value, 'select_new_situation')" placeholder="Laisser vide si en poste" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #dc2626;border-radius:6px;">
+            <div style="font-size:10px;color:#64748b;margin-top:2px;">* Renseigner cette date retire automatiquement l'employé de la masse salariale.</div>
+          </div>
+
+          <!-- SITUATION -->
           <div>
             <label style="font-weight:700;display:block;margin-bottom:4px;color:#0284c7;">🏷️ Situation du Salarié :</label>
-            <select name="statut_professionnel" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:700;">
+            <select name="statut_professionnel" id="select_new_situation" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:700;">
               <option value="Actif" selected>🟢 Actif (En poste)</option>
-              <option value="Sorti">🔴 Sorti (Départ / Fin contrat)</option>
+              <option value="Sorti">🔴 Sorti (A quitté l'hôtel - Exclu paie)</option>
               <option value="Non déclaré">🟠 Non déclaré (En attente CNAS)</option>
             </select>
           </div>
@@ -760,7 +811,7 @@
             <label style="font-weight:700;display:block;margin-bottom:4px;">Numéro CNAS (si déclaré) :</label>
             <input name="n_assurance" placeholder="12 chiffres" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
-          <div>
+          <div style="grid-column:1/-1;">
             <label style="font-weight:700;display:block;margin-bottom:4px;">NIN (Identifiant National) :</label>
             <input name="nin" placeholder="18 chiffres" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
@@ -773,14 +824,32 @@
     `;
   };
 
+  // Synchronisation dynamique : Si date de sortie entrée, passer la situation en Sorti
+  window.rhOnDateSortieChange = function(dateVal, selectId){
+    const sel = document.getElementById(selectId);
+    if(sel){
+      if(dateVal && dateVal.trim() !== ""){
+        sel.value = "Sorti";
+      } else {
+        if(sel.value === "Sorti") sel.value = "Actif";
+      }
+    }
+  };
+
   window.rhSubmitNouveauSalarie = async function(e, matricule){
     e.preventDefault();
     const fd = new FormData(e.target);
     const nom = (fd.get("nom") || "").trim();
     const prenom = (fd.get("prenom") || "").trim();
     const salaire = Number(fd.get("salaire_base_contractuel")) || 50000;
-    const dateRecrut = fd.get("date_embauche") || new Date().toISOString().split("T")[0];
-    const situation = fd.get("statut_professionnel") || "Actif";
+    const dateEntree = fd.get("date_embauche") || new Date().toISOString().split("T")[0];
+    const dateSortie = (fd.get("date_sortie") || "").trim();
+
+    // Règle automatique : si date_sortie est présente => Situation = Sorti
+    let situation = fd.get("statut_professionnel") || "Actif";
+    if(dateSortie !== ""){
+      situation = "Sorti";
+    }
 
     const newEmp = {
       name: matricule,
@@ -790,8 +859,10 @@
       departement: fd.get("departement"),
       fonction: fd.get("fonction"),
       type_contrat: fd.get("type_contrat") || "CDI",
-      date_embauche: dateRecrut,
-      date_recrutement: dateRecrut,
+      date_embauche: dateEntree,
+      date_entree: dateEntree,
+      date_recrutement: dateEntree,
+      date_sortie: dateSortie,
       statut_professionnel: situation,
       situation: situation,
       salaire_base_contractuel: salaire,
@@ -825,15 +896,17 @@
     }
     modal.style.display = "flex";
 
-    const dateRecrut = e.date_embauche || e.date_recrutement || new Date().toISOString().split("T")[0];
-    const situation = e.statut_professionnel || e.situation || "Actif";
+    const dateEntree = e.date_embauche || e.date_entree || e.date_recrutement || new Date().toISOString().split("T")[0];
+    const dateSortie = e.date_sortie || "";
+    const isEnPoste = rhIsEmployeEnPoste(e);
+    const situation = !isEnPoste ? "Sorti" : (e.statut_professionnel || e.situation || "Actif");
 
     modal.innerHTML = `
-      <div style="background:#fff;border-radius:12px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;padding:24px;">
+      <div style="background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:24px;">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px;">
           <div>
             <h3 style="margin:0;font-size:18px;color:#0f172a;">✏️ Fiche Salarié — ${e.name}</h3>
-            <div style="font-size:12px;color:#64748b;">Mise à jour des informations administratives et de situation</div>
+            <div style="font-size:12px;color:#64748b;">Mise à jour des dates d'entrée et de sortie</div>
           </div>
           <button onclick="document.getElementById('${modalId}').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
         </div>
@@ -847,18 +920,25 @@
             <input name="fonction" value="${e.fonction || ''}" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
 
-          <!-- DATE DE RECRUTEMENT -->
+          <!-- DATE D'ENTRÉE -->
           <div>
-            <label style="font-weight:700;display:block;margin-bottom:4px;color:#0284c7;">📅 Date de Recrutement :</label>
-            <input name="date_embauche" type="date" value="${dateRecrut}" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:600;">
+            <label style="font-weight:700;display:block;margin-bottom:4px;color:#059669;">📅 Date d'Entrée :</label>
+            <input name="date_embauche" type="date" value="${dateEntree}" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #059669;border-radius:6px;font-weight:600;">
+          </div>
+
+          <!-- DATE DE SORTIE -->
+          <div>
+            <label style="font-weight:700;display:block;margin-bottom:4px;color:#dc2626;">🚪 Date de Sortie (si départ) :</label>
+            <input name="date_sortie" type="date" value="${dateSortie}" onchange="window.rhOnDateSortieChange(this.value, 'select_edit_situation')" placeholder="Laisser vide si en poste" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #dc2626;border-radius:6px;">
+            <div style="font-size:10px;color:#64748b;margin-top:2px;">* Renseigner la date de sortie exclut l'employé de la masse salariale.</div>
           </div>
 
           <!-- SITUATION -->
           <div>
             <label style="font-weight:700;display:block;margin-bottom:4px;color:#0284c7;">🏷️ Situation :</label>
-            <select name="statut_professionnel" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:700;">
+            <select name="statut_professionnel" id="select_edit_situation" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:700;">
               <option value="Actif" ${situation === 'Actif' ? 'selected' : ''}>🟢 Actif (En poste)</option>
-              <option value="Sorti" ${situation === 'Sorti' ? 'selected' : ''}>🔴 Sorti (Départ)</option>
+              <option value="Sorti" ${situation === 'Sorti' ? 'selected' : ''}>🔴 Sorti (A quitté l'hôtel - Exclu paie)</option>
               <option value="Non déclaré" ${situation === 'Non déclaré' ? 'selected' : ''}>🟠 Non déclaré</option>
             </select>
           </div>
@@ -914,9 +994,18 @@
       emp.departement = fd.get("departement");
       emp.type_contrat = fd.get("type_contrat") || emp.type_contrat;
       emp.date_embauche = fd.get("date_embauche") || emp.date_embauche;
+      emp.date_entree = emp.date_embauche;
       emp.date_recrutement = emp.date_embauche;
-      emp.statut_professionnel = fd.get("statut_professionnel");
-      emp.situation = emp.statut_professionnel;
+      emp.date_sortie = (fd.get("date_sortie") || "").trim();
+
+      // Règle automatique : si date_sortie renseignée => Situation = Sorti
+      let situation = fd.get("statut_professionnel");
+      if(emp.date_sortie !== ""){
+        situation = "Sorti";
+      }
+      emp.statut_professionnel = situation;
+      emp.situation = situation;
+
       emp.salaire_base_contractuel = Number(fd.get("salaire_base_contractuel")) || emp.salaire_base_contractuel;
       emp.n_assurance = emp.statut_professionnel === "Non déclaré" ? "" : (fd.get("n_assurance") || "");
       emp.nin = fd.get("nin") || "";
