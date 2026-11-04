@@ -718,6 +718,7 @@ def main() -> None:
     <div class="topbar-actions">
       <button class="btn hide-mobile" onclick="showWorkspace()">📊 Tableau de Bord</button>
       <button class="btn btn-gold hide-mobile" onclick="openNewDoc('SE Facture Client')">+ Facture Client</button>
+      <button class="btn hide-mobile" style="border-color:#38bdf8;background:#0284c7;color:#fff;" onclick="openNewDoc('SE Facture Pro Forma')">+ Pro Forma</button>
       <button class="btn btn-primary hide-mobile" onclick="openNewDoc('SE Encaissement')">+ Encaissement</button>
       <button class="btn hide-mobile" style="border-color:#cbd5e1;" onclick="changePasswordFromLogin(event)" title="Modifier le mot de passe d'accès">🔑 Mot de passe</button>
       <button class="btn btn-green" onclick="showGoogleSheetBackupCenter()" title="Sauvegarde Google Sheet & Historique Complet">☁️ Google Sheet</button>
@@ -737,6 +738,10 @@ def main() -> None:
   <button class="mob-nav-item highlight" onclick="openNewDoc('SE Facture Client')">
     <span class="ico">🧾</span>
     <span>+ Facture</span>
+  </button>
+  <button class="mob-nav-item" onclick="openNewDoc('SE Facture Pro Forma')">
+    <span class="ico">📋</span>
+    <span>+ Pro Forma</span>
   </button>
   <button class="mob-nav-item highlight" onclick="openNewDoc('SE Encaissement')">
     <span class="ico">💰</span>
@@ -818,7 +823,7 @@ const BUNDLE_DATA = {bundle_json};
 const ENCRYPTED_BUNDLE = {encrypted_json};
 const GOOGLE_SHEET_ID = "{GOOGLE_SHEET_ID}";
 const GOOGLE_SHEET_URL = "{GOOGLE_SHEET_URL}";
-const STORAGE_KEY = "saint_eugene_erp_2026_db_v4";
+const STORAGE_KEY = "saint_eugene_erp_2026_db_v5";
 const WEBHOOK_KEY = "saint_eugene_gsheet_webhook_url";
 const SESSION_KEY = "saint_eugene_erp_2026_unlocked";
 
@@ -1085,7 +1090,7 @@ function lockSession() {{
 function loadDB() {{
   const base = JSON.parse(JSON.stringify(INITIAL_DB));
   try {{
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("saint_eugene_erp_2026_db_v3") || localStorage.getItem("saint_eugene_erp_2026_db_v2");
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("saint_eugene_erp_2026_db_v4") || localStorage.getItem("saint_eugene_erp_2026_db_v3") || localStorage.getItem("saint_eugene_erp_2026_db_v2");
     if (raw) {{
       const saved = JSON.parse(raw);
       Object.keys(saved).forEach(dt => {{
@@ -1099,6 +1104,9 @@ function loadDB() {{
       }});
     }}
   }} catch (e) {{}}
+  if (!Array.isArray(base["SE Facture Pro Forma"]) || base["SE Facture Pro Forma"].length === 0) {{
+    base["SE Facture Pro Forma"] = INITIAL_DB["SE Facture Pro Forma"] || [];
+  }}
   if (!Array.isArray(base["SE Historique Modifications"])) {{
     base["SE Historique Modifications"] = INITIAL_DB["SE Historique Modifications"] || [];
   }}
@@ -1502,6 +1510,7 @@ const NAV_GROUPS = [
     title: "Facturation & Exploitation",
     items: [
       {{ label: "🧾 Factures Clients (SCF 70)", doctype: "SE Facture Client" }},
+      {{ label: "📋 Factures Pro Forma", doctype: "SE Facture Pro Forma" }},
       {{ label: "🏨 Performance Hôtelière (45 ch.)", doctype: "SE Performance Hoteliere" }},
       {{ label: "📥 Factures Fournisseurs (SCF 60)", doctype: "SE Facture Fournisseur" }},
       {{ label: "⚡ Charges & Dépenses (61/62)", doctype: "SE Charge et Depense" }},
@@ -2156,6 +2165,7 @@ function generateNextDocName(doctype) {{
   const rows = DB[doctype] || [];
   const prefixes = {{
     "SE Facture Client": "FAC-CLI-2026-",
+    "SE Facture Pro Forma": "PRO-2026-",
     "SE Encaissement": "ENC-2026-",
     "SE Facture Fournisseur": "FAC-FRN-2026-",
     "SE Decaissement": "DEC-2026-",
@@ -2211,7 +2221,7 @@ function openNewDoc(doctype) {{
     }}
   }});
 
-  if (doctype === "SE Facture Client") {{
+  if (doctype === "SE Facture Client" || doctype === "SE Facture Pro Forma") {{
     const firstClient = (DB["SE Client"] || [])[0];
     if (firstClient) {{
       doc.client = LIST_STATE.entityFilter || firstClient.name;
@@ -2227,7 +2237,7 @@ function openNewDoc(doctype) {{
     doc.appliquer_taxe_sejour = 1;
     doc.mode_paiement_prevu = "Virement";
     doc.date_echeance = "2026-12-03";
-    doc.statut = "Validée";
+    doc.statut = (doctype === "SE Facture Pro Forma") ? "Brouillon" : "Validée";
     recomputeSingleInvoice(doc, DB);
   }} else if (doctype === "SE Encaissement") {{
     const unpaid = (DB["SE Facture Client"] || []).find(f => Number(f.reste_a_encaisser) > 0) || (DB["SE Facture Client"] || [])[0];
@@ -2955,7 +2965,7 @@ function quickReceiptFromInvoice() {{
 
 function saveCurrentDoc() {{
   syncModalInputsToDoc();
-  if (CURRENT_DOCTYPE === "SE Facture Client") {{
+  if (CURRENT_DOCTYPE === "SE Facture Client" || CURRENT_DOCTYPE === "SE Facture Pro Forma") {{
     recomputeSingleInvoice(CURRENT_DOC, DB);
   }}
 

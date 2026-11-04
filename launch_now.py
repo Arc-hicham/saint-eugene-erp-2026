@@ -1049,6 +1049,7 @@ HTML_INDEX = r"""<!DOCTYPE html>
     <div class="topbar-actions">
       <button class="btn" onclick="showWorkspace()">Tableau de Bord 2026</button>
       <button class="btn btn-gold" onclick="openNewDoc('SE Facture Client')">+ Nouvelle Facture Client</button>
+      <button class="btn" style="border-color:#38bdf8;background:#0284c7;color:#fff;" onclick="openNewDoc('SE Facture Pro Forma')">+ Nouvelle Pro Forma</button>
       <button class="btn btn-primary" onclick="openNewDoc('SE Encaissement')">+ Nouvel Encaissement</button>
     </div>
   </header>
