@@ -1486,10 +1486,54 @@ function renderInvoiceStaysRows(doc) {
       <td style="padding:6px 8px;"><input type="date" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${s.date_arrivee || ''}" onchange="CURRENT_DOC.sejours[${idx}].date_arrivee=this.value; onInvoiceFormUpdate();"></td>
       <td style="padding:6px 8px;"><input type="date" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${s.date_depart || ''}" onchange="CURRENT_DOC.sejours[${idx}].date_depart=this.value; onInvoiceFormUpdate();"></td>
       <td style="padding:6px 8px;text-align:center;font-weight:700;">${s.nuitees || 1} j</td>
-      <td style="padding:6px 8px;text-align:right;font-weight:700;color:#0f172a;">${fmtDZD(s.total_ttc_sejour || 0)}</td>
+      <td id="inv_stay_total_${s.sejour_no || (idx + 1)}" style="padding:6px 8px;text-align:right;font-weight:700;color:#0f172a;">${fmtDZD(s.total_ttc_sejour || 0)}</td>
       ${doc.sejours_separes ? `<td style="padding:6px 8px;text-align:center;"><button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceStay(${idx})" title="Supprimer ce séjour">✕</button></td>` : ''}
     </tr>
   `).join("");
+}
+
+function onInvoiceArticleChange(idx, newArticle) {
+  if (!CURRENT_DOC || !CURRENT_DOC.lignes || !CURRENT_DOC.lignes[idx]) return;
+  CURRENT_DOC.lignes[idx].article = newArticle;
+  if (!ROOM_TYPES.includes(newArticle)) {
+    CURRENT_DOC.lignes[idx].nb_personnes = 0;
+  }
+  onInvoiceFormUpdate();
+}
+
+function onInvoiceLineFieldInput(idx, field, rawVal) {
+  if (!CURRENT_DOC || !CURRENT_DOC.lignes || !CURRENT_DOC.lignes[idx]) return;
+  let val = 0;
+  if (rawVal !== "" && rawVal !== null && rawVal !== undefined) {
+    val = (field === "montant_ttc_saisi") ? parseFloat(rawVal) : parseInt(rawVal, 10);
+    if (isNaN(val)) val = 0;
+  }
+  CURRENT_DOC.lignes[idx][field] = val;
+
+  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {});
+  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {};
+  computeInvoiceDocClient(CURRENT_DOC, cfg);
+
+  const ln = CURRENT_DOC.lignes[idx];
+  const elHt = document.getElementById(`inv_ht_${idx}`);
+  if (elHt) elHt.textContent = fmtDZD(ln.montant_ht || 0);
+
+  const elTva = document.getElementById(`inv_tva_${idx}`);
+  if (elTva) elTva.textContent = `${ln.taux_tva || 9}%`;
+
+  const elTs = document.getElementById(`inv_ts_${idx}`);
+  if (elTs) elTs.textContent = fmtDZD(ln.taxe_sejour || 0);
+
+  const elTtc = document.getElementById(`inv_ttc_${idx}`);
+  if (elTtc) elTtc.textContent = fmtDZD(ln.total_ligne_ttc || 0);
+
+  (CURRENT_DOC.sejours || []).forEach((s, sIdx) => {
+    const elStay = document.getElementById(`inv_stay_total_${s.sejour_no || (sIdx + 1)}`);
+    if (elStay) elStay.textContent = fmtDZD(s.total_ttc_sejour || 0);
+  });
+
+  const elCard = document.getElementById("inv_totals_card");
+  if (elCard) elCard.innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
 }
 
 function renderInvoiceLinesRows(doc) {
@@ -1502,7 +1546,7 @@ function renderInvoiceLinesRows(doc) {
         </select>
       </td>` : ''}
       <td style="padding:6px;">
-        <select style="width:100%;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" onchange="CURRENT_DOC.lignes[${idx}].article=this.value; onInvoiceFormUpdate();">
+        <select style="width:100%;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" onchange="onInvoiceArticleChange(${idx}, this.value);">
           <optgroup label="🛏️ Chambres Hôtel 4★ (TVA 9% + Taxe séjour)">
             ${ROOM_TYPES.map(r => `<option value="${r}" ${r === ln.article ? "selected" : ""}>${r}</option>`).join("")}
           </optgroup>
@@ -1512,21 +1556,21 @@ function renderInvoiceLinesRows(doc) {
         </select>
       </td>
       <td style="padding:6px;text-align:center;">
-        <input type="number" min="1" style="width:50px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${ln.quantite || 1}" oninput="CURRENT_DOC.lignes[${idx}].quantite=parseInt(this.value||1); onInvoiceFormUpdate();">
+        <input type="number" min="1" id="inv_qty_${idx}" style="width:50px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${ln.quantite || 1}" onfocus="this.select()" oninput="onInvoiceLineFieldInput(${idx}, 'quantite', this.value);">
       </td>
       <td style="padding:6px;text-align:center;">
-        <input type="number" min="1" style="width:50px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${ln.nb_jours || 1}" ${ROOM_TYPES.includes(ln.article) ? 'readonly title="Synchronisé avec le séjour"' : ''} oninput="CURRENT_DOC.lignes[${idx}].nb_jours=parseInt(this.value||1); onInvoiceFormUpdate();">
+        <input type="number" min="1" id="inv_jours_${idx}" style="width:50px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${ln.nb_jours || 1}" ${ROOM_TYPES.includes(ln.article) ? 'readonly title="Synchronisé avec le séjour"' : ''} onfocus="this.select()" oninput="onInvoiceLineFieldInput(${idx}, 'nb_jours', this.value);">
       </td>
       <td style="padding:6px;text-align:center;">
-        <input type="number" min="0" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${ln.nb_personnes || 0}" ${!ROOM_TYPES.includes(ln.article) ? 'disabled style="background:#f1f5f9;"' : ''} oninput="CURRENT_DOC.lignes[${idx}].nb_personnes=parseInt(this.value||0); onInvoiceFormUpdate();">
+        <input type="number" min="0" id="inv_pers_${idx}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${ln.nb_personnes !== undefined ? ln.nb_personnes : 0}" ${!ROOM_TYPES.includes(ln.article) ? 'disabled style="background:#f1f5f9;"' : ''} onfocus="this.select()" oninput="onInvoiceLineFieldInput(${idx}, 'nb_personnes', this.value);">
       </td>
       <td style="padding:6px;text-align:right;">
-        <input type="number" step="any" style="width:130px;padding:5px 8px;text-align:right;border:2px solid #b45309;background:#fffbeb;font-weight:700;color:#92400e;border-radius:4px;font-size:13px;" value="${ln.montant_ttc_saisi || 0}" oninput="CURRENT_DOC.lignes[${idx}].montant_ttc_saisi=parseFloat(this.value||0); onInvoiceFormUpdate();">
+        <input type="number" step="any" id="inv_ttc_saisi_${idx}" style="width:130px;padding:5px 8px;text-align:right;border:2px solid #b45309;background:#fffbeb;font-weight:700;color:#92400e;border-radius:4px;font-size:13px;" value="${ln.montant_ttc_saisi !== undefined && ln.montant_ttc_saisi !== null ? ln.montant_ttc_saisi : ''}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineFieldInput(${idx}, 'montant_ttc_saisi', this.value);">
       </td>
-      <td style="padding:6px;text-align:right;color:#334155;">${fmtDZD(ln.montant_ht || 0)}</td>
-      <td style="padding:6px;text-align:center;font-size:11px;color:#64748b;">${ln.taux_tva || 9}%</td>
-      <td style="padding:6px;text-align:right;color:#0369a1;">${fmtDZD(ln.taxe_sejour || 0)}</td>
-      <td style="padding:6px;text-align:right;font-weight:700;color:#0f172a;">${fmtDZD(ln.total_ligne_ttc || 0)}</td>
+      <td id="inv_ht_${idx}" style="padding:6px;text-align:right;color:#334155;font-variant-numeric:tabular-nums;">${fmtDZD(ln.montant_ht || 0)}</td>
+      <td id="inv_tva_${idx}" style="padding:6px;text-align:center;font-size:11px;color:#64748b;">${ln.taux_tva || 9}%</td>
+      <td id="inv_ts_${idx}" style="padding:6px;text-align:right;color:#0369a1;font-variant-numeric:tabular-nums;">${fmtDZD(ln.taxe_sejour || 0)}</td>
+      <td id="inv_ttc_${idx}" style="padding:6px;text-align:right;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">${fmtDZD(ln.total_ligne_ttc || 0)}</td>
       <td style="padding:6px;text-align:center;">
         <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceLine(${idx})" title="Supprimer la ligne">✕</button>
       </td>
