@@ -146,14 +146,17 @@ def compute_invoice(header, sejours: list, lignes: list, cfg: dict) -> dict:
     appliquer_ts = _int(_g(header, "appliquer_taxe_sejour", 1), 1) == 1
     errors: list[str] = []
 
-    # 1. Séjours : nuitées propres à chaque séjour
+    # 1. Séjours : nuitées et personnes propres à chaque séjour
     sej_by_no = {}
     for idx, sej in enumerate(sejours, start=1):
         no = _int(_g(sej, "sejour_no"), idx) or idx
         _s(sej, "sejour_no", no)
         nuits = nights_between(_g(sej, "date_arrivee"), _g(sej, "date_depart"), _g(sej, "nuitees", 1))
-        _s(sej, "nuitees", nuits)
-        _s(sej, "nb_personnes", 0)
+        _s(sej, "nuitees", max(1, nuits))
+        pers = max(1, _int(_g(sej, "nb_personnes", 1), 1))
+        _s(sej, "nb_personnes", pers)
+        ts_sej = _r2(pers * max(1, nuits) * tarif_ts) if appliquer_ts else 0.0
+        _s(sej, "taxe_sejour", ts_sej)
         _s(sej, "total_ttc_sejour", 0.0)
         sej_by_no[no] = sej
     first_sej = sejours[0] if sejours else None
