@@ -1,0 +1,179 @@
+{
+  "actions": [],
+  "autoname": "format:REV-SAL-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "employe",
+    "nom_employe",
+    "date_effet",
+    "ancien_contractuel",
+    "nouveau_contractuel",
+    "ancien_declare",
+    "nouveau_declare",
+    "cb_main",
+    "ecart_dzd",
+    "ecart_pct",
+    "motif_revision",
+    "motif_ecart",
+    "validation_rh",
+    "validation_compta",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Revision Salariale"
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Employé (Matricule)",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom de l'employé",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_effet",
+      "fieldtype": "Date",
+      "label": "Date d'effet",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "ancien_contractuel",
+      "fieldtype": "Currency",
+      "label": "Ancien salaire contractuel"
+    },
+    {
+      "fieldname": "nouveau_contractuel",
+      "fieldtype": "Currency",
+      "label": "Nouveau salaire contractuel",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "ancien_declare",
+      "fieldtype": "Currency",
+      "label": "Ancien salaire déclaré"
+    },
+    {
+      "fieldname": "nouveau_declare",
+      "fieldtype": "Currency",
+      "label": "Nouveau salaire déclaré",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "ecart_dzd",
+      "fieldtype": "Currency",
+      "label": "Écart contractuel − déclaré (DA)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "ecart_pct",
+      "fieldtype": "Percent",
+      "label": "Écart (%)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "motif_revision",
+      "fieldtype": "Select",
+      "label": "Motif de révision",
+      "options": "Embauche\nAugmentation\nChangement de poste\nRégularisation\nAutre"
+    },
+    {
+      "fieldname": "motif_ecart",
+      "fieldtype": "Small Text",
+      "label": "Justification de l'écart (obligatoire si écart)"
+    },
+    {
+      "fieldname": "validation_rh",
+      "fieldtype": "Select",
+      "label": "Validation RH",
+      "options": "En attente\nValidée\nRefusée",
+      "default": "En attente",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "validation_compta",
+      "fieldtype": "Select",
+      "label": "Validation comptable",
+      "options": "En attente\nValidée\nRefusée",
+      "default": "En attente"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Revision Salariale",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "employe",
+  "search_fields": "employe"
+}

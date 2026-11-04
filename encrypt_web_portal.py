@@ -26,7 +26,8 @@ from pathlib import Path
 APP_ROOT = Path(r"C:\Users\HICHAM BAKIR\.gemini\antigravity\scratch\saint_eugene")
 sys.path.insert(0, str(APP_ROOT))
 
-from launch_now import SCHEMAS, build_initial_seed_db  # noqa: E402
+from launch_now import SCHEMAS, build_initial_seed_db
+import rh_module  # noqa: E402
 
 GOOGLE_SHEET_ID = "1UuZAxjwHC6YXcrhjsQaZ9G5XYdKBn9Hn779yTdIwjak"
 GOOGLE_SHEET_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/edit?usp=sharing"
@@ -357,7 +358,8 @@ def main() -> None:
                 r.setdefault("lien_google_sheet", GOOGLE_SHEET_URL)
 
     # Écrire le script Google Apps Script prêt à coller
-    gs_code = generate_google_apps_script(initial_db)
+    sanitized_db = rh_module.sanitize_db_for_backup(initial_db)
+    gs_code = generate_google_apps_script(sanitized_db)
     (APP_ROOT / "GOOGLE_SHEET_AUTO_BACKUP.gs").write_text(gs_code, encoding="utf-8")
 
     raw_bundle = {"schemas": SCHEMAS, "initial_db": initial_db, "gs_script": gs_code}
@@ -378,6 +380,7 @@ def main() -> None:
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="utilisateurs.js"></script>
+<script src="rh_module.js"></script>
 <style>
   :root {{
     --bg: #f1f5f9;
@@ -1676,7 +1679,26 @@ const NAV_GROUPS = [
     ]
   }},
   {{
-    title: "Fiscalité G50, RH & Patrimoine",
+    title: "👥 Module RH & Paie 4★",
+    items: [
+      {{ label: "📊 Dashboard Personnel & Masse Salariale", action: "rh_dashboard" }},
+      {{ label: "🪪 Collaborateurs Hôtel (Dossiers RH)", action: "rh_employees" }},
+      {{ label: "⚡ Centre de Paie & Bulletins", action: "rh_payroll" }},
+      {{ label: "🏛️ Déclarations CNAS (35%)", action: "rh_cnas" }},
+      {{ label: "📑 30 Registres Légaux & Rapports", action: "rh_reports" }},
+      {{ label: "📑 Contrats RH & Échéances", doctype: "SE Contrat RH" }},
+      {{ label: "🌴 Congés & Absences", doctype: "SE Conge" }},
+      {{ label: "🩺 Arrêts Maladie & AT", doctype: "SE Arret Maladie" }},
+      {{ label: "⏱️ Présences & Retards", doctype: "SE Presence Absence" }},
+      {{ label: "💰 Avances & Prêts au Personnel", doctype: "SE Avance Pret" }},
+      {{ label: "🚪 Départs & Soldes de Tout Compte", doctype: "SE Sortie Personnel" }},
+      {{ label: "⚖️ Écritures Paie SCF (SE Ecriture RH)", doctype: "SE Ecriture RH" }},
+      {{ label: "⚙️ Paramètres RH", doctype: "SE Parametres RH" }}
+    ]
+  }},
+  {{
+    title: "Fiscalité G50 & Patrimoine",
+
     items: [
       {{ label: "🏛️ Déclarations TVA (G50)", doctype: "SE Declaration TVA" }},
       {{ label: "🎯 Budget Annuel 2026", doctype: "SE Budget Annuel" }},
@@ -1726,8 +1748,14 @@ function renderSidebar(activeKey = "workspace") {{
       else if (item.action === "gsheet") count = (DB["SE Historique Modifications"] || []).length;
       const active = activeKey === key ? "active" : "";
       let fn = "showWorkspace()";
-      if (item.doctype) fn = `showList('${{item.doctype}}')`;
-      else if (item.action === "gsheet") fn = `showGoogleSheetBackupCenter()`;
+      if (item.action && item.action.startsWith("rh_")) {{
+        const sub = item.action.replace("rh_", "");
+        fn = `window.showRhModule('${{sub}}')`;
+      }} else if (item.doctype) {{
+        fn = `showList('${{item.doctype}}')`;
+      }} else if (item.action === "gsheet") {{
+        fn = `showGoogleSheetBackupCenter()`;
+      }}
       html += `<button class="nav-btn ${{active}}" onclick="${{fn}}">
         <span>${{item.label}}</span>
         ${{count !== "" ? `<span style="font-size:11px;opacity:0.75;">${{count}}</span>` : ""}}

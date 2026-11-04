@@ -15,7 +15,57 @@
     "date_embauche",
     "salaire_base",
     "mode_paiement_defaut",
-    "rib_ccp"
+    "rib_ccp",
+    "sb_a",
+    "matricule",
+    "nom",
+    "prenom",
+    "sexe",
+    "date_naissance",
+    "lieu_naissance",
+    "nationalite",
+    "adresse",
+    "wilaya",
+    "telephone",
+    "telephone_2",
+    "email",
+    "nin",
+    "n_carte_nationale",
+    "carte_delivree_le",
+    "carte_delivree_par",
+    "carte_expiration",
+    "n_assurance",
+    "agence_cnas",
+    "situation_familiale",
+    "nb_enfants",
+    "urgence_nom",
+    "urgence_tel",
+    "documents_fournis",
+    "sb_b",
+    "responsable",
+    "date_prise_poste",
+    "type_contrat",
+    "periode_essai_mois",
+    "date_fin_essai",
+    "date_fin_contrat",
+    "horaires",
+    "categorie_pro",
+    "qualification",
+    "centre_cout",
+    "lieu_travail",
+    "observation_rh",
+    "sb_c",
+    "salaire_base_contractuel",
+    "salaire_base_declare",
+    "primes_contractuelles",
+    "indemnites_contractuelles",
+    "avantages",
+    "salaire_net_estime",
+    "cout_employeur_estime",
+    "date_derniere_revision",
+    "solde_initial_conges",
+    "date_sortie",
+    "donnee_simulation"
   ],
   "fields": [
     {
@@ -32,10 +82,11 @@
     },
     {
       "fieldname": "fonction",
-      "fieldtype": "Data",
+      "fieldtype": "Select",
       "label": "Fonction / Poste",
       "reqd": 1,
-      "in_list_view": 1
+      "in_list_view": 1,
+      "options": "Directeur d'Exploitation\nChef Comptable SCF\nChef de Réception\nGouvernante Générale\nChef Exécutif Cuisine\nMaître d'Hôtel\nResponsable Technique & CVC\nRéceptionniste Bilingue\nRéceptionniste\nFemme de chambre\nValet de chambre\nCommis de cuisine\nServeur / Serveuse\nAgent de sécurité\nPlongeur\nAutre"
     },
     {
       "fieldname": "departement",
@@ -50,7 +101,7 @@
       "fieldname": "statut",
       "fieldtype": "Select",
       "label": "Statut",
-      "options": "Actif\nCongé\nSorti",
+      "options": "Actif\nCongé\nArrêt maladie\nSuspendu\nSorti",
       "in_standard_filter": 1,
       "default": "Actif"
     },
@@ -71,7 +122,7 @@
     {
       "fieldname": "salaire_base",
       "fieldtype": "Currency",
-      "label": "Salaire de Base Mensuel (DZD)",
+      "label": "Salaire de base mensuel — référence paie (DZD)",
       "reqd": 1,
       "in_list_view": 1
     },
@@ -86,6 +137,273 @@
       "fieldname": "rib_ccp",
       "fieldtype": "Data",
       "label": "RIB Bancaire / CCP"
+    },
+    {
+      "fieldname": "sb_a",
+      "fieldtype": "Section Break",
+      "label": "A — Informations personnelles & administratives"
+    },
+    {
+      "fieldname": "matricule",
+      "fieldtype": "Data",
+      "label": "Matricule (MAT) — unique",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "nom",
+      "fieldtype": "Data",
+      "label": "Nom"
+    },
+    {
+      "fieldname": "prenom",
+      "fieldtype": "Data",
+      "label": "Prénom"
+    },
+    {
+      "fieldname": "sexe",
+      "fieldtype": "Select",
+      "label": "Sexe",
+      "options": "Masculin\nFéminin"
+    },
+    {
+      "fieldname": "date_naissance",
+      "fieldtype": "Date",
+      "label": "Date de naissance"
+    },
+    {
+      "fieldname": "lieu_naissance",
+      "fieldtype": "Data",
+      "label": "Lieu de naissance (commune / wilaya)"
+    },
+    {
+      "fieldname": "nationalite",
+      "fieldtype": "Data",
+      "label": "Nationalité",
+      "default": "Algérienne"
+    },
+    {
+      "fieldname": "adresse",
+      "fieldtype": "Data",
+      "label": "Adresse actuelle"
+    },
+    {
+      "fieldname": "wilaya",
+      "fieldtype": "Data",
+      "label": "Wilaya de résidence"
+    },
+    {
+      "fieldname": "telephone",
+      "fieldtype": "Data",
+      "label": "Téléphone principal"
+    },
+    {
+      "fieldname": "telephone_2",
+      "fieldtype": "Data",
+      "label": "Téléphone secondaire"
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Email"
+    },
+    {
+      "fieldname": "nin",
+      "fieldtype": "Data",
+      "label": "NIN (identification nationale) 🔒"
+    },
+    {
+      "fieldname": "n_carte_nationale",
+      "fieldtype": "Data",
+      "label": "N° carte nationale 🔒"
+    },
+    {
+      "fieldname": "carte_delivree_le",
+      "fieldtype": "Date",
+      "label": "Carte délivrée le"
+    },
+    {
+      "fieldname": "carte_delivree_par",
+      "fieldtype": "Data",
+      "label": "Carte délivrée par"
+    },
+    {
+      "fieldname": "carte_expiration",
+      "fieldtype": "Date",
+      "label": "Expiration du document"
+    },
+    {
+      "fieldname": "n_assurance",
+      "fieldtype": "Data",
+      "label": "N° assurance / affiliation sociale 🔒"
+    },
+    {
+      "fieldname": "agence_cnas",
+      "fieldtype": "Data",
+      "label": "Agence CNAS d'affiliation"
+    },
+    {
+      "fieldname": "situation_familiale",
+      "fieldtype": "Select",
+      "label": "Situation familiale",
+      "options": "Célibataire\nMarié(e)\nDivorcé(e)\nVeuf(ve)"
+    },
+    {
+      "fieldname": "nb_enfants",
+      "fieldtype": "Int",
+      "label": "Enfants à charge"
+    },
+    {
+      "fieldname": "urgence_nom",
+      "fieldtype": "Data",
+      "label": "Personne à contacter en urgence"
+    },
+    {
+      "fieldname": "urgence_tel",
+      "fieldtype": "Data",
+      "label": "Téléphone urgence"
+    },
+    {
+      "fieldname": "documents_fournis",
+      "fieldtype": "Small Text",
+      "label": "Documents fournis (liste, séparés par |)"
+    },
+    {
+      "fieldname": "sb_b",
+      "fieldtype": "Section Break",
+      "label": "B — Informations professionnelles"
+    },
+    {
+      "fieldname": "responsable",
+      "fieldtype": "Link",
+      "label": "Responsable hiérarchique",
+      "options": "SE Employe"
+    },
+    {
+      "fieldname": "date_prise_poste",
+      "fieldtype": "Date",
+      "label": "Date de prise de poste"
+    },
+    {
+      "fieldname": "type_contrat",
+      "fieldtype": "Select",
+      "label": "Type de contrat",
+      "options": "CDI\nCDD\nContrat d'essai\nAutre",
+      "default": "CDI",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "periode_essai_mois",
+      "fieldtype": "Int",
+      "label": "Période d'essai (mois)"
+    },
+    {
+      "fieldname": "date_fin_essai",
+      "fieldtype": "Date",
+      "label": "Fin de période d'essai (calculée)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "date_fin_contrat",
+      "fieldtype": "Date",
+      "label": "Date de fin du contrat (CDD)"
+    },
+    {
+      "fieldname": "horaires",
+      "fieldtype": "Data",
+      "label": "Horaires / régime de travail",
+      "default": "Poste de jour"
+    },
+    {
+      "fieldname": "categorie_pro",
+      "fieldtype": "Data",
+      "label": "Catégorie professionnelle"
+    },
+    {
+      "fieldname": "qualification",
+      "fieldtype": "Data",
+      "label": "Qualification"
+    },
+    {
+      "fieldname": "centre_cout",
+      "fieldtype": "Data",
+      "label": "Centre de coût"
+    },
+    {
+      "fieldname": "lieu_travail",
+      "fieldtype": "Data",
+      "label": "Lieu de travail",
+      "default": "Hôtel Saint Eugène — Alger"
+    },
+    {
+      "fieldname": "observation_rh",
+      "fieldtype": "Small Text",
+      "label": "Observation RH"
+    },
+    {
+      "fieldname": "sb_c",
+      "fieldtype": "Section Break",
+      "label": "C — Contrat & salaire (contractuel ≠ déclaré)"
+    },
+    {
+      "fieldname": "salaire_base_contractuel",
+      "fieldtype": "Currency",
+      "label": "Salaire de base CONTRACTUEL (DZD)"
+    },
+    {
+      "fieldname": "salaire_base_declare",
+      "fieldtype": "Currency",
+      "label": "Salaire de base DÉCLARÉ (base de cotisation) (DZD)"
+    },
+    {
+      "fieldname": "primes_contractuelles",
+      "fieldtype": "Currency",
+      "label": "Primes contractuelles"
+    },
+    {
+      "fieldname": "indemnites_contractuelles",
+      "fieldtype": "Currency",
+      "label": "Indemnités (non soumises — à valider)"
+    },
+    {
+      "fieldname": "avantages",
+      "fieldtype": "Currency",
+      "label": "Avantages en nature"
+    },
+    {
+      "fieldname": "salaire_net_estime",
+      "fieldtype": "Currency",
+      "label": "Salaire net estimé (calcul)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cout_employeur_estime",
+      "fieldtype": "Currency",
+      "label": "Coût employeur estimé (calcul)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "date_derniere_revision",
+      "fieldtype": "Date",
+      "label": "Dernière révision salariale",
+      "read_only": 1
+    },
+    {
+      "fieldname": "solde_initial_conges",
+      "fieldtype": "Float",
+      "label": "Solde initial de congés (jours)"
+    },
+    {
+      "fieldname": "date_sortie",
+      "fieldtype": "Date",
+      "label": "Date de sortie"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
     }
   ],
   "index_web_pages_for_search": 0,

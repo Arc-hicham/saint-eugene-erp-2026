@@ -1,0 +1,184 @@
+{
+  "actions": [],
+  "autoname": "format:CTR-RH-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "employe",
+    "nom_employe",
+    "n_contrat",
+    "nature_mouvement",
+    "type_contrat",
+    "date_contrat",
+    "date_debut",
+    "cb_main",
+    "date_fin",
+    "salaire_base_contractuel",
+    "responsable",
+    "decision_renouvellement",
+    "statut_workflow",
+    "contrat_pdf_ref",
+    "observation",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Contrat RH"
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Employé (Matricule)",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom de l'employé",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "n_contrat",
+      "fieldtype": "Data",
+      "label": "N° Contrat",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "nature_mouvement",
+      "fieldtype": "Select",
+      "label": "Nature du mouvement",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "options": "Création\nRenouvellement\nAvenant\nChangement de fonction\nChangement de département\nChangement de salaire\nFin de contrat\nDémission\nLicenciement\nDépart à la retraite\nAutre motif de sortie"
+    },
+    {
+      "fieldname": "type_contrat",
+      "fieldtype": "Select",
+      "label": "Type de contrat",
+      "options": "CDI\nCDD\nContrat d'essai\nAutre",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_contrat",
+      "fieldtype": "Date",
+      "label": "Date de signature"
+    },
+    {
+      "fieldname": "date_debut",
+      "fieldtype": "Date",
+      "label": "Date de début"
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "date_fin",
+      "fieldtype": "Date",
+      "label": "Date de fin (CDD)",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "salaire_base_contractuel",
+      "fieldtype": "Currency",
+      "label": "Salaire de base contractuel (DZD)"
+    },
+    {
+      "fieldname": "responsable",
+      "fieldtype": "Link",
+      "label": "Responsable hiérarchique",
+      "options": "SE Employe"
+    },
+    {
+      "fieldname": "decision_renouvellement",
+      "fieldtype": "Select",
+      "label": "Décision de renouvellement",
+      "options": "À décider\nRenouveler\nNe pas renouveler\nConvertir en CDI"
+    },
+    {
+      "fieldname": "statut_workflow",
+      "fieldtype": "Select",
+      "label": "Statut du dossier (workflow)",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Brouillon",
+      "options": "Brouillon\nEn attente de validation RH\nValidation Direction\nContrat signé\nActif\nClôturé"
+    },
+    {
+      "fieldname": "contrat_pdf_ref",
+      "fieldtype": "Data",
+      "label": "Réf. contrat PDF (archivage)"
+    },
+    {
+      "fieldname": "observation",
+      "fieldtype": "Small Text",
+      "label": "Observation"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Contrat RH",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "n_contrat",
+  "search_fields": "n_contrat"
+}

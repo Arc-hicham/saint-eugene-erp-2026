@@ -1,0 +1,176 @@
+{
+  "actions": [],
+  "autoname": "format:CONGE-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "employe",
+    "nom_employe",
+    "type_conge",
+    "date_debut",
+    "date_fin",
+    "nb_jours",
+    "cb_main",
+    "motif",
+    "remplacant",
+    "date_demande",
+    "responsable_validation",
+    "statut",
+    "justificatif_ref",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Conge"
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Employé (Matricule)",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom de l'employé",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "type_conge",
+      "fieldtype": "Select",
+      "label": "Type de congé",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Congé annuel",
+      "options": "Congé annuel\nCongé exceptionnel\nCongé sans solde\nCongé maternité\nCongé paternité\nCongé maladie\nCongé pour événement familial\nAutre congé"
+    },
+    {
+      "fieldname": "date_debut",
+      "fieldtype": "Date",
+      "label": "Date de début",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_fin",
+      "fieldtype": "Date",
+      "label": "Date de fin",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "nb_jours",
+      "fieldtype": "Float",
+      "label": "Nombre de jours (calculé)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "motif",
+      "fieldtype": "Small Text",
+      "label": "Motif"
+    },
+    {
+      "fieldname": "remplacant",
+      "fieldtype": "Link",
+      "label": "Remplaçant",
+      "options": "SE Employe"
+    },
+    {
+      "fieldname": "date_demande",
+      "fieldtype": "Date",
+      "label": "Date de la demande"
+    },
+    {
+      "fieldname": "responsable_validation",
+      "fieldtype": "Link",
+      "label": "Responsable de validation",
+      "options": "SE Employe"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut (workflow)",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Demande",
+      "options": "Demande\nValidé responsable\nValidé RH\nApprouvé\nRefusé\nAnnulé"
+    },
+    {
+      "fieldname": "justificatif_ref",
+      "fieldtype": "Data",
+      "label": "Justificatif (réf.)"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Conge",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "employe",
+  "search_fields": "employe"
+}

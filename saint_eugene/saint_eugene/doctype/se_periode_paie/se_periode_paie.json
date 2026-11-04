@@ -1,0 +1,199 @@
+{
+  "actions": [],
+  "autoname": "format:PERIODE-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "mois",
+    "departement",
+    "statut_paie",
+    "date_preparation",
+    "date_validation",
+    "responsable_rh",
+    "responsable_compta",
+    "nb_bulletins",
+    "cb_main",
+    "total_brut",
+    "total_net",
+    "total_cnas_sal",
+    "total_cnas_pat",
+    "total_irg",
+    "cout_employeur",
+    "total_paye",
+    "ecriture_generee",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Periode Paie"
+    },
+    {
+      "fieldname": "mois",
+      "fieldtype": "Select",
+      "label": "Mois",
+      "options": "2026-01\n2026-02\n2026-03\n2026-04\n2026-05\n2026-06\n2026-07\n2026-08\n2026-09\n2026-10\n2026-11\n2026-12",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "departement",
+      "fieldtype": "Data",
+      "label": "Département",
+      "default": "Tous"
+    },
+    {
+      "fieldname": "statut_paie",
+      "fieldtype": "Select",
+      "label": "Statut de paie",
+      "options": "Brouillon\nEn préparation\nEn attente de validation\nValidée\nComptabilisée\nEn attente de paiement\nPartiellement payée\nPayée\nAnnulée",
+      "default": "Brouillon",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "date_preparation",
+      "fieldtype": "Date",
+      "label": "Date de préparation"
+    },
+    {
+      "fieldname": "date_validation",
+      "fieldtype": "Date",
+      "label": "Date de validation"
+    },
+    {
+      "fieldname": "responsable_rh",
+      "fieldtype": "Data",
+      "label": "Responsable RH / Paie"
+    },
+    {
+      "fieldname": "responsable_compta",
+      "fieldtype": "Data",
+      "label": "Responsable comptable"
+    },
+    {
+      "fieldname": "nb_bulletins",
+      "fieldtype": "Int",
+      "label": "Bulletins",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "total_brut",
+      "fieldtype": "Currency",
+      "label": "Masse salariale brute",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "total_net",
+      "fieldtype": "Currency",
+      "label": "Total net à payer",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "total_cnas_sal",
+      "fieldtype": "Currency",
+      "label": "Cotisations salariales",
+      "read_only": 1
+    },
+    {
+      "fieldname": "total_cnas_pat",
+      "fieldtype": "Currency",
+      "label": "Cotisations patronales",
+      "read_only": 1
+    },
+    {
+      "fieldname": "total_irg",
+      "fieldtype": "Currency",
+      "label": "IRG",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cout_employeur",
+      "fieldtype": "Currency",
+      "label": "Coût employeur",
+      "read_only": 1
+    },
+    {
+      "fieldname": "total_paye",
+      "fieldtype": "Currency",
+      "label": "Total payé",
+      "read_only": 1
+    },
+    {
+      "fieldname": "ecriture_generee",
+      "fieldtype": "Check",
+      "label": "Écritures comptables générées (anti double comptabilisation)",
+      "read_only": 1,
+      "default": "0"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Periode Paie",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "mois",
+  "search_fields": "mois"
+}

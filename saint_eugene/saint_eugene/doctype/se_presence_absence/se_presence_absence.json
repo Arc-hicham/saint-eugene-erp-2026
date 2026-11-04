@@ -1,0 +1,179 @@
+{
+  "actions": [],
+  "autoname": "format:PRES-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "employe",
+    "nom_employe",
+    "date",
+    "type_absence",
+    "horaire_prevu",
+    "heure_arrivee",
+    "heure_depart",
+    "cb_main",
+    "retard_minutes",
+    "heures_sup",
+    "motif",
+    "justificatif_recu",
+    "statut",
+    "retenue_validee",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Presence Absence"
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Employé (Matricule)",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom de l'employé",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date",
+      "fieldtype": "Date",
+      "label": "Date",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "type_absence",
+      "fieldtype": "Select",
+      "label": "Type",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Absence injustifiée",
+      "options": "Présent\nAbsence justifiée\nAbsence injustifiée\nRetard\nSortie autorisée\nCongé\nArrêt maladie\nAccident du travail\nAutre"
+    },
+    {
+      "fieldname": "horaire_prevu",
+      "fieldtype": "Data",
+      "label": "Horaire prévu",
+      "default": "08:00-17:00"
+    },
+    {
+      "fieldname": "heure_arrivee",
+      "fieldtype": "Data",
+      "label": "Heure d'arrivée"
+    },
+    {
+      "fieldname": "heure_depart",
+      "fieldtype": "Data",
+      "label": "Heure de départ"
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "retard_minutes",
+      "fieldtype": "Int",
+      "label": "Retard (minutes)"
+    },
+    {
+      "fieldname": "heures_sup",
+      "fieldtype": "Float",
+      "label": "Heures supplémentaires"
+    },
+    {
+      "fieldname": "motif",
+      "fieldtype": "Data",
+      "label": "Motif"
+    },
+    {
+      "fieldname": "justificatif_recu",
+      "fieldtype": "Check",
+      "label": "Justificatif reçu",
+      "default": "0"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Validation du responsable",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "À valider",
+      "options": "À valider\nValidé\nRefusé"
+    },
+    {
+      "fieldname": "retenue_validee",
+      "fieldtype": "Check",
+      "label": "Retenue salariale validée (conforme aux règles)",
+      "default": "0"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Presence Absence",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "employe",
+  "search_fields": "employe"
+}

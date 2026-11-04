@@ -1,0 +1,180 @@
+{
+  "actions": [],
+  "autoname": "format:AT-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "employe",
+    "nom_employe",
+    "date_accident",
+    "heure_accident",
+    "lieu",
+    "circonstances",
+    "date_declaration",
+    "cb_main",
+    "ref_dossier",
+    "organisme",
+    "arret_associe",
+    "statut",
+    "date_reprise",
+    "indemnites",
+    "observation",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Accident Travail"
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Employé (Matricule)",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom de l'employé",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_accident",
+      "fieldtype": "Date",
+      "label": "Date de l'accident",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "heure_accident",
+      "fieldtype": "Data",
+      "label": "Heure"
+    },
+    {
+      "fieldname": "lieu",
+      "fieldtype": "Data",
+      "label": "Lieu"
+    },
+    {
+      "fieldname": "circonstances",
+      "fieldtype": "Small Text",
+      "label": "Circonstances (factuelles)"
+    },
+    {
+      "fieldname": "date_declaration",
+      "fieldtype": "Date",
+      "label": "Date de déclaration",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "ref_dossier",
+      "fieldtype": "Data",
+      "label": "Référence du dossier"
+    },
+    {
+      "fieldname": "organisme",
+      "fieldtype": "Data",
+      "label": "Organisme destinataire",
+      "default": "CNAS"
+    },
+    {
+      "fieldname": "arret_associe",
+      "fieldtype": "Link",
+      "label": "Arrêt de travail associé",
+      "options": "SE Arret Maladie"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "À déclarer",
+      "options": "À déclarer\nDéclaré\nEn instruction\nAccepté\nRefusé\nClôturé"
+    },
+    {
+      "fieldname": "date_reprise",
+      "fieldtype": "Date",
+      "label": "Date de reprise"
+    },
+    {
+      "fieldname": "indemnites",
+      "fieldtype": "Currency",
+      "label": "Indemnités éventuelles (DZD)"
+    },
+    {
+      "fieldname": "observation",
+      "fieldtype": "Small Text",
+      "label": "Observation"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Accident Travail",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "employe",
+  "search_fields": "employe"
+}

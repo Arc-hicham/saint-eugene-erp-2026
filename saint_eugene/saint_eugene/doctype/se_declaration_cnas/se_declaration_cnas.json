@@ -1,0 +1,223 @@
+{
+  "actions": [],
+  "autoname": "format:CNAS-DECL-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "periode",
+    "type_declaration",
+    "n_employeur_cnas",
+    "agence_cnas",
+    "nb_employes",
+    "masse_salariale",
+    "total_bases",
+    "cotisations_salariales",
+    "cotisations_patronales",
+    "total_cotisations",
+    "cb_main",
+    "date_preparation",
+    "date_limite",
+    "date_depot",
+    "ref_declaration",
+    "date_paiement",
+    "ref_paiement",
+    "statut",
+    "justificatif_ref",
+    "anomalies",
+    "observation",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Declaration CNAS"
+    },
+    {
+      "fieldname": "periode",
+      "fieldtype": "Select",
+      "label": "Période (mois)",
+      "options": "2026-01\n2026-02\n2026-03\n2026-04\n2026-05\n2026-06\n2026-07\n2026-08\n2026-09\n2026-10\n2026-11\n2026-12",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "type_declaration",
+      "fieldtype": "Select",
+      "label": "Type de déclaration",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Déclaration périodique des cotisations",
+      "options": "Déclaration périodique des cotisations\nDéclaration annuelle des salaires et des salariés\nDéclaration d'entrée d'un employé\nDéclaration de sortie d'un employé\nDéclaration de modification de situation\nDéclaration liée à un arrêt maladie\nDéclaration liée à un accident du travail\nAutre déclaration applicable"
+    },
+    {
+      "fieldname": "n_employeur_cnas",
+      "fieldtype": "Data",
+      "label": "N° employeur CNAS"
+    },
+    {
+      "fieldname": "agence_cnas",
+      "fieldtype": "Data",
+      "label": "Agence CNAS"
+    },
+    {
+      "fieldname": "nb_employes",
+      "fieldtype": "Int",
+      "label": "Employés déclarés",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "masse_salariale",
+      "fieldtype": "Currency",
+      "label": "Masse salariale déclarée",
+      "read_only": 1
+    },
+    {
+      "fieldname": "total_bases",
+      "fieldtype": "Currency",
+      "label": "Total des bases de cotisation",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cotisations_salariales",
+      "fieldtype": "Currency",
+      "label": "Cotisations salariales",
+      "read_only": 1
+    },
+    {
+      "fieldname": "cotisations_patronales",
+      "fieldtype": "Currency",
+      "label": "Cotisations patronales",
+      "read_only": 1
+    },
+    {
+      "fieldname": "total_cotisations",
+      "fieldtype": "Currency",
+      "label": "Total des cotisations",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "date_preparation",
+      "fieldtype": "Date",
+      "label": "Date de préparation"
+    },
+    {
+      "fieldname": "date_limite",
+      "fieldtype": "Date",
+      "label": "Date limite (selon paramètre à valider)"
+    },
+    {
+      "fieldname": "date_depot",
+      "fieldtype": "Date",
+      "label": "Date de dépôt (preuve requise)"
+    },
+    {
+      "fieldname": "ref_declaration",
+      "fieldtype": "Data",
+      "label": "Référence de déclaration / accusé"
+    },
+    {
+      "fieldname": "date_paiement",
+      "fieldtype": "Date",
+      "label": "Date de paiement (preuve requise)"
+    },
+    {
+      "fieldname": "ref_paiement",
+      "fieldtype": "Data",
+      "label": "Référence de paiement / bordereau"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Non préparée",
+      "options": "Non préparée\nPréparée\nValidée\nDéposée\nPayée\nEn retard"
+    },
+    {
+      "fieldname": "justificatif_ref",
+      "fieldtype": "Data",
+      "label": "Justificatif archivé (réf. fichier)"
+    },
+    {
+      "fieldname": "anomalies",
+      "fieldtype": "Small Text",
+      "label": "Anomalies détectées (auto)",
+      "read_only": 1
+    },
+    {
+      "fieldname": "observation",
+      "fieldtype": "Small Text",
+      "label": "Observation"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Declaration CNAS",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "periode",
+  "search_fields": "periode"
+}

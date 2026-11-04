@@ -32,7 +32,15 @@
     "ref_paiement",
     "cb_paie_st",
     "statut",
-    "amended_from"
+    "amended_from",
+    "nb_heures_sup",
+    "montant_heures_sup",
+    "retenue_absences",
+    "retenue_avances",
+    "base_cotisation",
+    "cout_employeur",
+    "date_paiement",
+    "comptabilise"
   ],
   "fields": [
     {
@@ -197,7 +205,7 @@
       "fieldname": "statut",
       "fieldtype": "Select",
       "label": "Statut",
-      "options": "Brouillon\nValidée\nPayée\nAnnulée",
+      "options": "Brouillon\nEn préparation\nEn attente de validation\nValidée\nComptabilisée\nEn attente de paiement\nPartiellement payée\nPayée\nAnnulée",
       "read_only": 1,
       "in_list_view": 1,
       "in_standard_filter": 1,
@@ -210,6 +218,48 @@
       "label": "Amendé depuis",
       "options": "SE Fiche de Paie Mensuelle",
       "read_only": 1
+    },
+    {
+      "fieldname": "nb_heures_sup",
+      "fieldtype": "Float",
+      "label": "Heures supplémentaires validées (h)"
+    },
+    {
+      "fieldname": "montant_heures_sup",
+      "fieldtype": "Currency",
+      "label": "Montant heures supplémentaires"
+    },
+    {
+      "fieldname": "retenue_absences",
+      "fieldtype": "Currency",
+      "label": "Retenue absences validées"
+    },
+    {
+      "fieldname": "retenue_avances",
+      "fieldtype": "Currency",
+      "label": "Retenue avances / prêts (échéancier validé)"
+    },
+    {
+      "fieldname": "base_cotisation",
+      "fieldtype": "Currency",
+      "label": "Base de cotisation (salaire déclaré + primes)"
+    },
+    {
+      "fieldname": "cout_employeur",
+      "fieldtype": "Currency",
+      "label": "Coût total employeur"
+    },
+    {
+      "fieldname": "date_paiement",
+      "fieldtype": "Date",
+      "label": "Date de paiement"
+    },
+    {
+      "fieldname": "comptabilise",
+      "fieldtype": "Check",
+      "label": "Comptabilisée (anti double comptabilisation)",
+      "read_only": 1,
+      "default": "0"
     }
   ],
   "index_web_pages_for_search": 0,

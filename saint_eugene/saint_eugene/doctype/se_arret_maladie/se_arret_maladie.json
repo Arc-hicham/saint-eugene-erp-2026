@@ -1,0 +1,183 @@
+{
+  "actions": [],
+  "autoname": "format:ARRET-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "employe",
+    "nom_employe",
+    "date_debut",
+    "date_fin_prevue",
+    "date_reprise",
+    "nb_jours",
+    "date_reception_certificat",
+    "cb_main",
+    "justificatif_recu",
+    "date_transmission",
+    "organisme",
+    "ref_dossier",
+    "statut_admin",
+    "statut_indemnisation",
+    "observation_admin",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Arret Maladie"
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Employé (Matricule)",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom de l'employé",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_debut",
+      "fieldtype": "Date",
+      "label": "Date de début",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_fin_prevue",
+      "fieldtype": "Date",
+      "label": "Date de fin prévue",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_reprise",
+      "fieldtype": "Date",
+      "label": "Date de reprise effective"
+    },
+    {
+      "fieldname": "nb_jours",
+      "fieldtype": "Int",
+      "label": "Nombre de jours (calculé)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_reception_certificat",
+      "fieldtype": "Date",
+      "label": "Date de réception du certificat"
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "justificatif_recu",
+      "fieldtype": "Check",
+      "label": "Justificatif médical reçu (conservé dans le dossier RH confidentiel)",
+      "default": "0"
+    },
+    {
+      "fieldname": "date_transmission",
+      "fieldtype": "Date",
+      "label": "Date de transmission à l'organisme"
+    },
+    {
+      "fieldname": "organisme",
+      "fieldtype": "Data",
+      "label": "Organisme destinataire",
+      "default": "CNAS"
+    },
+    {
+      "fieldname": "ref_dossier",
+      "fieldtype": "Data",
+      "label": "Référence du dossier"
+    },
+    {
+      "fieldname": "statut_admin",
+      "fieldtype": "Select",
+      "label": "Statut administratif",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Déclaré par l'employé",
+      "options": "Déclaré par l'employé\nCertificat reçu\nEn attente de contrôle\nValidé RH\nTransmis à l'organisme\nDéclaration effectuée\nEn attente de traitement\nAccepté\nRefusé\nClôturé"
+    },
+    {
+      "fieldname": "statut_indemnisation",
+      "fieldtype": "Select",
+      "label": "Statut d'indemnisation (si applicable)",
+      "options": "Non applicable\nEn attente\nIndemnisé\nRefusé"
+    },
+    {
+      "fieldname": "observation_admin",
+      "fieldtype": "Small Text",
+      "label": "Observation administrative (aucun diagnostic médical)"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Arret Maladie",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "employe",
+  "search_fields": "employe"
+}

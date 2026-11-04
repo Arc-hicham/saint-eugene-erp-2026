@@ -87,6 +87,9 @@ def load_doctype_schemas() -> dict[str, dict]:
     return schemas
 
 
+import rh_module
+rh_module.write_doctypes()
+rh_module.extend_existing()
 SCHEMAS = load_doctype_schemas()
 
 
@@ -645,6 +648,7 @@ def build_initial_seed_db() -> dict:
     ]
 
     recompute_all_links(db)
+    rh_module.seed_rh(db)
     return db
 
 
@@ -831,7 +835,9 @@ def recompute_all_links(db: dict) -> None:
 def get_db() -> dict:
     if DB_FILE.exists():
         try:
-            return json.loads(DB_FILE.read_text(encoding="utf-8"))
+            db = json.loads(DB_FILE.read_text(encoding="utf-8"))
+            rh_module.seed_rh(db)
+            return db
         except Exception:
             pass
     db = build_initial_seed_db()
@@ -945,6 +951,8 @@ HTML_INDEX = r"""<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Saint Eugène ERP 2026 — Direction Financière & Contrôle de Gestion (4★ Alger)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="/rh_module.js"></script>
 <style>
   :root {
     --bg: #f1f5f9;
@@ -1106,7 +1114,26 @@ const NAV_GROUPS = [
     ]
   },
   {
-    title: "Fiscalité G50, RH & Patrimoine",
+    title: "👥 Module RH & Paie 4★",
+    items: [
+      { label: "📊 Dashboard Personnel & Masse Salariale", action: "rh_dashboard" },
+      { label: "🪪 Collaborateurs Hôtel (Dossiers RH)", action: "rh_employees" },
+      { label: "⚡ Centre de Paie & Bulletins", action: "rh_payroll" },
+      { label: "🏛️ Déclarations CNAS (35%)", action: "rh_cnas" },
+      { label: "📑 30 Registres Légaux & Rapports", action: "rh_reports" },
+      { label: "📑 Contrats RH & Échéances", doctype: "SE Contrat RH" },
+      { label: "🌴 Congés & Absences", doctype: "SE Conge" },
+      { label: "🩺 Arrêts Maladie & AT", doctype: "SE Arret Maladie" },
+      { label: "⏱️ Présences & Retards", doctype: "SE Presence Absence" },
+      { label: "💰 Avances & Prêts au Personnel", doctype: "SE Avance Pret" },
+      { label: "🚪 Départs & Soldes de Tout Compte", doctype: "SE Sortie Personnel" },
+      { label: "⚖️ Écritures Paie SCF (SE Ecriture RH)", doctype: "SE Ecriture RH" },
+      { label: "⚙️ Paramètres RH", doctype: "SE Parametres RH" }
+    ]
+  },
+  {
+    title: "Fiscalité G50 & Patrimoine",
+
     items: [
       { label: "🏛️ Déclarations TVA (G50)", doctype: "SE Declaration TVA" },
       { label: "🎯 Budget Annuel 2026", doctype: "SE Budget Annuel" },
@@ -1159,7 +1186,13 @@ function renderSidebar(activeKey = "workspace") {
       const key = item.doctype || "workspace";
       const count = item.doctype && APP_STATE.db[item.doctype] ? APP_STATE.db[item.doctype].length : "";
       const active = activeKey === key ? "active" : "";
-      const fn = item.doctype ? `showList('${item.doctype}')` : `showWorkspace()`;
+      let fn = "showWorkspace()";
+      if (item.action && item.action.startsWith("rh_")) {
+        const sub = item.action.replace("rh_", "");
+        fn = `window.showRhModule('${sub}')`;
+      } else if (item.doctype) {
+        fn = `showList('${item.doctype}')`;
+      }
       html += `<button class="nav-btn ${active}" onclick="${fn}">
         <span>${item.label}</span>
         ${count !== "" ? `<span style="font-size:11px;opacity:0.75;">${count}</span>` : ""}
@@ -2387,6 +2420,14 @@ class SaintEugeneHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+        if parsed.path.endswith(".js"):
+            js_file = APP_ROOT / parsed.path.lstrip("/")
+            if js_file.exists():
+                self.send_response(200)
+                self.send_header("Content-Type", "application/javascript; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(js_file.read_bytes())
+                return
         if parsed.path == "/api/state":
             db = get_db()
             payload = {"schemas": SCHEMAS, "db": db, "dashboard": compute_dashboard_payload(db)}

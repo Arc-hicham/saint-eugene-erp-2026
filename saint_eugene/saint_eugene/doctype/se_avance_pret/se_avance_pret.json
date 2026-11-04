@@ -1,0 +1,196 @@
+{
+  "actions": [],
+  "autoname": "format:AVP-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "employe",
+    "nom_employe",
+    "type_operation",
+    "date_operation",
+    "montant_demande",
+    "montant_approuve",
+    "montant_verse",
+    "mode_paiement",
+    "cb_main",
+    "ref_paiement",
+    "nb_echeances",
+    "retenue_mensuelle",
+    "date_premiere_retenue",
+    "montant_rembourse",
+    "solde_restant",
+    "base_autorisation",
+    "statut",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Avance Pret"
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Employé (Matricule)",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom de l'employé",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "type_operation",
+      "fieldtype": "Select",
+      "label": "Type",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "options": "Avance sur salaire\nPrêt au personnel"
+    },
+    {
+      "fieldname": "date_operation",
+      "fieldtype": "Date",
+      "label": "Date",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "montant_demande",
+      "fieldtype": "Currency",
+      "label": "Montant demandé"
+    },
+    {
+      "fieldname": "montant_approuve",
+      "fieldtype": "Currency",
+      "label": "Montant approuvé"
+    },
+    {
+      "fieldname": "montant_verse",
+      "fieldtype": "Currency",
+      "label": "Montant versé",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "mode_paiement",
+      "fieldtype": "Select",
+      "label": "Mode de paiement",
+      "options": "Virement\nChèque\nEspèces"
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "ref_paiement",
+      "fieldtype": "Data",
+      "label": "Référence de paiement"
+    },
+    {
+      "fieldname": "nb_echeances",
+      "fieldtype": "Int",
+      "label": "Nombre d'échéances"
+    },
+    {
+      "fieldname": "retenue_mensuelle",
+      "fieldtype": "Currency",
+      "label": "Retenue mensuelle"
+    },
+    {
+      "fieldname": "date_premiere_retenue",
+      "fieldtype": "Date",
+      "label": "Mois de 1ʳᵉ retenue (jj/mm)"
+    },
+    {
+      "fieldname": "montant_rembourse",
+      "fieldtype": "Currency",
+      "label": "Montant remboursé"
+    },
+    {
+      "fieldname": "solde_restant",
+      "fieldtype": "Currency",
+      "label": "Solde restant (calculé)",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "base_autorisation",
+      "fieldtype": "Data",
+      "label": "Base d'autorisation de la retenue (obligatoire)"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "Demandé",
+      "options": "Demandé\nApprouvé\nVersé\nEn cours de remboursement\nSoldé\nAnnulé"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Avance Pret",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "employe",
+  "search_fields": "employe"
+}

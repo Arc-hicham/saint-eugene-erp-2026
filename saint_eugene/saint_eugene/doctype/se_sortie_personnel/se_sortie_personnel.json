@@ -1,0 +1,240 @@
+{
+  "actions": [],
+  "autoname": "format:SORTIE-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "employe",
+    "nom_employe",
+    "date_depart",
+    "type_depart",
+    "motif",
+    "preavis_jours",
+    "dernier_jour_travaille",
+    "solde_conges",
+    "dernier_salaire",
+    "avances_restantes",
+    "chk_contrat_cloture",
+    "cb_main",
+    "chk_derniere_paie",
+    "chk_conges_regularises",
+    "chk_avances_controlees",
+    "chk_documents_remis",
+    "chk_declaration_sortie",
+    "chk_acces_desactives",
+    "chk_materiel_restitue",
+    "chk_dossier_archive",
+    "validation_rh",
+    "validation_direction",
+    "statut",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Sortie Personnel"
+    },
+    {
+      "fieldname": "employe",
+      "fieldtype": "Link",
+      "label": "Employé (Matricule)",
+      "options": "SE Employe",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "nom_employe",
+      "fieldtype": "Data",
+      "label": "Nom de l'employé",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_depart",
+      "fieldtype": "Date",
+      "label": "Date de départ",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "type_depart",
+      "fieldtype": "Select",
+      "label": "Type de départ",
+      "in_list_view": 1,
+      "options": "Fin de CDD\nDémission\nLicenciement\nDépart à la retraite\nAutre"
+    },
+    {
+      "fieldname": "motif",
+      "fieldtype": "Data",
+      "label": "Motif"
+    },
+    {
+      "fieldname": "preavis_jours",
+      "fieldtype": "Int",
+      "label": "Préavis (jours)"
+    },
+    {
+      "fieldname": "dernier_jour_travaille",
+      "fieldtype": "Date",
+      "label": "Dernier jour travaillé"
+    },
+    {
+      "fieldname": "solde_conges",
+      "fieldtype": "Float",
+      "label": "Solde de congés à régulariser (jours)"
+    },
+    {
+      "fieldname": "dernier_salaire",
+      "fieldtype": "Currency",
+      "label": "Dernier salaire"
+    },
+    {
+      "fieldname": "avances_restantes",
+      "fieldtype": "Currency",
+      "label": "Avances / prêts restants dus"
+    },
+    {
+      "fieldname": "chk_contrat_cloture",
+      "fieldtype": "Check",
+      "label": "Contrat clôturé",
+      "default": "0"
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "chk_derniere_paie",
+      "fieldtype": "Check",
+      "label": "Dernière paie préparée",
+      "default": "0"
+    },
+    {
+      "fieldname": "chk_conges_regularises",
+      "fieldtype": "Check",
+      "label": "Congés régularisés",
+      "default": "0"
+    },
+    {
+      "fieldname": "chk_avances_controlees",
+      "fieldtype": "Check",
+      "label": "Avances et prêts contrôlés",
+      "default": "0"
+    },
+    {
+      "fieldname": "chk_documents_remis",
+      "fieldtype": "Check",
+      "label": "Documents remis (certificat de travail…)",
+      "default": "0"
+    },
+    {
+      "fieldname": "chk_declaration_sortie",
+      "fieldtype": "Check",
+      "label": "Déclaration de sortie effectuée si applicable",
+      "default": "0"
+    },
+    {
+      "fieldname": "chk_acces_desactives",
+      "fieldtype": "Check",
+      "label": "Accès informatiques désactivés",
+      "default": "0"
+    },
+    {
+      "fieldname": "chk_materiel_restitue",
+      "fieldtype": "Check",
+      "label": "Matériel restitué",
+      "default": "0"
+    },
+    {
+      "fieldname": "chk_dossier_archive",
+      "fieldtype": "Check",
+      "label": "Dossier archivé",
+      "default": "0"
+    },
+    {
+      "fieldname": "validation_rh",
+      "fieldtype": "Select",
+      "label": "Validation RH",
+      "options": "En attente\nValidée",
+      "default": "En attente"
+    },
+    {
+      "fieldname": "validation_direction",
+      "fieldtype": "Select",
+      "label": "Validation Direction",
+      "options": "En attente\nValidée",
+      "default": "En attente"
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "default": "En cours",
+      "options": "En cours\nClôturé"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Sortie Personnel",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "employe",
+  "search_fields": "employe"
+}

@@ -1,0 +1,148 @@
+{
+  "actions": [],
+  "autoname": "format:PARAM-RH-{####}",
+  "creation": "2026-11-04 08:00:00.000000",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "sb_main",
+    "code",
+    "libelle",
+    "categorie",
+    "valeur",
+    "unite",
+    "cb_main",
+    "date_effet",
+    "source_reglementaire",
+    "statut_validation",
+    "valide_par",
+    "donnee_simulation"
+  ],
+  "fields": [
+    {
+      "fieldname": "sb_main",
+      "fieldtype": "Section Break",
+      "label": "Parametres RH"
+    },
+    {
+      "fieldname": "code",
+      "fieldtype": "Data",
+      "label": "Code du paramètre",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "libelle",
+      "fieldtype": "Data",
+      "label": "Libellé",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "categorie",
+      "fieldtype": "Select",
+      "label": "Catégorie",
+      "options": "Cotisations\nPaie\nCongés\nAbsences\nDéclarations\nArrêts maladie\nComptabilité",
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "valeur",
+      "fieldtype": "Data",
+      "label": "Valeur",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "unite",
+      "fieldtype": "Data",
+      "label": "Unité"
+    },
+    {
+      "fieldname": "cb_main",
+      "fieldtype": "Column Break",
+      "label": ""
+    },
+    {
+      "fieldname": "date_effet",
+      "fieldtype": "Date",
+      "label": "Date d'effet (versionnement)",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "source_reglementaire",
+      "fieldtype": "Data",
+      "label": "Source réglementaire documentée"
+    },
+    {
+      "fieldname": "statut_validation",
+      "fieldtype": "Select",
+      "label": "Validation",
+      "options": "À valider\nValidé",
+      "default": "À valider",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "valide_par",
+      "fieldtype": "Data",
+      "label": "Validé par (RH / expert-comptable)"
+    },
+    {
+      "fieldname": "donnee_simulation",
+      "fieldtype": "Check",
+      "label": "Donnée de simulation (fictive)",
+      "default": "0"
+    }
+  ],
+  "index_web_pages_for_search": 0,
+  "is_submittable": 0,
+  "istable": 0,
+  "links": [],
+  "modified": "2026-11-04 08:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Saint Eugene",
+  "name": "SE Parametres RH",
+  "naming_rule": "Expression",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "role": "System Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "share": 1,
+      "write": 1
+    },
+    {
+      "role": "Accounts User",
+      "create": 1,
+      "read": 1,
+      "write": 1,
+      "print": 1,
+      "export": 1,
+      "report": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "track_changes": 1,
+  "title_field": "libelle",
+  "search_fields": "libelle"
+}
