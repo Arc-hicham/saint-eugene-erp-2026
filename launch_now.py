@@ -1077,7 +1077,8 @@ HTML_INDEX = r"""<!DOCTYPE html>
 </div>
 
 <script>
-let APP_STATE = { schemas: {}, db: {}, dashboard: {} };
+var APP_STATE = { schemas: {}, db: {}, dashboard: {} };
+window.APP_STATE = APP_STATE;
 let CURRENT_DOCTYPE = null;
 let CURRENT_DOC = null;
 
@@ -1153,6 +1154,7 @@ function pillClass(st) {
 async function loadState() {
   const res = await fetch("/api/state");
   APP_STATE = await res.json();
+  window.APP_STATE = APP_STATE;
   renderSidebar();
 }
 
@@ -2247,6 +2249,7 @@ async function saveCurrentDoc(isNew) {
     body: JSON.stringify({ doctype: CURRENT_DOCTYPE, doc: CURRENT_DOC, is_new: isNew })
   });
   APP_STATE = await res.json();
+  window.APP_STATE = APP_STATE;
   closeModal();
   if (CURRENT_DOCTYPE === "SE Parametres Hotel") showWorkspace();
   else showList(CURRENT_DOCTYPE);

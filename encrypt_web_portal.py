@@ -865,7 +865,8 @@ const SESSION_KEY = "saint_eugene_erp_2026_unlocked";
 let SCHEMAS = {{}};
 let INITIAL_DB = {{}};
 let GS_SCRIPT_CODE = "";
-let DB = {{}};
+var DB = {{}};
+window.DB = DB;
 let CURRENT_USER_ROLE = "Contrôle de Gestion / DAF (Hicham Bakir)";
 let CURRENT_DOCTYPE = null;
 let CURRENT_DOC = null;
@@ -1104,6 +1105,7 @@ async function handleUnlock(e) {{
     document.getElementById("activeUserBadge").textContent = `Connecté : ${{role}}`;
     document.getElementById("loginScreen").classList.add("hidden");
     DB = loadDB();
+    window.DB = DB;
     renderSidebar();
     showWorkspace();
     showToast(`👋 Bienvenue, ${{role}} !`);
@@ -1266,6 +1268,7 @@ function importSyncJsonFile(inputEl) {{
 }}
 
 function saveDB(lastEvent = null) {{
+  window.DB = DB;
   recomputeAllLinks(DB);
   try {{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));

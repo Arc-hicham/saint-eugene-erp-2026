@@ -1,5 +1,5 @@
 /* ==============================================================================
-   MODULE RH & PAIE SIMPLIFIÉ — HÔTEL SAINT EUGÈNE 4★ ALGER
+   MODULE RH & PAIE — HÔTEL SAINT EUGÈNE 4★ ALGER
    Architecture épurée, ultra-rapide, intuitive et optimisée mobile & desktop
    Conformité Code du Travail Algérien (Loi 90-11) & Normes SCF Algérie
    ============================================================================== */
@@ -12,7 +12,8 @@
     activeTab: "dashboard", // "dashboard", "employees", "payroll", "cnas"
     currentEmpId: null,
     payrollPeriod: "2026-03",
-    filterSearch: ""
+    filterSearch: "",
+    filterSituation: "TOUS" // "TOUS", "Actif", "Sorti", "Non déclaré"
   };
 
   // Utilitaires de formatage
@@ -56,11 +57,16 @@
     return Math.round(netIrg * 100) / 100;
   }
 
-  // Accès aux données universel (supporte APP_STATE de launch_now et DB de index.html)
+  // Accès aux données universel (supporte window.APP_STATE, window.DB et variables globales)
   function rhGetDb(){
     if(window.APP_STATE && window.APP_STATE.db) return window.APP_STATE.db;
     if(window.DB) return window.DB;
-    if(window.STATE && window.STATE.db) return window.STATE.db;
+    if(typeof APP_STATE !== "undefined" && APP_STATE && APP_STATE.db) return APP_STATE.db;
+    if(typeof DB !== "undefined" && DB) return DB;
+    for(const k of ["APP_STATE", "DB", "STATE", "erpDb"]){
+      if(window[k] && window[k].db) return window[k].db;
+      if(window[k] && Array.isArray(window[k]["SE Employe"])) return window[k];
+    }
     return {};
   }
 
@@ -69,18 +75,35 @@
     return Array.isArray(db[dt]) ? db[dt] : [];
   }
 
-  // Sauvegarde universelle asynchrone (met à jour la mémoire locale et le backend)
+  // Sauvegarde universelle asynchrone garantie
   async function rhSaveDoc(doctype, doc, isNew=false){
-    const db = rhGetDb();
-    if(!db[doctype]) db[doctype] = [];
-    const idx = db[doctype].findIndex(x => x.name === doc.name);
-    if(idx >= 0){
-      db[doctype][idx] = Object.assign({}, db[doctype][idx], doc);
-    } else {
-      db[doctype].unshift(doc);
+    // 1. Mise à jour de toutes les instances en mémoire
+    const targetDb = rhGetDb();
+    if(targetDb){
+      if(!targetDb[doctype]) targetDb[doctype] = [];
+      const idx = targetDb[doctype].findIndex(x => x.name === doc.name);
+      if(idx >= 0){
+        targetDb[doctype][idx] = Object.assign({}, targetDb[doctype][idx], doc);
+      } else {
+        targetDb[doctype].unshift(doc);
+      }
     }
 
-    // 1. Sauvegarde serveur local launch_now.py si disponible
+    if(window.APP_STATE && window.APP_STATE.db && window.APP_STATE.db !== targetDb){
+      const list = window.APP_STATE.db[doctype] || (window.APP_STATE.db[doctype] = []);
+      const idx = list.findIndex(x => x.name === doc.name);
+      if(idx >= 0) list[idx] = Object.assign({}, list[idx], doc);
+      else list.unshift(doc);
+    }
+
+    if(window.DB && window.DB !== targetDb){
+      const list = window.DB[doctype] || (window.DB[doctype] = []);
+      const idx = list.findIndex(x => x.name === doc.name);
+      if(idx >= 0) list[idx] = Object.assign({}, list[idx], doc);
+      else list.unshift(doc);
+    }
+
+    // 2. Sauvegarde vers le serveur local launch_now.py si disponible
     if(typeof fetch === "function"){
       try {
         const res = await fetch("/api/save", {
@@ -90,29 +113,31 @@
         });
         if(res.ok){
           const payload = await res.json();
-          if(window.APP_STATE && payload.db){
-            window.APP_STATE = payload;
+          if(payload && payload.db){
+            if(window.APP_STATE) window.APP_STATE = payload;
+            if(typeof APP_STATE !== "undefined") APP_STATE = payload;
+            window.DB = payload.db;
+            if(typeof DB !== "undefined") DB = payload.db;
           }
         }
       } catch(e){
-        console.warn("Sauvegarde serveur local ignorée:", e);
+        console.warn("Mode autonome (fetch local ignoré):", e);
       }
     }
 
-    // 2. Sauvegarde portail web chiffré index.html
-    if(typeof saveToStorage === "function"){
-      try { saveToStorage(); } catch(e){}
-    }
-    if(typeof syncToGoogleSheet === "function"){
-      try { syncToGoogleSheet(); } catch(e){}
+    // 3. Sauvegarde portail web chiffré index.html
+    if(typeof window.saveDB === "function"){
+      try { window.saveDB(); } catch(e){}
+    } else if(typeof saveDB === "function"){
+      try { saveDB(); } catch(e){}
     }
 
-    // 3. Rafraîchissement des compteurs de la barre latérale
+    // 4. Rafraîchissement des compteurs de la barre latérale
     if(typeof renderSidebar === "function"){
       try { renderSidebar(RH_STATE.activeTab ? "rh_" + RH_STATE.activeTab : "workspace"); } catch(e){}
     }
 
-    rhNotify("✅ " + (doc.name || doctype) + " enregistré avec succès !", "success");
+    rhNotify("✅ " + (doc.nom_complet || doc.name) + " enregistré avec succès !", "success");
     rhRenderActiveView();
   }
 
@@ -188,6 +213,8 @@
   window.rhRetourErp = function(){
     if(typeof showWorkspace === "function"){
       showWorkspace();
+    } else if(typeof window.showWorkspace === "function"){
+      window.showWorkspace();
     } else {
       window.location.reload();
     }
@@ -205,13 +232,13 @@
     const emps = rhGetRows("SE Employe");
     const paies = rhGetRows("SE Fiche de Paie Mensuelle");
     const contrats = rhGetRows("SE Contrat RH");
-    const cnas = rhGetRows("SE Declaration CNAS");
 
     const totalStaff = emps.length;
-    const cdd = emps.filter(e => e.type_contrat === "CDD").length;
-    const cdi = emps.filter(e => e.type_contrat === "CDI" || !e.type_contrat).length;
+    const actifs = emps.filter(e => (e.statut_professionnel || e.situation) === "Actif" || (!e.statut_professionnel && !e.situation)).length;
+    const sortis = emps.filter(e => (e.statut_professionnel || e.situation) === "Sorti").length;
+    const nonDeclares = emps.filter(e => (e.statut_professionnel || e.situation) === "Non déclaré").length;
+
     const masseContractuelle = emps.reduce((acc, e) => acc + (Number(e.salaire_base_contractuel) || 0), 0);
-    const masseDeclaree = emps.reduce((acc, e) => acc + (Number(e.salaire_base_declare) || 0), 0);
     const cnasPatronale = Math.round(masseContractuelle * 0.26);
 
     // Contrats à expiration < 30j
@@ -223,7 +250,7 @@
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
           <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;">Effectif Total Hôtel</div>
           <div style="font-size:28px;font-weight:800;color:#0f172a;margin:4px 0;">${totalStaff}</div>
-          <div style="font-size:12px;color:#059669;font-weight:600;">${cdi} CDI • ${cdd} CDD</div>
+          <div style="font-size:12px;color:#059669;font-weight:600;">🟢 ${actifs} Actifs • 🔴 ${sortis} Sortis • 🟠 ${nonDeclares} Non déclarés</div>
         </div>
 
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
@@ -259,11 +286,11 @@
               </div>
             ` : `<div style="font-size:12px;color:#059669;padding:6px;">✅ Tous les contrats CDD sont à jour.</div>`}
 
-            ${emps.some(e => !e.n_assurance) ? `
+            ${nonDeclares > 0 ? `
               <div style="background:#fffbeb;border:1px solid #fde68a;padding:10px;border-radius:6px;font-size:12px;color:#92400e;">
-                <strong>⚠️ Immatriculation CNAS :</strong> Certains salariés n'ont pas encore de N° d'assurance renseigné.
+                <strong>⚠️ Salariés Non Déclarés :</strong> ${nonDeclares} collaborateur(s) en attente d'immatriculation CNAS.
               </div>
-            ` : `<div style="font-size:12px;color:#059669;padding:6px;">✅ Immatriculations CNAS en règle.</div>`}
+            ` : `<div style="font-size:12px;color:#059669;padding:6px;">✅ Tous les salariés en poste sont déclarés CNAS.</div>`}
           </div>
         </div>
 
@@ -291,14 +318,31 @@
     `;
   }
 
+  // Rendu du badge de situation
+  function rhRenderSituationBadge(sit){
+    const s = String(sit || "Actif").trim();
+    if(s === "Actif"){
+      return `<span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:6px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;gap:4px;">🟢 Actif</span>`;
+    } else if(s === "Sorti"){
+      return `<span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:6px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;gap:4px;">🔴 Sorti</span>`;
+    } else if(s === "Non déclaré"){
+      return `<span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:6px;font-weight:700;font-size:11px;display:inline-flex;align-items:center;gap:4px;">🟠 Non déclaré</span>`;
+    }
+    return `<span style="background:#f1f5f9;color:#475569;padding:3px 8px;border-radius:6px;font-weight:600;font-size:11px;">${s}</span>`;
+  }
+
   /* ==============================================================================
-     2. VUE SALARIÉS & DOSSIERS RH
+     2. VUE SALARIÉS & DOSSIERS RH (Avec Date de Recrutement & Situation)
      ============================================================================== */
   function rhRenderEmployeesView(){
     const emps = rhGetRows("SE Employe");
     const search = (RH_STATE.filterSearch || "").toLowerCase();
+    const filterSit = RH_STATE.filterSituation || "TOUS";
+
     const filtered = emps.filter(e => {
-      const q = (e.name + " " + (e.nom_complet||"") + " " + (e.departement||"") + " " + (e.fonction||"")).toLowerCase();
+      const sit = e.statut_professionnel || e.situation || "Actif";
+      if(filterSit !== "TOUS" && sit !== filterSit) return false;
+      const q = (e.name + " " + (e.nom_complet||"") + " " + (e.departement||"") + " " + (e.fonction||"") + " " + sit).toLowerCase();
       return q.includes(search);
     });
 
@@ -306,38 +350,49 @@
       <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
           <div>
-            <h3 style="margin:0;font-size:16px;color:#0f172a;">Effectif du Personnel (${emps.length} Salariés)</h3>
-            <div style="font-size:12px;color:#64748b;">Consultez, modifiez ou ajoutez les collaborateurs de l'Hôtel Saint Eugène.</div>
+            <h3 style="margin:0;font-size:16px;color:#0f172a;">Effectif du Personnel (${emps.length} Collaborateurs)</h3>
+            <div style="font-size:12px;color:#64748b;">Gestion des fiches individuelles, dates de recrutement et situations (Actif / Sorti / Non déclaré).</div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <input type="text" placeholder="🔍 Rechercher salarié, poste..." value="${RH_STATE.filterSearch}" oninput="window.rhSearchEmp(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;width:220px;">
-            <button onclick="window.rhModalNouveauSalarie()" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">
-              ➕ Ajouter
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <!-- Filtre par Situation -->
+            <select onchange="window.rhFilterSituation(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-weight:600;background:#fff;cursor:pointer;">
+              <option value="TOUS" ${filterSit === 'TOUS' ? 'selected' : ''}>Toutes situations</option>
+              <option value="Actif" ${filterSit === 'Actif' ? 'selected' : ''}>🟢 Actifs seulement</option>
+              <option value="Sorti" ${filterSit === 'Sorti' ? 'selected' : ''}>🔴 Sortis</option>
+              <option value="Non déclaré" ${filterSit === 'Non déclaré' ? 'selected' : ''}>🟠 Non déclarés</option>
+            </select>
+            <input type="text" placeholder="🔍 Rechercher matricule, nom..." value="${RH_STATE.filterSearch}" oninput="window.rhSearchEmp(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;width:200px;">
+            <button onclick="window.rhModalNouveauSalarie()" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
+              ➕ Ajouter un Salarié
             </button>
           </div>
         </div>
 
-        <table style="width:100%;font-size:12px;border-collapse:collapse;border:1px solid #e2e8f0;">
-          <thead>
-            <tr style="background:#f1f5f9;color:#475569;text-align:left;">
-              <th style="padding:10px;">Matricule</th>
-              <th style="padding:10px;">Nom Complet</th>
-              <th style="padding:10px;">Département</th>
-              <th style="padding:10px;">Fonction</th>
-              <th style="padding:10px;">Contrat</th>
-              <th style="padding:10px;">Salaire Base</th>
-              <th style="padding:10px;">N° CNAS</th>
-              <th style="padding:10px;">Statut</th>
-              <th style="padding:10px;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;font-size:12px;border-collapse:collapse;border:1px solid #e2e8f0;">
+            <thead>
+              <tr style="background:#f1f5f9;color:#475569;text-align:left;">
+                <th style="padding:10px;">Matricule</th>
+                <th style="padding:10px;">Nom & Prénom</th>
+                <th style="padding:10px;">Département</th>
+                <th style="padding:10px;">Fonction</th>
+                <th style="padding:10px;">Contrat</th>
+                <th style="padding:10px;">Date Recrutement</th>
+                <th style="padding:10px;">Salaire Base</th>
+                <th style="padding:10px;">Situation</th>
+                <th style="padding:10px;">N° CNAS</th>
+                <th style="padding:10px;text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
     `;
 
     if(filtered.length === 0){
-      html += `<tr><td colspan="9" style="padding:30px;text-align:center;color:#64748b;">Aucun salarié trouvé. Cliquez sur "Ajouter un Salarié".</td></tr>`;
+      html += `<tr><td colspan="10" style="padding:30px;text-align:center;color:#64748b;">Aucun salarié trouvé. Cliquez sur "Ajouter un Salarié" pour en enregistrer un.</td></tr>`;
     } else {
       filtered.forEach(e => {
+        const dateRecrut = e.date_embauche || e.date_recrutement;
+        const situation = e.statut_professionnel || e.situation || "Actif";
         html += `
           <tr style="border-bottom:1px solid #f1f5f9;">
             <td style="padding:10px;font-weight:700;color:#0284c7;">${e.name}</td>
@@ -345,23 +400,60 @@
             <td style="padding:10px;">${e.departement || '—'}</td>
             <td style="padding:10px;">${e.fonction || '—'}</td>
             <td style="padding:10px;"><span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:4px;font-weight:700;">${e.type_contrat || 'CDI'}</span></td>
+            <td style="padding:10px;font-weight:600;color:#334155;">${rhFmtDate(dateRecrut)}</td>
             <td style="padding:10px;font-weight:600;">${rhFmtMoney(e.salaire_base_contractuel)}</td>
-            <td style="padding:10px;color:#475569;">${e.n_assurance || '—'}</td>
-            <td style="padding:10px;"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-weight:700;">${e.statut_professionnel || 'Actif'}</span></td>
-            <td style="padding:10px;white-space:nowrap;">
-              <button onclick="window.rhModalModifierEmploye('${e.name}')" style="background:#f1f5f9;border:1px solid #cbd5e1;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;">✏️ Fiche</button>
+            <td style="padding:10px;">${rhRenderSituationBadge(situation)}</td>
+            <td style="padding:10px;color:${e.n_assurance ? '#475569' : '#dc2626'};font-weight:${e.n_assurance ? '400' : '600'};">
+              ${e.n_assurance || (situation === 'Non déclaré' ? 'Non déclaré' : '—')}
+            </td>
+            <td style="padding:10px;text-align:right;white-space:nowrap;">
+              <button onclick="window.rhModalModifierEmploye('${e.name}')" style="background:#f1f5f9;border:1px solid #cbd5e1;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;margin-right:4px;">✏️ Modifier</button>
+              <button onclick="window.rhSupprimerEmploye('${e.name}')" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;">🗑️</button>
             </td>
           </tr>
         `;
       });
     }
 
-    html += `</tbody></table></div>`;
+    html += `</tbody></table></div></div>`;
     return html;
   }
 
   window.rhSearchEmp = function(v){
     RH_STATE.filterSearch = v;
+    rhRenderActiveView();
+  };
+
+  window.rhFilterSituation = function(s){
+    RH_STATE.filterSituation = s;
+    rhRenderActiveView();
+  };
+
+  // Suppression d'un salarié
+  window.rhSupprimerEmploye = async function(empId){
+    if(!confirm(`Confirmez-vous la suppression du salarié ${empId} ?`)){
+      return;
+    }
+    const db = rhGetDb();
+    if(db["SE Employe"]){
+      db["SE Employe"] = db["SE Employe"].filter(x => x.name !== empId);
+    }
+    if(window.APP_STATE && window.APP_STATE.db && window.APP_STATE.db["SE Employe"]){
+      window.APP_STATE.db["SE Employe"] = window.APP_STATE.db["SE Employe"].filter(x => x.name !== empId);
+    }
+    if(window.DB && window.DB["SE Employe"]){
+      window.DB["SE Employe"] = window.DB["SE Employe"].filter(x => x.name !== empId);
+    }
+
+    if(typeof window.saveDB === "function"){
+      try { window.saveDB(); } catch(e){}
+    }
+
+    if(typeof renderSidebar === "function"){
+      try { renderSidebar(RH_STATE.activeTab ? "rh_" + RH_STATE.activeTab : "workspace"); } catch(e){}
+    }
+
+    rhNotify(`Salarié ${empId} supprimé.`, "info");
     rhRenderActiveView();
   };
 
@@ -465,7 +557,8 @@
   window.rhCalculerPaieMasse = function(){
     const db = rhGetDb();
     if(!db["SE Fiche de Paie Mensuelle"]) db["SE Fiche de Paie Mensuelle"] = [];
-    const emps = (db["SE Employe"] || []);
+    // Uniquement les salariés Actifs ou Non déclarés (pas les sortis)
+    const emps = (db["SE Employe"] || []).filter(e => (e.statut_professionnel || e.situation) !== "Sorti");
     const per = RH_STATE.payrollPeriod;
 
     emps.forEach(e => {
@@ -502,7 +595,7 @@
       else db["SE Fiche de Paie Mensuelle"].push(fiche);
     });
 
-    rhNotify(`⚡ Calcul terminé : ${emps.length} bulletins de paie calculés pour ${per}`, "success");
+    rhNotify(`⚡ Calcul terminé : ${emps.length} bulletins calculés pour ${per}`, "success");
     rhRenderActiveView();
   };
 
@@ -578,7 +671,7 @@
   }
 
   /* ==============================================================================
-     MODAL NOUVEAU SALARIÉ (Simple, Efficace, Garanti de Sauvegarde)
+     MODAL NOUVEAU SALARIÉ (Avec Date de Recrutement & Situation)
      ============================================================================== */
   window.rhModalNouveauSalarie = function(){
     const modalId = "rh-modal-nouveau";
@@ -599,9 +692,10 @@
       if(m) maxId = Math.max(maxId, parseInt(m[1], 10));
     });
     const nextMatricule = `EMP-2026-${String(maxId + 1).padStart(4, "0")}`;
+    const todayStr = new Date().toISOString().split("T")[0];
 
     modal.innerHTML = `
-      <div style="background:#fff;border-radius:12px;width:100%;max-width:550px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="background:#fff;border-radius:12px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px;">
           <div>
             <h3 style="margin:0;font-size:18px;color:#0f172a;">➕ Nouveau Salarié Hôtel</h3>
@@ -611,13 +705,30 @@
         </div>
         <form id="form-simple-emp" onsubmit="window.rhSubmitNouveauSalarie(event, '${nextMatricule}')" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;">
           <div>
-            <label style="font-weight:700;display:block;margin-bottom:4px;">Nom :</label>
-            <input name="nom" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+            <label style="font-weight:700;display:block;margin-bottom:4px;">Nom de famille :</label>
+            <input name="nom" required placeholder="Ex: Bakir" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
           <div>
             <label style="font-weight:700;display:block;margin-bottom:4px;">Prénom :</label>
-            <input name="prenom" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+            <input name="prenom" required placeholder="Ex: Hicham" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
+
+          <!-- DATE DE RECRUTEMENT -->
+          <div>
+            <label style="font-weight:700;display:block;margin-bottom:4px;color:#0284c7;">📅 Date de Recrutement :</label>
+            <input name="date_embauche" type="date" required value="${todayStr}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:600;">
+          </div>
+
+          <!-- SITUATION : ACTIF / SORTI / NON DÉCLARÉ -->
+          <div>
+            <label style="font-weight:700;display:block;margin-bottom:4px;color:#0284c7;">🏷️ Situation du Salarié :</label>
+            <select name="statut_professionnel" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:700;">
+              <option value="Actif" selected>🟢 Actif (En poste)</option>
+              <option value="Sorti">🔴 Sorti (Départ / Fin contrat)</option>
+              <option value="Non déclaré">🟠 Non déclaré (En attente CNAS)</option>
+            </select>
+          </div>
+
           <div>
             <label style="font-weight:700;display:block;margin-bottom:4px;">Département :</label>
             <select name="departement" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
@@ -637,6 +748,8 @@
             <select name="type_contrat" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
               <option value="CDI">CDI (Indéterminé)</option>
               <option value="CDD">CDD (Déterminé)</option>
+              <option value="Saisonnier">Saisonnier</option>
+              <option value="Stage">Stage</option>
             </select>
           </div>
           <div>
@@ -644,7 +757,7 @@
             <input name="salaire_base_contractuel" type="number" required value="50000" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
           <div>
-            <label style="font-weight:700;display:block;margin-bottom:4px;">Numéro CNAS :</label>
+            <label style="font-weight:700;display:block;margin-bottom:4px;">Numéro CNAS (si déclaré) :</label>
             <input name="n_assurance" placeholder="12 chiffres" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
           <div>
@@ -653,7 +766,7 @@
           </div>
           <div style="grid-column:1/-1;text-align:right;margin-top:14px;border-top:1px solid #e2e8f0;padding-top:14px;">
             <button type="button" onclick="document.getElementById('${modalId}').style.display='none'" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:8px 16px;cursor:pointer;margin-right:8px;">Annuler</button>
-            <button type="submit" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-weight:700;cursor:pointer;">Enregistrer Salarié</button>
+            <button type="submit" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-weight:700;cursor:pointer;font-size:13px;">💾 Enregistrer Salarié</button>
           </div>
         </form>
       </div>
@@ -663,9 +776,11 @@
   window.rhSubmitNouveauSalarie = async function(e, matricule){
     e.preventDefault();
     const fd = new FormData(e.target);
-    const nom = fd.get("nom");
-    const prenom = fd.get("prenom");
+    const nom = (fd.get("nom") || "").trim();
+    const prenom = (fd.get("prenom") || "").trim();
     const salaire = Number(fd.get("salaire_base_contractuel")) || 50000;
+    const dateRecrut = fd.get("date_embauche") || new Date().toISOString().split("T")[0];
+    const situation = fd.get("statut_professionnel") || "Actif";
 
     const newEmp = {
       name: matricule,
@@ -675,12 +790,14 @@
       departement: fd.get("departement"),
       fonction: fd.get("fonction"),
       type_contrat: fd.get("type_contrat") || "CDI",
+      date_embauche: dateRecrut,
+      date_recrutement: dateRecrut,
+      statut_professionnel: situation,
+      situation: situation,
       salaire_base_contractuel: salaire,
-      salaire_base_declare: salaire,
-      n_assurance: fd.get("n_assurance") || "",
+      salaire_base_declare: situation === "Non déclaré" ? 0 : salaire,
+      n_assurance: situation === "Non déclaré" ? "" : (fd.get("n_assurance") || ""),
       nin: fd.get("nin") || "",
-      statut_professionnel: "Actif",
-      date_embauche: new Date().toISOString().split("T")[0],
       solde_conges_acquis: 30,
       solde_conges_pris: 0,
       solde_conges_restant: 30
@@ -692,7 +809,7 @@
     rhRenderActiveView();
   };
 
-  // Modification simple de la fiche
+  // Modification complète de la fiche salarié
   window.rhModalModifierEmploye = function(empId){
     const emps = rhGetRows("SE Employe");
     const e = emps.find(x => x.name === empId);
@@ -707,10 +824,17 @@
       document.body.appendChild(modal);
     }
     modal.style.display = "flex";
+
+    const dateRecrut = e.date_embauche || e.date_recrutement || new Date().toISOString().split("T")[0];
+    const situation = e.statut_professionnel || e.situation || "Actif";
+
     modal.innerHTML = `
-      <div style="background:#fff;border-radius:12px;width:100%;max-width:550px;max-height:90vh;overflow-y:auto;padding:24px;">
+      <div style="background:#fff;border-radius:12px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;padding:24px;">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px;">
-          <h3 style="margin:0;font-size:18px;color:#0f172a;">✏️ Fiche Salarié — ${e.name}</h3>
+          <div>
+            <h3 style="margin:0;font-size:18px;color:#0f172a;">✏️ Fiche Salarié — ${e.name}</h3>
+            <div style="font-size:12px;color:#64748b;">Mise à jour des informations administratives et de situation</div>
+          </div>
           <button onclick="document.getElementById('${modalId}').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
         </div>
         <form onsubmit="window.rhSaveModifEmp(event, '${e.name}')" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;">
@@ -722,6 +846,23 @@
             <label style="font-weight:700;display:block;margin-bottom:4px;">Fonction :</label>
             <input name="fonction" value="${e.fonction || ''}" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
+
+          <!-- DATE DE RECRUTEMENT -->
+          <div>
+            <label style="font-weight:700;display:block;margin-bottom:4px;color:#0284c7;">📅 Date de Recrutement :</label>
+            <input name="date_embauche" type="date" value="${dateRecrut}" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:600;">
+          </div>
+
+          <!-- SITUATION -->
+          <div>
+            <label style="font-weight:700;display:block;margin-bottom:4px;color:#0284c7;">🏷️ Situation :</label>
+            <select name="statut_professionnel" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #0284c7;border-radius:6px;font-weight:700;">
+              <option value="Actif" ${situation === 'Actif' ? 'selected' : ''}>🟢 Actif (En poste)</option>
+              <option value="Sorti" ${situation === 'Sorti' ? 'selected' : ''}>🔴 Sorti (Départ)</option>
+              <option value="Non déclaré" ${situation === 'Non déclaré' ? 'selected' : ''}>🟠 Non déclaré</option>
+            </select>
+          </div>
+
           <div>
             <label style="font-weight:700;display:block;margin-bottom:4px;">Département :</label>
             <select name="departement" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
@@ -733,6 +874,15 @@
             </select>
           </div>
           <div>
+            <label style="font-weight:700;display:block;margin-bottom:4px;">Type de Contrat :</label>
+            <select name="type_contrat" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+              <option value="CDI" ${e.type_contrat === 'CDI' ? 'selected' : ''}>CDI</option>
+              <option value="CDD" ${e.type_contrat === 'CDD' ? 'selected' : ''}>CDD</option>
+              <option value="Saisonnier" ${e.type_contrat === 'Saisonnier' ? 'selected' : ''}>Saisonnier</option>
+              <option value="Stage" ${e.type_contrat === 'Stage' ? 'selected' : ''}>Stage</option>
+            </select>
+          </div>
+          <div>
             <label style="font-weight:700;display:block;margin-bottom:4px;">Salaire de Base (DZD) :</label>
             <input name="salaire_base_contractuel" type="number" value="${e.salaire_base_contractuel || 45000}" required style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
@@ -740,13 +890,13 @@
             <label style="font-weight:700;display:block;margin-bottom:4px;">N° CNAS :</label>
             <input name="n_assurance" value="${e.n_assurance || ''}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
-          <div>
-            <label style="font-weight:700;display:block;margin-bottom:4px;">NIN :</label>
+          <div style="grid-column:1/-1;">
+            <label style="font-weight:700;display:block;margin-bottom:4px;">NIN (Identifiant National) :</label>
             <input name="nin" value="${e.nin || ''}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
           </div>
           <div style="grid-column:1/-1;text-align:right;margin-top:14px;border-top:1px solid #e2e8f0;padding-top:14px;">
             <button type="button" onclick="document.getElementById('${modalId}').style.display='none'" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:8px 16px;cursor:pointer;margin-right:8px;">Annuler</button>
-            <button type="submit" style="background:#0284c7;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-weight:700;cursor:pointer;">Mettre à jour</button>
+            <button type="submit" style="background:#0284c7;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-weight:700;cursor:pointer;">💾 Mettre à jour</button>
           </div>
         </form>
       </div>
@@ -762,8 +912,13 @@
       emp.nom_complet = fd.get("nom_complet");
       emp.fonction = fd.get("fonction");
       emp.departement = fd.get("departement");
+      emp.type_contrat = fd.get("type_contrat") || emp.type_contrat;
+      emp.date_embauche = fd.get("date_embauche") || emp.date_embauche;
+      emp.date_recrutement = emp.date_embauche;
+      emp.statut_professionnel = fd.get("statut_professionnel");
+      emp.situation = emp.statut_professionnel;
       emp.salaire_base_contractuel = Number(fd.get("salaire_base_contractuel")) || emp.salaire_base_contractuel;
-      emp.n_assurance = fd.get("n_assurance") || "";
+      emp.n_assurance = emp.statut_professionnel === "Non déclaré" ? "" : (fd.get("n_assurance") || "");
       emp.nin = fd.get("nin") || "";
       document.getElementById("rh-modal-nouveau").style.display = "none";
       await rhSaveDoc("SE Employe", emp, false);
