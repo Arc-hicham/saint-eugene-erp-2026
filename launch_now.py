@@ -1114,31 +1114,19 @@ const NAV_GROUPS = [
     ]
   },
   {
-    title: "👥 Module RH & Paie 4★",
+    title: "👥 Ressources Humaines & Paie",
     items: [
-      { label: "📊 Dashboard Personnel & Masse Salariale", action: "rh_dashboard" },
-      { label: "🪪 Collaborateurs Hôtel (Dossiers RH)", action: "rh_employees" },
+      { label: "📊 Tableau de Bord RH", action: "rh_dashboard" },
+      { label: "🪪 Collaborateurs Hôtel", action: "rh_employees" },
       { label: "⚡ Centre de Paie & Bulletins", action: "rh_payroll" },
-      { label: "🏛️ Déclarations CNAS (35%)", action: "rh_cnas" },
-      { label: "📑 30 Registres Légaux & Rapports", action: "rh_reports" },
-      { label: "📑 Contrats RH & Échéances", doctype: "SE Contrat RH" },
-      { label: "🌴 Congés & Absences", doctype: "SE Conge" },
-      { label: "🩺 Arrêts Maladie & AT", doctype: "SE Arret Maladie" },
-      { label: "⏱️ Présences & Retards", doctype: "SE Presence Absence" },
-      { label: "💰 Avances & Prêts au Personnel", doctype: "SE Avance Pret" },
-      { label: "🚪 Départs & Soldes de Tout Compte", doctype: "SE Sortie Personnel" },
-      { label: "⚖️ Écritures Paie SCF (SE Ecriture RH)", doctype: "SE Ecriture RH" },
-      { label: "⚙️ Paramètres RH", doctype: "SE Parametres RH" }
+      { label: "🏛️ Déclarations CNAS & Congés", action: "rh_cnas" }
     ]
   },
   {
     title: "Fiscalité G50 & Patrimoine",
-
     items: [
       { label: "🏛️ Déclarations TVA (G50)", doctype: "SE Declaration TVA" },
       { label: "🎯 Budget Annuel 2026", doctype: "SE Budget Annuel" },
-      { label: "👥 Fiches de Paie (CNAS / IRG)", doctype: "SE Fiche de Paie Mensuelle" },
-      { label: "🪪 Collaborateurs Hôtel", doctype: "SE Employe" },
       { label: "🏗️ Immobilisations & VNC (Cl. 2)", doctype: "SE Immobilisation" },
       { label: "🏦 Emprunts & Dettes (Cl. 16)", doctype: "SE Emprunt et Dette" },
       { label: "📑 Contrats & Abonnements", doctype: "SE Contrat et Abonnement" }
@@ -1184,7 +1172,14 @@ function renderSidebar(activeKey = "workspace") {
     html += `<div class="nav-group">${g.title}</div>`;
     g.items.forEach(item => {
       const key = item.doctype || "workspace";
-      const count = item.doctype && APP_STATE.db[item.doctype] ? APP_STATE.db[item.doctype].length : "";
+      let count = "";
+      if (item.action === "rh_employees" && APP_STATE.db && APP_STATE.db["SE Employe"]) {
+        count = APP_STATE.db["SE Employe"].length;
+      } else if (item.action === "rh_payroll" && APP_STATE.db && APP_STATE.db["SE Fiche de Paie Mensuelle"]) {
+        count = APP_STATE.db["SE Fiche de Paie Mensuelle"].length;
+      } else if (item.doctype && APP_STATE.db && APP_STATE.db[item.doctype]) {
+        count = APP_STATE.db[item.doctype].length;
+      }
       const active = activeKey === key ? "active" : "";
       let fn = "showWorkspace()";
       if (item.action && item.action.startsWith("rh_")) {

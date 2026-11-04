@@ -1016,6 +1016,21 @@
   ],
   "SE Employe": [
     {
+      "name": "EMP-2026-0016",
+      "nom": "Benali",
+      "prenom": "Nadia",
+      "nom_complet": "Nadia Benali",
+      "departement": "Hébergement",
+      "fonction": "Gouvernante Générale",
+      "type_contrat": "CDI",
+      "salaire_base_contractuel": 65000,
+      "salaire_base_declare": 65000,
+      "n_assurance": "168012345678",
+      "nin": "109876543210987654",
+      "statut_professionnel": "Actif",
+      "date_embauche": "2026-03-01"
+    },
+    {
       "name": "SE-EMP-0001",
       "nom_complet": "Karim Benali",
       "fonction": "Directeur d'Exploitation",
@@ -1931,7 +1946,8 @@
           "date_arrivee": "2026-01-05",
           "date_depart": "2026-01-12",
           "nuitees": 7,
-          "nb_personnes": 12,
+          "nb_personnes": 13,
+          "taxe_sejour": 3500.0,
           "total_ttc_sejour": 4200000.0
         }
       ],
@@ -2021,7 +2037,8 @@
           "date_arrivee": "2026-01-18",
           "date_depart": "2026-01-20",
           "nuitees": 2,
-          "nb_personnes": 4,
+          "nb_personnes": 5,
+          "taxe_sejour": 1000.0,
           "total_ttc_sejour": 285000.0
         }
       ],
@@ -2111,7 +2128,8 @@
           "date_arrivee": "",
           "date_depart": "",
           "nuitees": 1,
-          "nb_personnes": 0,
+          "nb_personnes": 1,
+          "taxe_sejour": 0.0,
           "total_ttc_sejour": 2450000.0
         }
       ],
@@ -2155,8 +2173,9 @@
           "date_arrivee": "2026-02-10",
           "date_depart": "2026-02-12",
           "nuitees": 2,
-          "nb_personnes": 4,
-          "total_ttc_sejour": 2100000.0
+          "nb_personnes": 8,
+          "total_ttc_sejour": 2100000.0,
+          "taxe_sejour": 4000.0
         },
         {
           "sejour_no": 2,
@@ -2164,8 +2183,9 @@
           "date_arrivee": "2026-02-12",
           "date_depart": "2026-02-14",
           "nuitees": 2,
-          "nb_personnes": 6,
-          "total_ttc_sejour": 2800000.0
+          "nb_personnes": 12,
+          "total_ttc_sejour": 2800000.0,
+          "taxe_sejour": 6000.0
         }
       ],
       "lignes": [
@@ -2271,7 +2291,8 @@
           "date_arrivee": "",
           "date_depart": "",
           "nuitees": 1,
-          "nb_personnes": 0,
+          "nb_personnes": 1,
+          "taxe_sejour": 0.0,
           "total_ttc_sejour": 2750000.0
         }
       ],
@@ -2316,7 +2337,8 @@
           "date_arrivee": "2026-03-01",
           "date_depart": "2026-03-05",
           "nuitees": 4,
-          "nb_personnes": 15,
+          "nb_personnes": 16,
+          "taxe_sejour": 2000.0,
           "total_ttc_sejour": 3850000.0
         }
       ],
@@ -2406,7 +2428,8 @@
           "date_arrivee": "",
           "date_depart": "",
           "nuitees": 1,
-          "nb_personnes": 0,
+          "nb_personnes": 1,
+          "taxe_sejour": 0.0,
           "total_ttc_sejour": 2900000.0
         }
       ],
@@ -2503,7 +2526,8 @@
           "date_arrivee": "2026-11-01",
           "date_depart": "2026-11-04",
           "nuitees": 3,
-          "nb_personnes": 3,
+          "nb_personnes": 4,
+          "taxe_sejour": 1500.0,
           "total_ttc_sejour": 70000.0
         }
       ],
@@ -2591,8 +2615,9 @@
           "date_arrivee": "2026-11-15",
           "date_depart": "2026-11-18",
           "nuitees": 3,
-          "nb_personnes": 5,
-          "total_ttc_sejour": 2160000.0
+          "nb_personnes": 10,
+          "total_ttc_sejour": 2160000.0,
+          "taxe_sejour": 7500.0
         },
         {
           "sejour_no": 2,
@@ -2600,8 +2625,9 @@
           "date_arrivee": "2026-11-15",
           "date_depart": "2026-11-18",
           "nuitees": 3,
-          "nb_personnes": 5,
-          "total_ttc_sejour": 720000.0
+          "nb_personnes": 10,
+          "total_ttc_sejour": 720000.0,
+          "taxe_sejour": 7500.0
         }
       ],
       "lignes": [
@@ -2736,7 +2762,8 @@
           "date_arrivee": "2026-12-01",
           "date_depart": "2026-12-05",
           "nuitees": 4,
-          "nb_personnes": 6,
+          "nb_personnes": 7,
+          "taxe_sejour": 2000.0,
           "total_ttc_sejour": 1176000.0
         }
       ],
