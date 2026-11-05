@@ -32,7 +32,28 @@ from datetime import date, datetime
 
 from saint_eugene.utils.fiscal_dz import compute_droit_timbre_algerie, montant_dzd_en_lettres
 
-ROOM_TYPES = ("Single", "Double", "Twin", "Triple", "Suite Deluxe", "Suite Saint Eugène")
+ROOM_TYPES = (
+    "Single Standard [SGL-STD]",
+    "Single Vue Mer [SGL-MER]",
+    "Double Standard [DBL-STD]",
+    "Double Vue Mer [DBL-MER]",
+    "Chambre Twin [TWIN]",
+    "Chambre Triple [TRP]",
+    "Suite Deluxe [SDL]",
+    "Suite Saint Eugène [SSE]",
+    "Single Standard",
+    "Single Vue Mer",
+    "Double Standard",
+    "Double Vue Mer",
+    "Chambre Twin",
+    "Chambre Triple",
+    "Single",
+    "Double",
+    "Twin",
+    "Triple",
+    "Suite Deluxe",
+    "Suite Saint Eugène"
+)
 SERVICES = ("Dîner", "Déjeuner", "Coffee Break", "Location de salle")
 
 ARTICLE_CATEGORY = {

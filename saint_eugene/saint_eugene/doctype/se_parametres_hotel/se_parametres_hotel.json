@@ -53,7 +53,7 @@
       "fieldtype": "Data",
       "label": "Raison Sociale Légale",
       "reqd": 1,
-      "default": "SPA HÔTEL SAINT EUGÈNE"
+      "default": "HOTEL SAINT EUGENE"
     },
     {
       "fieldname": "classement_etoiles",
@@ -78,25 +78,25 @@
       "fieldname": "capital_social",
       "fieldtype": "Data",
       "label": "Capital Social",
-      "default": "120 000 000,00 DZD"
+      "default": "70 000 000 DA"
     },
     {
       "fieldname": "adresse",
       "fieldtype": "Small Text",
       "label": "Adresse Officielle",
-      "default": "Front de Mer, Bologhine - 16090 Alger, Algérie"
+      "default": "04, Boulevard Omar LOUNAS, Bab El Oued, Alger"
     },
     {
       "fieldname": "telephone",
       "fieldtype": "Data",
       "label": "Téléphone Standard",
-      "default": "+213 (0) 21 95 40 00"
+      "default": "+213 (0) 770 05 95 43"
     },
     {
       "fieldname": "email",
       "fieldtype": "Data",
       "label": "Email Direction Financière",
-      "default": "direction.financiere@hotel-sainteugene.dz"
+      "default": "contact@sainteugenehotel.com"
     },
     {
       "fieldname": "sb_fisc_id",
@@ -108,20 +108,20 @@
       "fieldtype": "Data",
       "label": "NIF (Numéro d'Identification Fiscale)",
       "reqd": 1,
-      "default": "002616099124587"
+      "default": "001416099002973"
     },
     {
       "fieldname": "nis",
       "fieldtype": "Data",
       "label": "NIS (Numéro d'Identification Statistique)",
-      "default": "099916090145821"
+      "default": "001416170291741"
     },
     {
       "fieldname": "rc",
       "fieldtype": "Data",
       "label": "Registre de Commerce (RC)",
       "reqd": 1,
-      "default": "16/00-0991245B26"
+      "default": "16/00-0990029B14"
     },
     {
       "fieldname": "cb_fisc_id_2",
@@ -132,7 +132,7 @@
       "fieldtype": "Data",
       "label": "Article d'Imposition (AI)",
       "reqd": 1,
-      "default": "16094512874"
+      "default": "16175066192"
     },
     {
       "fieldname": "numero_employeur_cnas",
@@ -144,7 +144,7 @@
       "fieldname": "rib_principal",
       "fieldtype": "Data",
       "label": "Coordonnées Bancaires / RIB sur Factures",
-      "default": "BNA Agence Bologhine : 00100614030001458921"
+      "default": "CPA Bab El Oued (175) : 004 00175 4000261090 62"
     },
     {
       "fieldname": "sb_taxes",
@@ -155,19 +155,19 @@
       "fieldname": "taux_tva_hebergement_defaut",
       "fieldtype": "Percent",
       "label": "Taux TVA Tourisme / Hébergement (%)",
-      "default": "9"
+      "default": "9.0"
     },
     {
       "fieldname": "taux_tva_standard_defaut",
       "fieldtype": "Percent",
       "label": "Taux TVA Normal (%)",
-      "default": "19"
+      "default": "19.0"
     },
     {
       "fieldname": "taxe_sejour_nuitee_adulte",
       "fieldtype": "Currency",
       "label": "Taxe de Séjour par Nuitée & Adulte (DZD)",
-      "default": "400",
+      "default": "500.0",
       "description": "Barème légal Algérie : 400 DZD / nuitée / personne en Hôtel 4★"
     },
     {
@@ -184,7 +184,7 @@
       "fieldname": "plafond_droit_timbre",
       "fieldtype": "Currency",
       "label": "Plafond Droit de Timbre Espèces (0 = Sans plafond)",
-      "default": "0",
+      "default": "0.0",
       "description": "Laisser 0 pour appliquer le barème déplafonné ou saisir un plafond DZD selon Loi de Finances"
     },
     {
@@ -196,7 +196,7 @@
       "fieldname": "seuil_tresorerie_critique",
       "fieldtype": "Currency",
       "label": "Seuil Critique de Trésorerie Globale (DZD)",
-      "default": "2500000"
+      "default": "2500000.0"
     },
     {
       "fieldname": "cb_alertes_2",
