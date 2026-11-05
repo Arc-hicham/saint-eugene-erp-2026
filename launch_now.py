@@ -2508,36 +2508,48 @@ def render_print_html(db: dict, doctype: str, name: str) -> str:
         return f"""<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
         <title>{'FACTURE PRO FORMA' if is_pro else 'FACTURE CLIENT'} {doc['name']}</title>
         <style>
-          body {{ font-family:'Segoe UI',Arial,sans-serif; color:#0f172a; max-width:880px; margin:20px auto; padding:24px; border:1px solid #cbd5e1; background:#fff; }}
-          .hdr {{ display:flex; justify-content:space-between; border-bottom:3px solid #b45309; padding-bottom:14px; margin-bottom:18px; }}
-          .grid {{ display:flex; gap:16px; margin-bottom:16px; }}
-          .box {{ flex:1; border:1px solid #cbd5e1; border-radius:6px; padding:12px; background:#f8fafc; font-size:12px; }}
-          table {{ width:100%; border-collapse:collapse; margin-bottom:14px; font-size:12px; }}
-          th {{ background:#0f172a; color:#fff; padding:8px; text-align:left; }}
-          .words {{ background:#fffbeb; border-left:4px solid #d97706; padding:12px; font-size:12.5px; margin:16px 0; }}
-          @media print {{ .no-print {{ display:none; }} body {{ border:none; margin:0; padding:10px; }} }}
+          @page {{ size: A4 portrait; margin: 8mm 10mm; }}
+          body {{ font-family:'Segoe UI',Arial,sans-serif; color:#0f172a; max-width:820px; margin:10px auto; padding:16px 20px; border:1px solid #cbd5e1; background:#fff; }}
+          .hdr {{ display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; justify-content:space-between !important; align-items:flex-start !important; border-bottom:2.5px solid #b45309; padding-bottom:10px; margin-bottom:14px; gap:12px; }}
+          .hdr-left {{ display:flex !important; align-items:center !important; gap:12px !important; flex:1 1 auto !important; min-width:0 !important; }}
+          .hdr-logo {{ max-height:52px !important; max-width:130px !important; width:auto !important; height:auto !important; object-fit:contain !important; flex-shrink:0 !important; }}
+          .hdr-hotel {{ flex:1 1 auto !important; min-width:0 !important; }}
+          .hdr-right {{ flex:0 0 auto !important; text-align:right !important; white-space:nowrap !important; }}
+          .grid {{ display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; gap:12px; margin-bottom:14px; }}
+          .box {{ flex:1 !important; border:1px solid #cbd5e1; border-radius:6px; padding:10px 12px; background:#f8fafc; font-size:11.5px; min-width:0 !important; }}
+          table {{ width:100%; border-collapse:collapse; margin-bottom:12px; font-size:11.5px; }}
+          th {{ background:#0f172a; color:#fff; padding:6px 8px; text-align:left; font-size:11.5px; }}
+          td {{ padding:6px 8px; border-bottom:1px solid #e2e8f0; }}
+          .words {{ background:#fffbeb; border-left:4px solid #d97706; padding:10px 12px; font-size:12px; margin:12px 0; }}
+          @media print {{
+            .no-print {{ display:none !important; }}
+            body {{ border:none !important; margin:0 !important; padding:0 !important; max-width:100% !important; width:100% !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }}
+            .hdr {{ display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; justify-content:space-between !important; align-items:flex-start !important; }}
+            .grid {{ display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; gap:12px !important; }}
+          }}
         </style></head><body>
         <div class="no-print" style="margin-bottom:14px;text-align:right;">
           <button onclick="window.print()" style="padding:8px 18px;background:#0f172a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">🖨️ Imprimer / Enregistrer en PDF</button>
         </div>
         <div class="hdr">
-          <div style="display:flex;align-items:center;gap:18px;">
-            <img src="{LOGO_BASE64_URI}" alt="Logo Hôtel Saint Eugène" style="max-height:72px;width:auto;object-fit:contain;">
-            <div>
-              <h1 style="margin:0;font-size:20px;color:#0f172a;letter-spacing:0.5px;">{cfg['raison_sociale']} <span style="font-size:13px;color:#64748b;font-weight:normal;">({cfg.get('forme_juridique', 'SARL')})</span> <span style="color:#d97706;">★★★★</span></h1>
-              <div style="font-size:11.5px;color:#475569;margin-top:4px;line-height:1.4;">
+          <div class="hdr-left">
+            <img src="{LOGO_BASE64_URI}" alt="Logo Hôtel Saint Eugène" class="hdr-logo">
+            <div class="hdr-hotel">
+              <h1 style="margin:0;font-size:16px;color:#0f172a;letter-spacing:0.3px;line-height:1.2;">{cfg['raison_sociale']} <span style="font-size:12px;color:#64748b;font-weight:normal;">({cfg.get('forme_juridique', 'SARL')})</span> <span style="color:#d97706;">★★★★</span></h1>
+              <div style="font-size:10px;color:#475569;margin-top:3px;line-height:1.35;">
                 {cfg['adresse']}<br>
                 Tél : {cfg['telephone']} | Réservations : {cfg.get('email_reservation') or cfg['email']}<br>
-                <b>RC :</b> {cfg['rc']} | <b>NIF :</b> {cfg['nif']} | <b>NIS :</b> {cfg.get('nis', '001416170291741')} | <b>AI :</b> {cfg['article_imposition']}
+                <b>RC :</b> {cfg['rc']} | <b>AI :</b> {cfg['article_imposition']}<br>
+                <b>NIF :</b> {cfg['nif']} | <b>NIS :</b> {cfg.get('nis', '001416170291741')}
               </div>
             </div>
           </div>
-          <div style="text-align:right;">
-            <h2 style="margin:0;color:#b45309;font-size:18px;">{'FACTURE PRO FORMA' if is_pro else 'FACTURE CLIENT OFFICIELLE'}</h2>
-            <div style="font-size:12px;margin-top:4px;"><b>N° :</b> {doc['name']}</div>
-            <div style="font-size:12px;"><b>Date :</b> {doc['date_facture']}</div>
-            <div style="font-size:12px;"><b>{'Validité' if is_pro else 'Échéance'} :</b> {doc.get('date_validite' if is_pro else 'date_echeance', '—')}</div>
-            <div style="font-size:12px;"><b>Statut :</b> {doc.get('statut', 'Validée')}</div>
+          <div class="hdr-right">
+            <h2 style="margin:0 0 3px 0;color:#b45309;font-size:15.5px;font-weight:800;letter-spacing:0.3px;">{'FACTURE PRO FORMA' if is_pro else 'FACTURE CLIENT OFFICIELLE'}</h2>
+            <div style="font-size:11px;line-height:1.35;"><b>N° :</b> {doc['name']}</div>
+            <div style="font-size:11px;line-height:1.35;"><b>Date :</b> {doc['date_facture']}</div>
+            <div style="font-size:11px;line-height:1.35;"><b>{'Validité' if is_pro else 'Échéance'} :</b> {doc.get('date_validite' if is_pro else 'date_echeance', '—')}</div>
+            <div style="font-size:11px;line-height:1.35;"><b>Statut :</b> {doc.get('statut', 'Validée')}</div>
           </div>
         </div>
         <div class="grid">
