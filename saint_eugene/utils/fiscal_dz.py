@@ -3,7 +3,7 @@
 Utilitaires Fiscaux & Réglementaires Algériens (SCF / DGI / Hôtellerie 4★)
 - Paramètres centralisés `SE Parametres Hotel`
 - Calcul du Droit de Timbre algérien sur paiements en Espèces (Code du Timbre)
-- Calcul de la Taxe de Séjour Hôtelière 4★ (400 DZD / adulte / nuitée, hors base TVA)
+- Calcul de la Taxe de Séjour Hôtelière 4★ (500 DZD / adulte / nuitée, hors base TVA)
 - Conversion intégrale des montants DZD en toutes lettres en français (mention obligatoire facture Algérie)
 """
 from __future__ import annotations
@@ -33,16 +33,16 @@ DEFAULT_SETTINGS = {
     "nom_hotel": "Hôtel Saint Eugène 4★ - Alger",
     "raison_sociale": "SPA HÔTEL SAINT EUGÈNE",
     "classement_etoiles": "4 Étoiles",
-    "capital_social": "120 000 000,00 DZD",
-    "adresse": "04 Blv Omar Lounas, Bologhine - 16090 Alger, Algérie",
-    "telephone": "+213 (0) 21 95 40 00",
-    "email": "direction.financiere@hotel-sainteugene.dz",
-    "nif": "002616099124587",
-    "nis": "099916090145821",
-    "rc": "16/00-0991245B26",
-    "article_imposition": "16094512874",
+    "capital_social": "70 000 000,00 DZD",
+    "adresse": "4 Boulevard Lounas Omar, Bab El Oued 16000",
+    "telephone": "+213 (0) 70 05 95 43",
+    "email": "Contact@sainteugenehotel.com",
+    "nif": "001416099002973",
+    "nis": "001416170291741",
+    "rc": "16/00-0990029 B 14",
+    "article_imposition": "16175066192",
     "numero_employeur_cnas": "16 4458 92 01",
-    "rib_principal": "BNA Agence Bologhine : 00100614030001458921",
+    "rib_principal": "CPA Bab El Oued : 004 00175 4000261090 62",
     "capacite_chambres": 45,
     "taux_tva_hebergement_defaut": 9.0,
     "taux_tva_standard_defaut": 19.0,
