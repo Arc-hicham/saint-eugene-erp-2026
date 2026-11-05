@@ -3739,7 +3739,7 @@ function openPrintPreview() {{
         <td style="padding:7px;border-bottom:1px solid #e2e8f0;">
           <b>${{ln.article || 'Prestation'}}</b> (${{ln.type_ligne || 'Hébergement'}})
           ${{sejours.length > 1 ? `<span style="font-size:11px;color:#64748b;">[Séjour #${{ln.sejour_no || 1}}]</span>` : ''}}
-          ${{(ln.observation || ln.obs || ln.remarque) ? `<div style="font-size:11px;color:#475569;margin-top:3px;font-style:italic;line-height:1.3;">📝 <b>Observation :</b> ${{String(ln.observation || ln.obs || ln.remarque).replace(/\n/g, '<br>')}}</div>` : ''}}
+          ${{(ln.observation || ln.obs || ln.remarque) ? `<div style="font-size:11px;color:#475569;margin-top:3px;font-style:italic;line-height:1.3;">📝 <b>Observation :</b> ${{String(ln.observation || ln.obs || ln.remarque).split(String.fromCharCode(10)).join('<br>')}}</div>` : ''}}
         </td>
         <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:right;">${{fmtDZD(pu)}}</td>
         <td style="padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;">${{qty}}</td>
