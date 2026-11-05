@@ -708,11 +708,9 @@ def main() -> None:
     <div class="login-field">
       <label>Profil Utilisateur Autorisé</label>
       <select id="loginRole">
-        <option value="Contrôle de Gestion / DAF (Hicham Bakir)">Hicham Bakir — Contrôle de Gestion / DAF</option>
-        <option value="Direction Générale — Hôtel Saint Eugène">Direction Générale — Hôtel Saint Eugène</option>
-        <option value="Chef Comptable SCF & Audit">Chef Comptable SCF & Audit</option>
-        <option value="Réception & Caisses Hôtel 4★">Réception & Caisses Hôtel 4★</option>
-        <option value="Administrateur Système">Administrateur Système</option>
+        <option value="Administrateur">Hicham Bakir — Administrateur (Accès Total)</option>
+        <option value="Utilisateur Normal">Réception & Facturation — Utilisateur Normal</option>
+        <option value="Consultant">Audit & Contrôle Financier — Consultant (Lecture Seule)</option>
       </select>
     </div>
     <div class="login-field">
@@ -959,11 +957,9 @@ function rc4Drop4096Decrypt(keyBytes, cipherBytes) {{
 // 👥 GESTION DES UTILISATEURS & AUTHENTIFICATION — HÔTEL SAINT EUGÈNE 4★
 // =============================================================================
 const DEFAULT_USERS_LIST = [
-  {{ "nom": "Hicham Bakir", "role": "Contrôle de Gestion / DAF (Hicham Bakir)", "mot_de_passe": "1234" }},
-  {{ "nom": "Direction Générale", "role": "Direction Générale — Hôtel Saint Eugène", "mot_de_passe": "SaintEugene2026" }},
-  {{ "nom": "Chef Comptable", "role": "Chef Comptable SCF & Audit", "mot_de_passe": "compta2026" }},
-  {{ "nom": "Réception & Caisses", "role": "Réception & Caisses Hôtel 4★", "mot_de_passe": "reception2026" }},
-  {{ "nom": "Administrateur", "role": "Administrateur Système", "mot_de_passe": "admin" }}
+  {{ "id": "USR-001", "name": "USR-001", "identifiant": "admin", "nom": "Hicham Bakir", "role": "Administrateur", "mot_de_passe": "1234", "email": "general.manager@sainteugenehotel.com" }},
+  {{ "id": "USR-002", "name": "USR-002", "identifiant": "user1", "nom": "Réception & Facturation", "role": "Utilisateur Normal", "mot_de_passe": "user2026", "email": "reception@sainteugenehotel.com" }},
+  {{ "id": "USR-003", "name": "USR-003", "identifiant": "consultant", "nom": "Audit & Contrôle Financier", "role": "Consultant", "mot_de_passe": "consultant2026", "email": "consultant@sainteugenehotel.com" }}
 ];
 
 const MASTER_PASSWORDS = ["1234", "SaintEugene2026", "sainteugene2026", "admin", "admin2026"];
@@ -1123,14 +1119,24 @@ async function handleUnlock(e) {{
     INITIAL_DB = BUNDLE_DATA.initial_db;
     GS_SCRIPT_CODE = BUNDLE_DATA.gs_script || "";
     CURRENT_USER_ROLE = role;
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({{ pwd, role }}));
-    document.getElementById("activeUserBadge").textContent = `Connecté : ${{role}}`;
+    const allUsers = getUsersList();
+    const curU = allUsers.find(u => u.role === role) || DEFAULT_USERS_LIST[0];
+    window.CURRENT_USER = {{
+      id: curU.id || curU.name || "USR-001",
+      name: curU.name || curU.id || "USR-001",
+      identifiant: curU.identifiant || "admin",
+      nom: curU.nom || role,
+      role: curU.role || role,
+      email: curU.email || ""
+    }};
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({{ pwd, role, user: window.CURRENT_USER }}));
+    document.getElementById("activeUserBadge").textContent = `Connecté : ${{curU.nom}} (${{role}})`;
     document.getElementById("loginScreen").classList.add("hidden");
     DB = loadDB();
     window.DB = DB;
     renderSidebar();
     showWorkspace();
-    showToast(`👋 Bienvenue, ${{role}} !`);
+    showToast(`👋 Bienvenue, ${{curU.nom}} (${{role}}) !`);
     return;
   }}
 
@@ -1720,6 +1726,13 @@ const NAV_GROUPS = [
       {{ label: "🏗️ Immobilisations & VNC (Cl. 2)", doctype: "SE Immobilisation" }},
       {{ label: "🏦 Emprunts & Dettes (Cl. 16)", doctype: "SE Emprunt et Dette" }},
       {{ label: "📑 Contrats & Abonnements", doctype: "SE Contrat et Abonnement" }}
+    ]
+  }},
+  {{
+    title: "Sécurité & Supervision",
+    items: [
+      {{ label: "👥 Gestion des Utilisateurs (3 Rôles)", doctype: "SE Utilisateur", roles: ["Administrateur"] }},
+      {{ label: "📜 Journal d'Audit & Traçabilité", doctype: "SE Journal Audit", roles: ["Administrateur", "Utilisateur Normal"] }}
     ]
   }}
 ];

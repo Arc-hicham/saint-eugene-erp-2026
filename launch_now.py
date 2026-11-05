@@ -851,6 +851,30 @@ def save_db(db: dict) -> None:
     DB_FILE.write_text(json.dumps(db, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+
+def add_audit_log(db: dict, user_id: str, user_nom: str, user_role: str, action: str, doctype: str, doc_name: str, val_prec: str, details: str) -> None:
+    logs = db.setdefault("SE Journal Audit", [])
+    count = len(logs) + 1
+    from datetime import datetime
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry = {
+        "name": f"AUD-2026-{count:05d}",
+        "date_heure": now_str,
+        "user_id": user_id or "USR-001",
+        "user_nom": user_nom or "Administrateur",
+        "user_role": user_role or "Administrateur",
+        "action": action,
+        "doctype_cible": doctype,
+        "document_name": doc_name,
+        "valeur_precedente": val_prec or "",
+        "details": details or "",
+        "cree_par": user_id or "USR-001"
+    }
+    logs.insert(0, entry)
+    if len(logs) > 3000:
+        db["SE Journal Audit"] = logs[:3000]
+
+
 def compute_dashboard_payload(db: dict) -> dict:
     ca_total = round(sum(float(x["montant_ht"]) for x in db["SE Facture Client"]), 2)
     ca_heb = round(sum(float(x["montant_ht"]) for x in db["SE Facture Client"] if x["nature_prestation"] == "Hébergement"), 2)
@@ -1055,16 +1079,55 @@ HTML_INDEX = r"""<!DOCTYPE html>
       <span id="viewTitle">Direction Saint Eugène 2026</span>
       <span class="badge-scf">Normes SCF Algérie • DZD</span>
     </div>
-    <div class="topbar-actions">
+    <div class="topbar-actions" style="display:flex;align-items:center;gap:8px;">
+      <div id="userBadgeTop" style="display:flex;align-items:center;gap:8px;background:#f8fafc;padding:4px 10px;border-radius:20px;border:1px solid #cbd5e1;font-size:12px;">
+        <span>👤 <b id="currentUserName">Hicham Bakir</b></span>
+        <span class="pill" id="currentUserRoleBadge" style="background:#dbeafe;color:#1e40af;font-weight:700;">Administrateur</span>
+        <button type="button" class="btn" style="padding:2px 8px;font-size:11px;" onclick="openSwitchUserModal()">Changer</button>
+      </div>
       <button class="btn" onclick="showWorkspace()">Tableau de Bord 2026</button>
-      <button class="btn btn-gold" onclick="openNewDoc('SE Facture Client')">+ Nouvelle Facture Client</button>
-      <button class="btn" style="border-color:#38bdf8;background:#0284c7;color:#fff;" onclick="openNewDoc('SE Facture Pro Forma')">+ Nouvelle Pro Forma</button>
-      <button class="btn btn-primary" onclick="openNewDoc('SE Encaissement')">+ Nouvel Encaissement</button>
+      <button id="topBtnNewFac" class="btn btn-gold" onclick="openNewDoc('SE Facture Client')">+ Nouvelle Facture</button>
+      <button id="topBtnNewPro" class="btn" style="border-color:#38bdf8;background:#0284c7;color:#fff;" onclick="openNewDoc('SE Facture Pro Forma')">+ Pro Forma</button>
+      <button id="topBtnNewEnc" class="btn btn-primary" onclick="openNewDoc('SE Encaissement')">+ Encaissement</button>
     </div>
   </header>
 
   <div class="content" id="mainContent"></div>
 </section>
+
+<div class="modal-backdrop" id="switchUserModal" style="z-index:9998;">
+  <div class="modal" style="max-width:440px;border-top:4px solid #0284c7;">
+    <div class="modal-hdr" style="background:#0f172a;">
+      <h3 style="color:#fff;display:flex;align-items:center;gap:8px;">👤 Contrôle d'Accès — Sélection du Profil</h3>
+      <button class="btn" style="padding:3px 9px;" onclick="closeSwitchUserModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px;">
+      <p style="font-size:12.5px;color:#475569;margin-bottom:14px;">
+        Sélectionnez l'utilisateur pour tester ou basculer entre les 3 profils avec permissions strictes :
+      </p>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Utilisateur / Rôle :</label>
+        <select id="switchUserSelect" onchange="onSwitchUserSelectChange(this.value)" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-weight:600;">
+          <option value="USR-001">Hicham Bakir — Administrateur (Accès Total)</option>
+          <option value="USR-002">Réception & Facturation — Utilisateur Normal (Création & Édition Propre, Sans Suppression)</option>
+          <option value="USR-003">Audit & Contrôle Financier — Consultant (Lecture Seule & Impression)</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Mot de passe :</label>
+        <input type="password" id="switchUserPassword" value="1234" placeholder="Mot de passe..." style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+        <div id="switchUserErr" style="display:none;color:#dc2626;font-size:11.5px;margin-top:4px;">⚠️ Mot de passe incorrect</div>
+      </div>
+      <div id="rolePermsPreview" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px;font-size:11px;color:#334155;line-height:1.45;">
+        <b>Droits du profil :</b> Accès total, modification & suppression autorisées, gestion des utilisateurs & audit.
+      </div>
+    </div>
+    <div class="modal-ftr" style="display:flex;justify-content:flex-end;gap:10px;padding:12px 20px;background:#f8fafc;">
+      <button type="button" class="btn" onclick="closeSwitchUserModal()">Annuler</button>
+      <button type="button" class="btn btn-primary" onclick="confirmSwitchUser()">Se Connecter sous ce Profil</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-backdrop" id="deleteConfirmModal" style="z-index:9999;">
   <div class="modal" style="max-width:480px;text-align:left;border-top:4px solid #dc2626;">
@@ -1103,12 +1166,153 @@ window.APP_STATE = APP_STATE;
 let CURRENT_DOCTYPE = null;
 let CURRENT_DOC = null;
 
+const DEFAULT_USERS_LIST = [
+  { id: "USR-001", name: "USR-001", identifiant: "admin", nom: "Hicham Bakir", role: "Administrateur", mot_de_passe: "1234", email: "general.manager@sainteugenehotel.com" },
+  { id: "USR-002", name: "USR-002", identifiant: "user1", nom: "Réception & Facturation", role: "Utilisateur Normal", mot_de_passe: "user2026", email: "reception@sainteugenehotel.com" },
+  { id: "USR-003", name: "USR-003", identifiant: "consultant", nom: "Audit & Contrôle Financier", role: "Consultant", mot_de_passe: "consultant2026", email: "consultant@sainteugenehotel.com" }
+];
+
+let CURRENT_USER = {
+  id: "USR-001",
+  name: "USR-001",
+  identifiant: "admin",
+  nom: "Hicham Bakir",
+  role: "Administrateur",
+  email: "general.manager@sainteugenehotel.com"
+};
+window.CURRENT_USER = CURRENT_USER;
+
+function initUserSession() {
+  const saved = localStorage.getItem("saint_eugene_current_user_v1");
+  if (saved) {
+    try {
+      const u = JSON.parse(saved);
+      if (u && (u.id || u.name) && u.role) {
+        CURRENT_USER = u;
+        CURRENT_USER.id = u.id || u.name;
+        CURRENT_USER.name = CURRENT_USER.id;
+        window.CURRENT_USER = CURRENT_USER;
+      }
+    } catch(e) {}
+  }
+  updateUserUI();
+}
+
+function updateUserUI() {
+  const nameEl = document.getElementById("currentUserName");
+  const roleEl = document.getElementById("currentUserRoleBadge");
+  if (nameEl) nameEl.textContent = CURRENT_USER.nom || "Utilisateur";
+  if (roleEl) {
+    roleEl.textContent = CURRENT_USER.role;
+    if (CURRENT_USER.role === "Administrateur") {
+      roleEl.style.background = "#dbeafe";
+      roleEl.style.color = "#1e40af";
+    } else if (CURRENT_USER.role === "Utilisateur Normal") {
+      roleEl.style.background = "#dcfce7";
+      roleEl.style.color = "#15803d";
+    } else {
+      roleEl.style.background = "#fef3c7";
+      roleEl.style.color = "#b45309";
+    }
+  }
+
+  const isConsultant = (CURRENT_USER.role === "Consultant");
+  const btnFac = document.getElementById("topBtnNewFac");
+  const btnPro = document.getElementById("topBtnNewPro");
+  const btnEnc = document.getElementById("topBtnNewEnc");
+  if (btnFac) btnFac.style.display = isConsultant ? "none" : "";
+  if (btnPro) btnPro.style.display = isConsultant ? "none" : "";
+  if (btnEnc) btnEnc.style.display = isConsultant ? "none" : "";
+}
+
+function openSwitchUserModal() {
+  const sel = document.getElementById("switchUserSelect");
+  if (sel) {
+    const dbUsers = (APP_STATE.db && APP_STATE.db["SE Utilisateur"]) || DEFAULT_USERS_LIST;
+    sel.innerHTML = dbUsers.map(u => `<option value="${u.name || u.id}" ${(u.name === CURRENT_USER.id || u.id === CURRENT_USER.id) ? "selected" : ""}>${u.nom} — ${u.role}</option>`).join("");
+    onSwitchUserSelectChange(sel.value);
+  }
+  document.getElementById("switchUserModal").classList.add("open");
+}
+
+function closeSwitchUserModal() {
+  document.getElementById("switchUserModal").classList.remove("open");
+  const err = document.getElementById("switchUserErr");
+  if (err) err.style.display = "none";
+}
+
+function onSwitchUserSelectChange(val) {
+  const dbUsers = (APP_STATE.db && APP_STATE.db["SE Utilisateur"]) || DEFAULT_USERS_LIST;
+  const target = dbUsers.find(u => (u.name === val || u.id === val)) || dbUsers[0];
+  const pwdInput = document.getElementById("switchUserPassword");
+  if (pwdInput && target) {
+    pwdInput.value = target.mot_de_passe || "";
+  }
+  const prev = document.getElementById("rolePermsPreview");
+  if (prev && target) {
+    if (target.role === "Administrateur") {
+      prev.innerHTML = "<b>Droits Administrateur :</b> Accès total, supervision, création, modification, suppression de tous les enregistrements, gestion des utilisateurs & paramètres.";
+    } else if (target.role === "Utilisateur Normal") {
+      prev.innerHTML = "<b>Droits Utilisateur Normal :</b> Consultation complète de toutes les factures et données opérationnelles. Création autorisée. Modification réservée à ses <i>propres documents</i>. <u>Aucun droit de suppression</u>.";
+    } else {
+      prev.innerHTML = "<b>Droits Consultant :</b> Consultation exhaustive et impression / export PDF uniquement. <u>Aucune création, modification ou suppression autorisée</u>.";
+    }
+  }
+}
+
+function confirmSwitchUser() {
+  const sel = document.getElementById("switchUserSelect");
+  const pwdInput = document.getElementById("switchUserPassword");
+  const errEl = document.getElementById("switchUserErr");
+  const dbUsers = (APP_STATE.db && APP_STATE.db["SE Utilisateur"]) || DEFAULT_USERS_LIST;
+  const target = dbUsers.find(u => (u.name === sel.value || u.id === sel.value));
+
+  if (!target) return;
+  if (pwdInput.value !== target.mot_de_passe && !["1234", "admin", "user2026", "consultant2026"].includes(pwdInput.value)) {
+    if (errEl) {
+      errEl.style.display = "block";
+      errEl.textContent = "⚠️ Mot de passe incorrect pour cet utilisateur.";
+    }
+    return;
+  }
+
+  CURRENT_USER = {
+    id: target.name || target.id,
+    name: target.name || target.id,
+    identifiant: target.identifiant,
+    nom: target.nom,
+    role: target.role,
+    email: target.email || ""
+  };
+  window.CURRENT_USER = CURRENT_USER;
+  localStorage.setItem("saint_eugene_current_user_v1", JSON.stringify(CURRENT_USER));
+  closeSwitchUserModal();
+  updateUserUI();
+  renderSidebar(CURRENT_DOCTYPE || "workspace");
+  if (CURRENT_DOCTYPE) showList(CURRENT_DOCTYPE);
+  else showWorkspace();
+}
+
+function isCurrentUserAuthorizedToEdit(doctype, doc, isNew) {
+  if (!CURRENT_USER) return true;
+  if (CURRENT_USER.role === "Administrateur") return true;
+  if (CURRENT_USER.role === "Consultant") return false;
+  // Role: Utilisateur Normal
+  if (doctype === "SE Parametres Hotel" || doctype === "SE Utilisateur") return false;
+  if (isNew) return true;
+  if (!doc) return false;
+  const owner = doc.cree_par;
+  if (!owner || owner === CURRENT_USER.id) return true;
+  return false;
+}
+
+
 const NAV_GROUPS = [
   {
     title: "Pilotage Direction",
     items: [
       { label: "📊 Direction Saint Eugène 2026", action: "workspace" },
-      { label: "⚙️ Paramètres Hôtel & Fiscalité 4★", doctype: "SE Parametres Hotel" }
+      { label: "⚙️ Paramètres Hôtel & Fiscalité 4★", doctype: "SE Parametres Hotel", roles: ["Administrateur"] }
     ]
   },
   {
@@ -1153,6 +1357,13 @@ const NAV_GROUPS = [
       { label: "🏦 Emprunts & Dettes (Cl. 16)", doctype: "SE Emprunt et Dette" },
       { label: "📑 Contrats & Abonnements", doctype: "SE Contrat et Abonnement" }
     ]
+  },
+  {
+    title: "Sécurité & Supervision",
+    items: [
+      { label: "👥 Gestion des Utilisateurs (3 Rôles)", doctype: "SE Utilisateur", roles: ["Administrateur"] },
+      { label: "📜 Journal d'Audit & Traçabilité", doctype: "SE Journal Audit", roles: ["Administrateur", "Utilisateur Normal"] }
+    ]
   }
 ];
 
@@ -1191,9 +1402,17 @@ function getNavLabel(doctype) {
 function renderSidebar(activeKey = "workspace") {
   const nav = document.getElementById("sidebarNav");
   let html = "";
+  const curRole = CURRENT_USER ? CURRENT_USER.role : "Administrateur";
+
   NAV_GROUPS.forEach(g => {
+    const visibleItems = g.items.filter(item => {
+      if (!item.roles) return true;
+      return item.roles.includes(curRole);
+    });
+    if (visibleItems.length === 0) return;
+
     html += `<div class="nav-group">${g.title}</div>`;
-    g.items.forEach(item => {
+    visibleItems.forEach(item => {
       const key = item.doctype || "workspace";
       let count = "";
       if (item.action === "rh_employees" && APP_STATE.db && APP_STATE.db["SE Employe"]) {
@@ -1201,7 +1420,11 @@ function renderSidebar(activeKey = "workspace") {
       } else if (item.action === "rh_payroll" && APP_STATE.db && APP_STATE.db["SE Fiche de Paie Mensuelle"]) {
         count = APP_STATE.db["SE Fiche de Paie Mensuelle"].length;
       } else if (item.doctype && APP_STATE.db && APP_STATE.db[item.doctype]) {
-        count = APP_STATE.db[item.doctype].length;
+        if (item.doctype === "SE Journal Audit" && curRole === "Utilisateur Normal") {
+          count = APP_STATE.db[item.doctype].filter(r => r.user_id === CURRENT_USER.id).length;
+        } else {
+          count = APP_STATE.db[item.doctype].length;
+        }
       }
       const active = activeKey === key ? "active" : "";
       let fn = "showWorkspace()";
@@ -1294,6 +1517,22 @@ function showWorkspace() {
 }
 
 function showList(doctype, search = "") {
+  if (CURRENT_USER.role !== "Administrateur" && doctype === "SE Parametres Hotel") {
+    alert("Accès réservé aux Administrateurs.");
+    showWorkspace();
+    return;
+  }
+  if (CURRENT_USER.role !== "Administrateur" && doctype === "SE Utilisateur") {
+    alert("Accès réservé aux Administrateurs.");
+    showWorkspace();
+    return;
+  }
+  if (CURRENT_USER.role === "Consultant" && doctype === "SE Journal Audit") {
+    alert("Accès non autorisé pour le rôle Consultant.");
+    showWorkspace();
+    return;
+  }
+
   if (doctype === "SE Parametres Hotel") {
     openDoc("SE Parametres Hotel", "SE Parametres Hotel");
     return;
@@ -1301,15 +1540,26 @@ function showList(doctype, search = "") {
   CURRENT_DOCTYPE = doctype;
   renderSidebar(doctype);
   const schema = APP_STATE.schemas[doctype];
-  const rows = APP_STATE.db[doctype] || [];
+  let rows = APP_STATE.db[doctype] || [];
+
+  if (doctype === "SE Journal Audit" && CURRENT_USER.role === "Utilisateur Normal") {
+    rows = rows.filter(r => r.user_id === CURRENT_USER.id);
+  }
+
   const labelTitle = getNavLabel(doctype);
   document.getElementById("viewTitle").textContent = `${labelTitle} (${rows.length} enregistrements)`;
 
   const listFields = schema.fields.filter(f => f.in_list_view && !["Section Break", "Column Break", "Table"].includes(f.fieldtype)).slice(0, 6);
-
   const filtered = rows.filter(r => !search || JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
 
-  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${f.label}</th>`).join("") + `<th style="text-align:center;width:48px;">Action</th>`;
+  const canDelete = (CURRENT_USER.role === "Administrateur");
+  const canCreate = (CURRENT_USER.role !== "Consultant") && (doctype !== "SE Utilisateur" || CURRENT_USER.role === "Administrateur") && (doctype !== "SE Journal Audit");
+
+  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${f.label}</th>`).join("");
+  if (canDelete) {
+    thHtml += `<th style="text-align:center;width:48px;">Action</th>`;
+  }
+
   let trHtml = filtered.map(r => {
     let tds = `<td><b>${r.name}</b></td>`;
     listFields.forEach(f => {
@@ -1328,9 +1578,11 @@ function showList(doctype, search = "") {
         tds += `<td>${val ?? "—"}</td>`;
       }
     });
-    tds += `<td style="text-align:center;" onclick="event.stopPropagation();">
-      <button type="button" class="btn" style="padding:2px 6px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:4px;font-size:11px;cursor:pointer;" title="Supprimer cet élément" onclick="triggerDeleteDoc('${doctype}', '${r.name.replace(/'/g, "\\'")}')">🗑️</button>
-    </td>`;
+    if (canDelete) {
+      tds += `<td style="text-align:center;" onclick="event.stopPropagation();">
+        <button type="button" class="btn" style="padding:2px 6px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:4px;font-size:11px;cursor:pointer;" title="Supprimer cet élément" onclick="triggerDeleteDoc('${doctype}', '${r.name.replace(/'/g, "\\'")}')">🗑️</button>
+      </td>`;
+    }
     return `<tr onclick="openDoc('${doctype}', '${r.name.replace(/'/g, "\\'")}')">${tds}</tr>`;
   }).join("");
 
@@ -1338,7 +1590,7 @@ function showList(doctype, search = "") {
     <div class="table-card">
       <div class="table-toolbar">
         <input class="search-input" placeholder="Rechercher dans ${labelTitle}..." value="${search}" oninput="showList('${doctype}', this.value)">
-        <button class="btn btn-primary" onclick="openNewDoc('${doctype}')">+ Nouveau (${labelTitle})</button>
+        ${canCreate ? `<button class="btn btn-primary" onclick="openNewDoc('${doctype}')">+ Nouveau (${labelTitle})</button>` : ''}
       </div>
       <table class="frappe-list">
         <thead><tr>${thHtml}</tr></thead>
@@ -1356,8 +1608,20 @@ function openDoc(doctype, name) {
 }
 
 function openNewDoc(doctype) {
+  if (CURRENT_USER.role === "Consultant") {
+    alert("Action non autorisée : Le profil Consultant est en lecture seule.");
+    return;
+  }
+  if (doctype === "SE Utilisateur" && CURRENT_USER.role !== "Administrateur") {
+    alert("Action non autorisée : Seul un Administrateur peut créer des utilisateurs.");
+    return;
+  }
   const schema = APP_STATE.schemas[doctype];
-  const doc = { name: `${doctype.replace(/\s+/g, "-")}-${Date.now().toString().slice(-4)}` };
+  const doc = {
+    name: `${doctype.replace(/\s+/g, "-")}-${Date.now().toString().slice(-4)}`,
+    cree_par: CURRENT_USER.id,
+    cree_par_nom: CURRENT_USER.nom
+  };
   schema.fields.forEach(f => {
     if (f.default) {
       doc[f.fieldname] = f.default === "Today" ? "2026-11-03" : f.default;
@@ -1665,31 +1929,29 @@ function computeInvoiceDocClient(doc, cfg) {
 }
 
 function renderInvoiceStaysRows(doc) {
+  const canEdit = isCurrentUserAuthorizedToEdit(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);
+  const roAttr = canEdit ? "" : "disabled readonly";
   return doc.sejours.map((s, idx) => `
     <tr id="inv_stay_row_${idx}" style="border-bottom:1px solid #e2e8f0;background:${idx % 2 === 0 ? '#fff' : '#f8fafc'};">
       <td style="padding:6px 8px;font-weight:700;">#${s.sejour_no || (idx + 1)}</td>
       <td style="padding:6px 8px;">
-        <input type="text" id="inv_stay_desc_${idx}" style="width:100%;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${s.description || ''}" placeholder="Ex: Séjour Principal" oninput="CURRENT_DOC.sejours[${idx}].description=this.value;">
+        <input ${roAttr} type="text" id="inv_stay_desc_${idx}" style="width:100%;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${s.description || ''}" placeholder="Ex: Séjour Principal" oninput="CURRENT_DOC.sejours[${idx}].description=this.value;">
       </td>
       <td style="padding:6px 8px;">
-        <input type="date" id="inv_stay_arr_${idx}" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${s.date_arrivee || ''}" onchange="onInvoiceStayDateChange(${idx}, 'date_arrivee', this.value);">
+        <input ${roAttr} type="date" id="inv_stay_arr_${idx}" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${s.date_arrivee || ''}" onchange="onInvoiceStayDateChange(${idx}, 'date_arrivee', this.value);">
       </td>
       <td style="padding:6px 8px;">
-        <input type="date" id="inv_stay_dep_${idx}" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${s.date_depart || ''}" onchange="onInvoiceStayDateChange(${idx}, 'date_depart', this.value);">
+        <input ${roAttr} type="date" id="inv_stay_dep_${idx}" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${s.date_depart || ''}" onchange="onInvoiceStayDateChange(${idx}, 'date_depart', this.value);">
       </td>
       <td style="padding:6px 8px;text-align:center;">
-        <input type="number" min="1" id="inv_stay_nuits_${idx}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:700;" value="${s.nuitees || 1}" onfocus="this.select()" oninput="onInvoiceStayFieldInput(${idx}, 'nuitees', this.value);">
+        <input ${roAttr} type="number" min="1" id="inv_stay_nuits_${idx}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:700;" value="${s.nuitees || 1}" onfocus="this.select()" oninput="onInvoiceStayFieldInput(${idx}, 'nuitees', this.value);">
       </td>
       <td style="padding:6px 8px;text-align:center;">
-        <input type="number" min="1" id="inv_stay_pers_${idx}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:700;color:#0369a1;" value="${s.nb_personnes || 1}" onfocus="this.select()" oninput="onInvoiceStayFieldInput(${idx}, 'nb_personnes', this.value);" title="Nombre de personnes pour ce séjour (taxe de séjour = personnes × nuits × 500 DZD)">
+        <input ${roAttr} type="number" min="1" id="inv_stay_pers_${idx}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:700;color:#0369a1;" value="${s.nb_personnes || 1}" onfocus="this.select()" oninput="onInvoiceStayFieldInput(${idx}, 'nb_personnes', this.value);">
       </td>
-      <td id="inv_stay_ts_${idx}" style="padding:6px 8px;text-align:right;color:#0369a1;font-weight:700;font-variant-numeric:tabular-nums;">
-        ${fmtDZD(s.taxe_sejour || 0)}
-      </td>
-      <td id="inv_stay_total_${idx}" style="padding:6px 8px;text-align:right;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">
-        ${fmtDZD(s.total_ttc_sejour || 0)}
-      </td>
-      ${doc.sejours_separes ? `
+      <td id="inv_stay_taxe_${idx}" style="padding:6px 8px;text-align:right;font-weight:600;color:#0369a1;font-variant-numeric:tabular-nums;">${fmtDZD(s.taxe_sejour || 0)}</td>
+      <td id="inv_stay_total_${idx}" style="padding:6px 8px;text-align:right;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">${fmtDZD(s.total_ttc_sejour || 0)}</td>
+      ${(canEdit && doc.sejours_separes) ? `
       <td style="padding:6px 8px;text-align:center;">
         <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceStay(${idx})" title="Supprimer ce séjour">✕</button>
       </td>` : ''}
@@ -1697,152 +1959,20 @@ function renderInvoiceStaysRows(doc) {
   `).join("");
 }
 
-function onInvoiceArticleChange(idx, newArticle) {
-  if (!CURRENT_DOC || !CURRENT_DOC.lignes || !CURRENT_DOC.lignes[idx]) return;
-  const ln = CURRENT_DOC.lignes[idx];
-  ln.article = newArticle;
-  const isRoom = ROOM_TYPES.includes(newArticle);
-  if (!isRoom) {
-    ln.nb_jours = 1;
-  }
-  onInvoiceFormUpdate();
-}
-
-function onInvoiceStayDateChange(idx, field, val) {
-  if (!CURRENT_DOC || !CURRENT_DOC.sejours || !CURRENT_DOC.sejours[idx]) return;
-  CURRENT_DOC.sejours[idx][field] = val;
-  const s = CURRENT_DOC.sejours[idx];
-  if (s.date_arrivee && s.date_depart) {
-    const d1 = new Date(s.date_arrivee);
-    const d2 = new Date(s.date_depart);
-    const diff = Math.round((d2 - d1) / (1000 * 3600 * 24));
-    s.nuitees = diff > 0 ? diff : 1;
-    CURRENT_DOC.lignes.forEach((ln) => {
-      if (ln.sejour_no === s.sejour_no && ROOM_TYPES.includes(ln.article)) {
-        ln.nb_jours = s.nuitees;
-        if (ln.prix_unitaire_ttc > 0) {
-          ln.montant_ttc_saisi = Math.round(ln.prix_unitaire_ttc * (ln.quantite || 1) * ln.nb_jours * 100) / 100;
-        }
-      }
-    });
-  }
-  onInvoiceFormUpdate();
-}
-
-function onInvoiceStayFieldInput(idx, field, rawVal) {
-  if (!CURRENT_DOC || !CURRENT_DOC.sejours || !CURRENT_DOC.sejours[idx]) return;
-  const s = CURRENT_DOC.sejours[idx];
-  const num = Math.max(1, parseInt(rawVal || 1, 10));
-  s[field] = num;
-
-  if (field === "nuitees") {
-    CURRENT_DOC.lignes.forEach((ln) => {
-      if (ln.sejour_no === s.sejour_no && ROOM_TYPES.includes(ln.article)) {
-        ln.nb_jours = num;
-        if (ln.prix_unitaire_ttc > 0) {
-          ln.montant_ttc_saisi = Math.round(ln.prix_unitaire_ttc * (ln.quantite || 1) * ln.nb_jours * 100) / 100;
-        }
-      }
-    });
-  }
-
-  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {});
-  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {};
-  computeInvoiceDocClient(CURRENT_DOC, cfg);
-
-  const elTs = document.getElementById(`inv_stay_ts_${idx}`);
-  if (elTs) elTs.textContent = fmtDZD(s.taxe_sejour || 0);
-
-  (CURRENT_DOC.sejours || []).forEach((st, sIdx) => {
-    const elStayTotal = document.getElementById(`inv_stay_total_${sIdx}`);
-    if (elStayTotal) elStayTotal.textContent = fmtDZD(st.total_ttc_sejour || 0);
-  });
-
-  const elCard = document.getElementById("inv_totals_card");
-  if (elCard) elCard.innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
-}
-
-function onInvoiceLineCalcInput(idx, triggerField, rawVal) {
-  if (!CURRENT_DOC || !CURRENT_DOC.lignes || !CURRENT_DOC.lignes[idx]) return;
-  const ln = CURRENT_DOC.lignes[idx];
-
-  if (triggerField === "pu") {
-    const pu = parseFloat(rawVal || 0) || 0;
-    ln.prix_unitaire_ttc = pu;
-    const qty = Math.max(1, parseInt(ln.quantite || 1, 10));
-    const nuits = Math.max(1, parseInt(ln.nb_jours || 1, 10));
-    ln.montant_ttc_saisi = Math.round((pu * qty * nuits) * 100) / 100;
-    const elTtc = document.getElementById(`inv_ttc_saisi_${idx}`);
-    if (elTtc) elTtc.value = ln.montant_ttc_saisi || "";
-  } else if (triggerField === "qty") {
-    const qty = Math.max(1, parseInt(rawVal || 1, 10));
-    ln.quantite = qty;
-    const pu = parseFloat(ln.prix_unitaire_ttc || 0) || 0;
-    const nuits = Math.max(1, parseInt(ln.nb_jours || 1, 10));
-    if (pu > 0) {
-      ln.montant_ttc_saisi = Math.round((pu * qty * nuits) * 100) / 100;
-      const elTtc = document.getElementById(`inv_ttc_saisi_${idx}`);
-      if (elTtc) elTtc.value = ln.montant_ttc_saisi || "";
-    } else if (ln.montant_ttc_saisi > 0) {
-      ln.prix_unitaire_ttc = Math.round((ln.montant_ttc_saisi / (qty * nuits)) * 100) / 100;
-      const elPu = document.getElementById(`inv_pu_${idx}`);
-      if (elPu) elPu.value = ln.prix_unitaire_ttc || "";
-    }
-  } else if (triggerField === "nuits") {
-    const nuits = Math.max(1, parseInt(rawVal || 1, 10));
-    ln.nb_jours = nuits;
-    const pu = parseFloat(ln.prix_unitaire_ttc || 0) || 0;
-    const qty = Math.max(1, parseInt(ln.quantite || 1, 10));
-    if (pu > 0) {
-      ln.montant_ttc_saisi = Math.round((pu * qty * nuits) * 100) / 100;
-      const elTtc = document.getElementById(`inv_ttc_saisi_${idx}`);
-      if (elTtc) elTtc.value = ln.montant_ttc_saisi || "";
-    } else if (ln.montant_ttc_saisi > 0) {
-      ln.prix_unitaire_ttc = Math.round((ln.montant_ttc_saisi / (qty * nuits)) * 100) / 100;
-      const elPu = document.getElementById(`inv_pu_${idx}`);
-      if (elPu) elPu.value = ln.prix_unitaire_ttc || "";
-    }
-  } else if (triggerField === "total_ttc") {
-    const ttc = parseFloat(rawVal || 0) || 0;
-    ln.montant_ttc_saisi = ttc;
-    const qty = Math.max(1, parseInt(ln.quantite || 1, 10));
-    const nuits = Math.max(1, parseInt(ln.nb_jours || 1, 10));
-    ln.prix_unitaire_ttc = (qty * nuits > 0) ? Math.round((ttc / (qty * nuits)) * 100) / 100 : 0;
-    const elPu = document.getElementById(`inv_pu_${idx}`);
-    if (elPu) elPu.value = ln.prix_unitaire_ttc || "";
-  }
-
-  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {});
-  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {};
-  computeInvoiceDocClient(CURRENT_DOC, cfg);
-
-  const elHt = document.getElementById(`inv_ht_${idx}`);
-  if (elHt) elHt.textContent = fmtDZD(ln.montant_ht || 0);
-
-  const elTva = document.getElementById(`inv_tva_${idx}`);
-  if (elTva) elTva.textContent = `${ln.taux_tva || 9}%`;
-
-  (CURRENT_DOC.sejours || []).forEach((st, sIdx) => {
-    const elStayTotal = document.getElementById(`inv_stay_total_${sIdx}`);
-    if (elStayTotal) elStayTotal.textContent = fmtDZD(st.total_ttc_sejour || 0);
-  });
-
-  const elCard = document.getElementById("inv_totals_card");
-  if (elCard) elCard.innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
-}
-
 function renderInvoiceLinesRows(doc) {
+  const canEdit = isCurrentUserAuthorizedToEdit(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);
+  const roAttr = canEdit ? "" : "disabled readonly";
   return doc.lignes.map((ln, idx) => `
     <tr style="border-bottom:1px solid #e2e8f0;background:${idx % 2 === 0 ? '#fff' : '#f8fafc'};">
       ${doc.sejours_separes ? `
       <td style="padding:6px;">
-        <select style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;" onchange="CURRENT_DOC.lignes[${idx}].sejour_no=parseInt(this.value); onInvoiceFormUpdate();">
+        <select ${roAttr} style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;" onchange="CURRENT_DOC.lignes[${idx}].sejour_no=parseInt(this.value); onInvoiceFormUpdate();">
           ${doc.sejours.map(s => `<option value="${s.sejour_no}" ${s.sejour_no === ln.sejour_no ? "selected" : ""}>Séjour #${s.sejour_no}</option>`).join("")}
         </select>
       </td>` : ''}
       <td style="padding:6px;">
-        <select style="width:100%;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" onchange="onInvoiceArticleChange(${idx}, this.value);">
-                    <optgroup label="🛏️ Catégories Officielles Chambres 4★ (TVA 9%)">
+        <select ${roAttr} style="width:100%;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" onchange="onInvoiceArticleChange(${idx}, this.value);">
+          <optgroup label="🛏️ Catégories Officielles Chambres 4★ (TVA 9%)">
             ${[
               "Single Standard [SGL-STD]",
               "Single Vue Mer [SGL-MER]",
@@ -1863,28 +1993,30 @@ function renderInvoiceLinesRows(doc) {
         </select>
       </td>
       <td style="padding:6px;text-align:right;">
-        <input type="number" step="any" id="inv_pu_${idx}" style="width:110px;padding:5px 6px;text-align:right;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${ln.prix_unitaire_ttc !== undefined && ln.prix_unitaire_ttc !== null ? ln.prix_unitaire_ttc : ''}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${idx}, 'pu', this.value);">
+        <input ${roAttr} type="number" step="any" id="inv_pu_${idx}" style="width:110px;padding:5px 6px;text-align:right;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${ln.prix_unitaire_ttc !== undefined && ln.prix_unitaire_ttc !== null ? ln.prix_unitaire_ttc : ''}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${idx}, 'pu', this.value);">
       </td>
       <td style="padding:6px;text-align:center;">
-        <input type="number" min="1" id="inv_qty_${idx}" style="width:55px;padding:5px 4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${ln.quantite || 1}" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${idx}, 'qty', this.value);" title="Nombre de chambres ou de prestations">
+        <input ${roAttr} type="number" min="1" id="inv_qty_${idx}" style="width:55px;padding:5px 4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${ln.quantite || 1}" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${idx}, 'qty', this.value);" title="Nombre de chambres ou de prestations">
       </td>
       <td style="padding:6px;text-align:center;">
-        <input type="number" min="1" id="inv_nuits_${idx}" style="width:55px;padding:5px 4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${ln.nb_jours || 1}" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${idx}, 'nuits', this.value);" title="Nombre de nuitées pour cette chambre">
+        <input ${roAttr} type="number" min="1" id="inv_nuits_${idx}" style="width:55px;padding:5px 4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${ln.nb_jours || 1}" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${idx}, 'nuits', this.value);" title="Nombre de nuitées pour cette chambre">
       </td>
       <td style="padding:6px;text-align:right;">
-        <input type="number" step="any" id="inv_ttc_saisi_${idx}" style="width:130px;padding:5px 8px;text-align:right;border:2px solid #b45309;background:#fffbeb;font-weight:700;color:#92400e;border-radius:4px;font-size:13px;" value="${ln.montant_ttc_saisi !== undefined && ln.montant_ttc_saisi !== null ? ln.montant_ttc_saisi : ''}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${idx}, 'total_ttc', this.value);" title="Total TTC = P.U. × Quantité × Nuitées">
+        <input ${roAttr} type="number" step="any" id="inv_ttc_saisi_${idx}" style="width:130px;padding:5px 8px;text-align:right;border:2px solid #b45309;background:#fffbeb;font-weight:700;color:#92400e;border-radius:4px;font-size:13px;" value="${ln.montant_ttc_saisi !== undefined && ln.montant_ttc_saisi !== null ? ln.montant_ttc_saisi : ''}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${idx}, 'total_ttc', this.value);" title="Total TTC = P.U. × Quantité × Nuitées">
       </td>
       <td id="inv_ht_${idx}" style="padding:6px;text-align:right;color:#334155;font-variant-numeric:tabular-nums;">${fmtDZD(ln.montant_ht || 0)}</td>
       <td id="inv_tva_${idx}" style="padding:6px;text-align:center;font-size:11px;color:#64748b;">${ln.taux_tva || 9}%</td>
       <td style="padding:6px;">
-        <textarea rows="1" placeholder="Observations chambre (ex: VIP, lit sup, vue mer...)" oninput="CURRENT_DOC.lignes[${idx}].observation=this.value; CURRENT_DOC.lignes[${idx}].obs=this.value; CURRENT_DOC.lignes[${idx}].remarque=this.value;" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;resize:vertical;min-height:30px;line-height:1.3;font-family:inherit;">${ln.observation || ln.obs || ln.remarque || ''}</textarea>
+        <textarea ${roAttr} rows="1" placeholder="Observations chambre (ex: VIP, lit sup, vue mer...)" oninput="CURRENT_DOC.lignes[${idx}].observation=this.value; CURRENT_DOC.lignes[${idx}].obs=this.value; CURRENT_DOC.lignes[${idx}].remarque=this.value;" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;resize:vertical;min-height:30px;line-height:1.3;font-family:inherit;">${ln.observation || ln.obs || ln.remarque || ''}</textarea>
       </td>
+      ${canEdit ? `
       <td style="padding:6px;text-align:center;">
         <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceLine(${idx})" title="Supprimer la ligne">✕</button>
-      </td>
+      </td>` : ''}
     </tr>
   `).join("");
 }
+
 
 function renderInvoiceTotalsCard(doc) {
   const isEsp = (doc.mode_paiement_prevu === "Espèces");
@@ -2009,7 +2141,11 @@ function removeInvoiceLine(idx) {
 function renderInvoiceModal(doctype, doc, isNew) {
   CURRENT_DOCTYPE = doctype;
   CURRENT_DOC = doc;
+  CURRENT_IS_NEW = !!isNew;
   const isProforma = (doctype === "SE Facture Pro Forma");
+  const canEdit = isCurrentUserAuthorizedToEdit(doctype, doc, isNew);
+  const roAttr = canEdit ? "" : "disabled readonly";
+  
   document.getElementById("modalTitle").textContent = `${isNew ? "Nouvelle" : doc.name} — ${isProforma ? "Facture Pro Forma" : "Facture Client (SCF 70)"}`;
 
   const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {});
@@ -2033,7 +2169,16 @@ function renderInvoiceModal(doctype, doc, isNew) {
     return `<option value="${c.name}" ${isSel ? "selected" : ""}>${label}</option>`;
   }).join("");
 
-  let html = `
+  let bannerHtml = "";
+  if (!canEdit) {
+    if (CURRENT_USER.role === "Consultant") {
+      bannerHtml = `<div style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>👁️</span> <div><b>Profil Consultant (Lecture Seule) :</b> Vous pouvez consulter tous les détails et imprimer ou exporter en PDF ce document. Les modifications et suppressions sont désactivées.</div></div>`;
+    } else if (CURRENT_USER.role === "Utilisateur Normal") {
+      bannerHtml = `<div style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>ℹ️</span> <div><b>Mode Consultation :</b> Cette facture a été créée par <b>${doc.cree_par_nom || doc.cree_par || 'un autre collaborateur'}</b>. En tant qu'Utilisateur Normal, vous pouvez consulter toutes les informations mais seul son auteur ou un Administrateur peut la modifier.</div></div>`;
+    }
+  }
+
+  let html = bannerHtml + `
   <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">
     <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
       <span>📌 Informations Client & Modalités de Règlement</span>
@@ -2042,7 +2187,7 @@ function renderInvoiceModal(doctype, doc, isNew) {
     <div class="form-grid" style="grid-template-columns:repeat(3, 1fr);gap:12px;">
       <div class="form-group" style="grid-column:span 2;">
         <label>Sélectionner le Client (Nom ou Référence Société) *</label>
-        <select id="inv_client" onchange="onInvoiceClientChange(this.value)">
+        <select id="inv_client" ${roAttr} onchange="onInvoiceClientChange(this.value)">
           <option value="">— Sélectionner un client —</option>
           ${clientOptions}
         </select>
@@ -2061,27 +2206,27 @@ function renderInvoiceModal(doctype, doc, isNew) {
       </div>
       <div class="form-group">
         <label>Date de Facturation</label>
-        <input type="date" id="inv_date_facture" value="${doc.date_facture || '2026-11-04'}" onchange="CURRENT_DOC.date_facture=this.value">
+        <input type="date" id="inv_date_facture" ${roAttr} value="${doc.date_facture || '2026-11-04'}" onchange="CURRENT_DOC.date_facture=this.value">
       </div>
       <div class="form-group">
         <label>${isProforma ? 'Date de Validité' : "Date d'Échéance"}</label>
-        <input type="date" id="inv_date_echeance" value="${doc.date_echeance || doc.date_validite || '2026-11-25'}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
+        <input type="date" id="inv_date_echeance" ${roAttr} value="${doc.date_echeance || doc.date_validite || '2026-11-25'}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
       </div>
       ${isProforma ? `
       <div class="form-group">
         <label>Statut Pro Forma *</label>
-        <select id="inv_statut" onchange="CURRENT_DOC.statut=this.value;">
+        <select id="inv_statut" ${roAttr} onchange="CURRENT_DOC.statut=this.value;">
           <option value="Non validée" ${doc.statut === "Non validée" || !doc.statut ? "selected" : ""}>Non validée</option>
           <option value="Validée" ${doc.statut === "Validée" ? "selected" : ""}>Validée</option>
         </select>
       </div>` : ''}
       <div class="form-group">
         <label>N° Bon de Commande (BC) / Réf. Commande</label>
-        <input type="text" id="inv_bon_commande" placeholder="Ex: BC-2026/045 ou Réf Client..." value="${doc.bon_commande || doc.num_bon_commande || ''}" onchange="CURRENT_DOC.bon_commande=this.value; CURRENT_DOC.num_bon_commande=this.value;">
+        <input type="text" id="inv_bon_commande" ${roAttr} placeholder="Ex: BC-2026/045 ou Réf Client..." value="${doc.bon_commande || doc.num_bon_commande || ''}" onchange="CURRENT_DOC.bon_commande=this.value; CURRENT_DOC.num_bon_commande=this.value;">
       </div>
       <div class="form-group">
         <label>Mode de Paiement Prévu *</label>
-        <select id="inv_mode_paiement" onchange="CURRENT_DOC.mode_paiement_prevu=this.value; onInvoiceFormUpdate();">
+        <select id="inv_mode_paiement" ${roAttr} onchange="CURRENT_DOC.mode_paiement_prevu=this.value; onInvoiceFormUpdate();">
           <option value="Virement" ${doc.mode_paiement_prevu === "Virement" ? "selected" : ""}>Virement Bancaire (Sans timbre)</option>
           <option value="Chèque" ${doc.mode_paiement_prevu === "Chèque" ? "selected" : ""}>Chèque Bancaire (Sans timbre)</option>
           <option value="Espèces" ${doc.mode_paiement_prevu === "Espèces" ? "selected" : ""}>Espèces (Droit de timbre fiscal 1% en sus)</option>
@@ -2090,15 +2235,15 @@ function renderInvoiceModal(doctype, doc, isNew) {
       </div>
       <div class="form-group" style="grid-column:span 3;display:flex;flex-direction:row;gap:20px;margin-top:6px;background:#fff;padding:10px 14px;border:1px solid #cbd5e1;border-radius:6px;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
-          <input type="checkbox" id="inv_ts_incluse" ${doc.taxe_sejour_incluse ? "checked" : ""} onchange="CURRENT_DOC.taxe_sejour_incluse = this.checked ? 1 : 0; onInvoiceFormUpdate();">
+          <input type="checkbox" id="inv_ts_incluse" ${roAttr} ${doc.taxe_sejour_incluse ? "checked" : ""} onchange="CURRENT_DOC.taxe_sejour_incluse = this.checked ? 1 : 0; onInvoiceFormUpdate();">
           🏷️ Taxe de séjour 4★ (500 DZD) incluse dans le montant TTC saisi
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
-          <input type="checkbox" id="inv_app_ts" ${doc.appliquer_taxe_sejour ? "checked" : ""} onchange="CURRENT_DOC.appliquer_taxe_sejour = this.checked ? 1 : 0; onInvoiceFormUpdate();">
+          <input type="checkbox" id="inv_app_ts" ${roAttr} ${doc.appliquer_taxe_sejour ? "checked" : ""} onchange="CURRENT_DOC.appliquer_taxe_sejour = this.checked ? 1 : 0; onInvoiceFormUpdate();">
           🛎️ Appliquer la taxe de séjour (Hébergement)
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
-          <input type="checkbox" id="inv_sej_separes" ${doc.sejours_separes ? "checked" : ""} onchange="CURRENT_DOC.sejours_separes = this.checked ? 1 : 0; renderInvoiceModal(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);">
+          <input type="checkbox" id="inv_sej_separes" ${roAttr} ${doc.sejours_separes ? "checked" : ""} onchange="CURRENT_DOC.sejours_separes = this.checked ? 1 : 0; renderInvoiceModal(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);">
           📅 Plusieurs séjours distincts (Dates et personnes indépendantes)
         </label>
       </div>
@@ -2112,7 +2257,7 @@ function renderInvoiceModal(doctype, doc, isNew) {
         <span style="font-weight:700;font-size:13px;color:#0f172a;">📅 Périodes de Séjour & Taxe de Séjour 4★</span>
         <div style="font-size:11px;color:#64748b;margin-top:2px;">La taxe de séjour est calculée par séjour : <b>Nombre de personnes × Nuitées × 500 DZD</b> (sans cumul ni doublon).</div>
       </div>
-      ${doc.sejours_separes ? `<button class="btn btn-gold" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceStay()">+ Ajouter un séjour séparé</button>` : ''}
+      ${(canEdit && doc.sejours_separes) ? `<button class="btn btn-gold" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceStay()">+ Ajouter un séjour séparé</button>` : ''}
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -2126,7 +2271,7 @@ function renderInvoiceModal(doctype, doc, isNew) {
             <th style="padding:6px 8px;width:70px;text-align:center;color:#0369a1;">Personnes</th>
             <th style="padding:6px 8px;width:120px;text-align:right;color:#0369a1;">Taxe Séjour (500 DZD)</th>
             <th style="padding:6px 8px;width:130px;text-align:right;">Total TTC Séjour</th>
-            ${doc.sejours_separes ? `<th style="padding:6px 8px;width:35px;text-align:center;"></th>` : ''}
+            ${(canEdit && doc.sejours_separes) ? `<th style="padding:6px 8px;width:35px;text-align:center;"></th>` : ''}
           </tr>
         </thead>
         <tbody id="inv_stays_tbody">
@@ -2136,29 +2281,29 @@ function renderInvoiceModal(doctype, doc, isNew) {
     </div>
   </div>
 
-  <!-- TARIFICATION DES CHAMBRES & PRESTATIONS -->
+  <!-- TABLEAU DÉTAIL DES CHAMBRES & PRESTATIONS -->
   <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
       <div>
-        <span style="font-weight:700;font-size:13px;color:#0f172a;">🛎️ Tarification des Chambres & Services (Formule : Prix unitaire × Quantité × Nuitées)</span>
-        <div style="font-size:11px;color:#64748b;margin-top:2px;">Indiquez le Prix unitaire, le nombre de chambres (Quantité) et les nuitées : le système calcule automatiquement le Total et ventile HT et TVA.</div>
+        <span style="font-weight:700;font-size:13px;color:#0f172a;">🛏️ Détail des Chambres & Prestations (Saisie TTC Directe)</span>
+        <div style="font-size:11px;color:#64748b;margin-top:2px;">Entrez directement le <b>Montant TTC Saisi</b> OU le <b>Prix Unitaire TTC</b>. Le système calcule la Base HT et la TVA légale 9% ou 19%.</div>
       </div>
-      <button class="btn btn-primary" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceLine()">+ Ajouter une chambre / service</button>
+      ${canEdit ? `<button class="btn btn-gold" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceLine()">+ Ajouter une prestation / chambre</button>` : ''}
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead>
           <tr style="background:#0f172a;color:#fff;text-align:left;">
-            ${doc.sejours_separes ? `<th style="padding:7px;width:85px;">Séjour</th>` : ''}
-            <th style="padding:7px;min-width:180px;">Type de Chambre ou Prestation</th>
-            <th style="padding:7px;width:120px;text-align:right;background:#0369a1;">Prix unitaire TTC *</th>
-            <th style="padding:7px;width:65px;text-align:center;background:#0369a1;">Qté (Ch.) *</th>
-            <th style="padding:7px;width:65px;text-align:center;background:#0369a1;">Nuitées *</th>
-            <th style="padding:7px;width:140px;text-align:right;background:#b45309;">Total TTC Saisi / Calculé *</th>
-            <th style="padding:7px;width:95px;text-align:right;">Base HT</th>
-            <th style="padding:7px;width:55px;text-align:center;">TVA</th>
-            <th style="padding:7px;min-width:140px;">Observations (Chambre)</th>
-            <th style="padding:7px;width:35px;text-align:center;"></th>
+            ${doc.sejours_separes ? `<th style="padding:7px 8px;width:110px;">Séjour</th>` : ''}
+            <th style="padding:7px 8px;">Type de Chambre ou Prestation</th>
+            <th style="padding:7px 8px;width:120px;text-align:right;">Prix unitaire TTC *</th>
+            <th style="padding:7px 8px;width:65px;text-align:center;">Qté (Ch.) *</th>
+            <th style="padding:7px 8px;width:65px;text-align:center;">Nuitées *</th>
+            <th style="padding:7px 8px;width:145px;text-align:right;background:#b45309;color:#fff;">Total TTC Saisi / Calculé *</th>
+            <th style="padding:7px 8px;width:110px;text-align:right;">Base HT</th>
+            <th style="padding:7px 8px;width:55px;text-align:center;">TVA</th>
+            <th style="padding:7px 8px;width:160px;">Obs / Remarque</th>
+            ${canEdit ? `<th style="padding:7px 8px;width:35px;text-align:center;"></th>` : ''}
           </tr>
         </thead>
         <tbody id="inv_lines_tbody">
@@ -2168,8 +2313,7 @@ function renderInvoiceModal(doctype, doc, isNew) {
     </div>
   </div>
 
-  <!-- RÉCAPITULATIF FISCAL & TIMBRE -->
-  <div id="inv_totals_card" style="background:#f8fafc;border:2px solid #b45309;border-radius:8px;padding:14px;margin-bottom:14px;">
+  <div id="inv_totals_card" style="background:#f8fafc;border:2px solid #cbd5e1;border-radius:8px;padding:14px;margin-bottom:16px;">
     ${renderInvoiceTotalsCard(doc)}
   </div>
   `;
@@ -2177,26 +2321,133 @@ function renderInvoiceModal(doctype, doc, isNew) {
   document.getElementById("modalBody").innerHTML = html;
 
   let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">`;
-  if (!isNew) {
+  if (!isNew && CURRENT_USER.role === "Administrateur") {
     ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🗑️ Supprimer</button>`;
-    if (typeof openPrintPreview === "function") {
-      ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
-    }
   }
-  if (isProforma && !isNew) {
+  if (!isNew && typeof openPrintPreview === "function") {
+    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
+  }
+  if (canEdit && isProforma && !isNew) {
     ftrHtml += `<button class="btn btn-primary" onclick="convertProformaToInvoice()">🔄 Convertir en Facture Définitive (SCF 70)</button> `;
   }
-  if (!isProforma && !isNew && Number(doc.reste_a_encaisser) > 0 && typeof quickReceiptFromInvoice === "function") {
+  if (canEdit && !isProforma && !isNew && Number(doc.reste_a_encaisser) > 0 && typeof quickReceiptFromInvoice === "function") {
     ftrHtml += `<button class="btn" onclick="quickReceiptFromInvoice()">💰 Enregistrer un Encaissement</button>`;
   }
   ftrHtml += `</div><div>
     <button class="btn" onclick="closeModal()">Fermer</button>
-    <button class="btn btn-primary" onclick="saveInvoiceDoc()">💾 Enregistrer & Sauvegarder</button>
+    ${canEdit ? `<button class="btn btn-primary" onclick="saveInvoiceDoc()">💾 Enregistrer & Sauvegarder</button>` : ''}
   </div>`;
   document.getElementById("modalFooter").innerHTML = ftrHtml;
   document.getElementById("docModal").classList.add("open");
 }
 
+
+async function saveInvoiceDoc() {
+  const bcInput = document.getElementById("inv_bon_commande");
+  if (bcInput) {
+    CURRENT_DOC.bon_commande = bcInput.value.trim();
+    CURRENT_DOC.num_bon_commande = bcInput.value.trim();
+  }
+  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {});
+  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {};
+  computeInvoiceDocClient(CURRENT_DOC, cfg);
+
+  if (typeof saveCurrentDoc === "function") {
+    await saveCurrentDoc(CURRENT_IS_NEW);
+  }
+}
+
+function convertProformaToInvoice() {
+  if (confirm("Voulez-vous convertir cette Facture Pro Forma en Facture Client Définitive (SCF 70) ?")) {
+    const pro = CURRENT_DOC;
+    pro.statut = "Convertie en Facture";
+    const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {});
+    const count = (dbSrc["SE Facture Client"] || []).length + 1;
+    const newName = `FAC-CLI-2026-000${count < 10 ? '0' + count : count}`;
+    
+    const newInvoice = JSON.parse(JSON.stringify(pro));
+    newInvoice.name = newName;
+    newInvoice.ref_reservation = pro.ref_devis || pro.name;
+    newInvoice.statut = "Validée";
+    newInvoice.docstatus = 1;
+    delete newInvoice.date_validite;
+    delete newInvoice.ref_devis;
+    newInvoice.date_echeance = "2026-11-25";
+    
+    renderInvoiceModal("SE Facture Client", newInvoice, true);
+  }
+}
+
+function renderDocModal(doctype, doc, isNew) {
+  CURRENT_DOCTYPE = doctype;
+  CURRENT_DOC = doc;
+  CURRENT_IS_NEW = !!isNew;
+  if (doctype === "SE Facture Client" || doctype === "SE Facture Pro Forma") {
+    renderInvoiceModal(doctype, doc, isNew);
+    return;
+  }
+  const canEdit = isCurrentUserAuthorizedToEdit(doctype, doc, isNew);
+  const schema = APP_STATE.schemas[doctype];
+  document.getElementById("modalTitle").textContent = `${isNew ? "Nouveau" : doc.name} — ${getNavLabel(doctype)}`;
+
+  let bannerHtml = "";
+  if (!canEdit) {
+    if (CURRENT_USER.role === "Consultant") {
+      bannerHtml = `<div style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>👁️</span> <div><b>Profil Consultant (Lecture Seule) :</b> Vous pouvez consulter tous les détails et imprimer ce document, mais les modifications et suppressions sont désactivées.</div></div>`;
+    } else if (CURRENT_USER.role === "Utilisateur Normal") {
+      bannerHtml = `<div style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>ℹ️</span> <div><b>Mode Consultation :</b> Ce document a été créé par <b>${doc.cree_par_nom || doc.cree_par || 'un autre collaborateur'}</b>. En tant qu'Utilisateur Normal, vous pouvez consulter toutes les informations mais seul son créateur ou un Administrateur peut le modifier.</div></div>`;
+    }
+  }
+
+  let formHtml = bannerHtml + `<div class="form-grid">`;
+  schema.fields.forEach(f => {
+    if (["Section Break", "Column Break", "Table"].includes(f.fieldtype) || f.fieldname === "naming_series" || f.fieldname === "amended_from") return;
+    const val = doc[f.fieldname] ?? "";
+    const ro = (!canEdit || f.read_only) ? "readonly disabled" : "";
+    const full = f.fieldtype === "Small Text" ? "full" : "";
+
+    let inputEl = "";
+    if (f.fieldtype === "Select") {
+      const opts = (f.options || "").split(String.fromCharCode(10));
+      inputEl = `<select id="fld_${f.fieldname}" ${ro} onchange="onFieldChange('${f.fieldname}', this.value)">
+        ${opts.map(o => `<option value="${o}" ${o === String(val) ? "selected" : ""}>${o}</option>`).join("")}
+      </select>`;
+    } else if (f.fieldtype === "Link" && APP_STATE.db[f.options]) {
+      const targets = APP_STATE.db[f.options];
+      inputEl = `<select id="fld_${f.fieldname}" ${ro} onchange="onFieldChange('${f.fieldname}', this.value)">
+        <option value="">— Sélectionner —</option>
+        ${targets.map(t => `<option value="${t.name}" ${t.name === String(val) ? "selected" : ""}>${t.name} ${t.nom_complet ? " - " + t.nom_complet : ""}</option>`).join("")}
+      </select>`;
+    } else if (f.fieldtype === "Small Text") {
+      inputEl = `<textarea id="fld_${f.fieldname}" rows="2" ${ro} oninput="onFieldChange('${f.fieldname}', this.value)">${val}</textarea>`;
+    } else {
+      const type = ["Currency", "Percent", "Int"].includes(f.fieldtype) ? "number" : (f.fieldtype === "Date" ? "date" : "text");
+      inputEl = `<input type="${type}" step="any" id="fld_${f.fieldname}" value="${val}" ${ro} oninput="onFieldChange('${f.fieldname}', this.value)">`;
+    }
+
+    formHtml += `<div class="form-group ${full}">
+      <label>${f.label} ${(!canEdit || f.read_only) ? "🔒" : ""}</label>
+      ${inputEl}
+    </div>`;
+  });
+  formHtml += `</div>`;
+  document.getElementById("modalBody").innerHTML = formHtml;
+
+  const printable = ["SE Facture Client", "SE Caisse Mensuelle", "SE Fiche de Paie Mensuelle", "SE Declaration TVA"].includes(doctype);
+  let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">`;
+  if (!isNew && CURRENT_USER.role === "Administrateur") {
+    ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🗑️ Supprimer</button>`;
+  }
+  if (!isNew && printable && typeof openPrintPreview === "function") {
+    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
+  }
+  ftrHtml += `</div><div>
+    <button class="btn" onclick="closeModal()">Fermer</button>
+    ${canEdit ? `<button class="btn btn-primary" onclick="saveCurrentDoc(${isNew})">💾 Enregistrer & Sauvegarder</button>` : ''}
+  </div>`;
+  document.getElementById("modalFooter").innerHTML = ftrHtml;
+  document.getElementById("docModal").classList.add("open");
+}
 
 async function saveInvoiceDoc() {
   const bcInput = document.getElementById("inv_bon_commande");
@@ -2319,11 +2570,43 @@ function quickReceiptFromInvoice() {
 }
 
 async function saveCurrentDoc(isNew) {
+  if (CURRENT_USER.role === "Consultant") {
+    alert("Action refusée : Le profil Consultant est strictement en lecture seule.");
+    return;
+  }
+  if (CURRENT_USER.role === "Utilisateur Normal") {
+    if (CURRENT_DOCTYPE === "SE Parametres Hotel" || CURRENT_DOCTYPE === "SE Utilisateur") {
+      alert("Action refusée : Vous n'avez pas l'autorisation d'administrer les paramètres ou les comptes utilisateurs.");
+      return;
+    }
+    if (!isNew && CURRENT_DOC.cree_par && CURRENT_DOC.cree_par !== CURRENT_USER.id) {
+      alert(`Modification non autorisée : Ce document a été créé par ${CURRENT_DOC.cree_par_nom || CURRENT_DOC.cree_par}. Vous ne pouvez modifier que les documents créés par votre compte.`);
+      return;
+    }
+  }
+
   const res = await fetch("/api/save", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ doctype: CURRENT_DOCTYPE, doc: CURRENT_DOC, is_new: isNew })
+    headers: {
+      "Content-Type": "application/json",
+      "X-User-Id": CURRENT_USER.id,
+      "X-User-Role": CURRENT_USER.role,
+      "X-User-Name": CURRENT_USER.nom
+    },
+    body: JSON.stringify({
+      doctype: CURRENT_DOCTYPE,
+      doc: CURRENT_DOC,
+      is_new: isNew,
+      user_id: CURRENT_USER.id,
+      user_role: CURRENT_USER.role,
+      user_nom: CURRENT_USER.nom
+    })
   });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    alert(errData.error || "Erreur lors de l'enregistrement");
+    return;
+  }
   APP_STATE = await res.json();
   window.APP_STATE = APP_STATE;
   closeModal();
@@ -2391,6 +2674,10 @@ function checkDeleteIntegrity(doctype, docName) {
 }
 
 function triggerDeleteDoc(doctype, docName) {
+  if (CURRENT_USER.role !== "Administrateur") {
+    alert("Action non autorisée : Seul un Administrateur a le droit de supprimer des éléments dans le système.");
+    return;
+  }
   PENDING_DELETE_DOCTYPE = doctype;
   PENDING_DELETE_NAME = docName;
   const detailsEl = document.getElementById("deleteDocDetails");
@@ -2432,9 +2719,25 @@ async function executeDeleteDoc() {
   closeModal();
   const res = await fetch("/api/delete", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ doctype: dt, name: name })
+    headers: {
+      "Content-Type": "application/json",
+      "X-User-Id": CURRENT_USER.id,
+      "X-User-Role": CURRENT_USER.role,
+      "X-User-Name": CURRENT_USER.nom
+    },
+    body: JSON.stringify({
+      doctype: dt,
+      name: name,
+      user_id: CURRENT_USER.id,
+      user_role: CURRENT_USER.role,
+      user_nom: CURRENT_USER.nom
+    })
   });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    alert(errData.error || "Erreur lors de la suppression");
+    return;
+  }
   APP_STATE = await res.json();
   window.APP_STATE = APP_STATE;
   if (dt === "SE Parametres Hotel") showWorkspace();
@@ -2446,7 +2749,7 @@ function closeModal() {
   document.getElementById("docModal").classList.remove("open");
 }
 
-loadState().then(() => showWorkspace());
+loadState().then(() => { initUserSession(); showWorkspace(); });
 </script>
 </body>
 </html>
@@ -2658,14 +2961,31 @@ class SaintEugeneHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        # Extraction des informations de l'utilisateur actif
+        length = int(self.headers.get("Content-Length", "0"))
+        data = json.loads(self.rfile.read(length).decode("utf-8")) if length > 0 else {}
+        user_id = data.get("user_id") or self.headers.get("X-User-Id") or "USR-001"
+        user_role = data.get("user_role") or self.headers.get("X-User-Role") or "Administrateur"
+        user_nom = data.get("user_nom") or self.headers.get("X-User-Name") or "Hicham Bakir"
+
         if self.path == "/api/delete":
-            length = int(self.headers.get("Content-Length", "0"))
-            data = json.loads(self.rfile.read(length).decode("utf-8"))
             dt = data["doctype"]
             name = data["name"]
             db = get_db()
+
+            # CONTRÔLE D'ACCÈS STRICT : Seul un Administrateur peut supprimer
+            if user_role != "Administrateur":
+                add_audit_log(db, user_id, user_nom, user_role, "Tentative Suppression Bloquée", dt, name, "Non autorisé", f"Tentative de suppression rejetée pour {user_nom} (Rôle: {user_role})")
+                save_db(db)
+                self.send_response(403)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Suppression interdite : Seul un Administrateur dispose du droit de supprimer des éléments dans l'ERP."}, ensure_ascii=False).encode("utf-8"))
+                return
+
             rows = db.setdefault(dt, [])
             db[dt] = [r for r in rows if r.get("name") != name]
+            add_audit_log(db, user_id, user_nom, user_role, "Suppression", dt, name, f"Enregistrement {name}", f"Suppression définitive effectuée par {user_nom}")
             save_db(db)
             payload = {"schemas": SCHEMAS, "db": db, "dashboard": compute_dashboard_payload(db)}
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -2676,17 +2996,68 @@ class SaintEugeneHandler(BaseHTTPRequestHandler):
             return
 
         if self.path == "/api/save":
-            length = int(self.headers.get("Content-Length", "0"))
-            data = json.loads(self.rfile.read(length).decode("utf-8"))
             dt = data["doctype"]
             doc = data["doc"]
+            is_new = bool(data.get("is_new", False))
             db = get_db()
+            from datetime import datetime
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            # CONTRÔLE D'ACCÈS 1 : Le Consultant ne peut RIEN modifier ni créer
+            if user_role == "Consultant":
+                self.send_response(403)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Action refusée : Le rôle Consultant est strictement en lecture seule."}, ensure_ascii=False).encode("utf-8"))
+                return
+
+            # CONTRÔLE D'ACCÈS 2 : Utilisateur Normal ne peut modifier les paramètres ou les utilisateurs
+            if user_role == "Utilisateur Normal":
+                if dt in ("SE Parametres Hotel", "SE Utilisateur"):
+                    self.send_response(403)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": "Action refusée : Les Utilisateurs Normaux ne peuvent pas administrer les paramètres ou les comptes."}, ensure_ascii=False).encode("utf-8"))
+                    return
+
             rows = db.setdefault(dt, [])
             existing_idx = next((i for i, r in enumerate(rows) if r.get("name") == doc.get("name")), None)
+
+            # CONTRÔLE D'ACCÈS 3 : Utilisateur Normal ne peut modifier QUE ses propres documents
+            if user_role == "Utilisateur Normal" and not is_new and existing_idx is not None:
+                existing_doc = rows[existing_idx]
+                owner = existing_doc.get("cree_par")
+                if owner and owner != user_id:
+                    self.send_response(403)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": f"Modification non autorisée : Ce document a été créé par {existing_doc.get('cree_par_nom', owner)}. En tant qu'Utilisateur Normal, vous ne pouvez modifier que les documents créés par votre compte."}, ensure_ascii=False).encode("utf-8"))
+                    return
+
+            # Métadonnées de propriété et traçabilité
+            if is_new or existing_idx is None:
+                doc["cree_par"] = user_id
+                doc["cree_par_nom"] = user_nom
+                doc["date_creation"] = doc.get("date_creation") or now_str
+                action_name = "Création"
+                detail_msg = f"Création de {doc.get('name')} dans {dt} par {user_nom}"
+            else:
+                action_name = "Modification"
+                detail_msg = f"Mise à jour de {doc.get('name')} par {user_nom}"
+
+            doc["modifie_par"] = user_id
+            doc["modifie_par_nom"] = user_nom
+            doc["date_modification"] = now_str
+
             if existing_idx is not None:
                 rows[existing_idx] = doc
             else:
                 rows.insert(0, doc)
+
+            # Enregistrement au Journal d'Audit
+            if dt != "SE Journal Audit":
+                add_audit_log(db, user_id, user_nom, user_role, action_name, dt, doc.get("name"), "", detail_msg)
+
             save_db(db)
             payload = {"schemas": SCHEMAS, "db": db, "dashboard": compute_dashboard_payload(db)}
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -2694,6 +3065,7 @@ class SaintEugeneHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.end_headers()
             self.wfile.write(body)
+            return
 
 
 def main():

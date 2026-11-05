@@ -394,9 +394,9 @@
               <option value="Non déclaré" ${filterSit === 'Non déclaré' ? 'selected' : ''}>🟠 Non déclarés</option>
             </select>
             <input type="text" placeholder="🔍 Rechercher salarié, poste..." value="${RH_STATE.filterSearch}" oninput="window.rhSearchEmp(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;width:200px;">
-            <button onclick="window.rhModalNouveauSalarie()" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            ${(window.CURRENT_USER && window.CURRENT_USER.role === "Consultant") ? '' : `<button onclick="window.rhModalNouveauSalarie()" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
               ➕ Ajouter un Salarié
-            </button>
+            </button>`}
           </div>
         </div>
 
@@ -451,8 +451,10 @@
               ${e.n_assurance || (situation === 'Non déclaré' ? 'Non déclaré' : '—')}
             </td>
             <td style="padding:10px;text-align:right;white-space:nowrap;">
+              ${(window.CURRENT_USER && window.CURRENT_USER.role === "Consultant") ? '<span style="color:#94a3b8;font-size:11px;">Lecture Seule</span>' : `
               <button onclick="window.rhModalModifierEmploye('${e.name}')" style="background:#f1f5f9;border:1px solid #cbd5e1;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;margin-right:4px;">✏️ Modifier</button>
-              <button onclick="window.rhSupprimerEmploye('${e.name}')" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;">🗑️</button>
+              ${(!window.CURRENT_USER || window.CURRENT_USER.role === "Administrateur") ? `<button onclick="window.rhSupprimerEmploye('${e.name}')" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;">🗑️</button>` : ''}
+              `}
             </td>
           </tr>
         `;
@@ -475,6 +477,11 @@
 
   // Suppression d'un salarié avec confirmation unifiée et contrôle d'intégrité
   window.rhSupprimerEmploye = function(empId){
+    const curRole = (window.CURRENT_USER ? window.CURRENT_USER.role : "Administrateur");
+    if (curRole !== "Administrateur") {
+      alert("Action non autorisée : Seul un Administrateur a le droit de supprimer un collaborateur.");
+      return;
+    }
     if(typeof window.triggerDeleteDoc === "function"){
       window.triggerDeleteDoc("SE Employe", empId);
       return;
@@ -723,6 +730,11 @@
      MODAL NOUVEAU SALARIÉ (Date d'Entrée & Date de Sortie)
      ============================================================================== */
   window.rhModalNouveauSalarie = function(){
+    const curRole = (window.CURRENT_USER ? window.CURRENT_USER.role : "Administrateur");
+    if (curRole === "Consultant") {
+      alert("Action non autorisée : Le profil Consultant est en lecture seule.");
+      return;
+    }
     const modalId = "rh-modal-nouveau";
     let modal = document.getElementById(modalId);
     if(!modal){

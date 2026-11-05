@@ -13,7 +13,10 @@
       "organisme": "CNAS",
       "statut": "À déclarer",
       "observation": "Déclaration à effectuer dans le délai réglementaire (à valider)",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Arret Maladie": [
@@ -32,7 +35,10 @@
       "statut_admin": "Déclaré par l'employé",
       "statut_indemnisation": "Non applicable",
       "observation_admin": "Certificat à fournir",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ARRET-0002",
@@ -50,7 +56,10 @@
       "statut_admin": "Certificat reçu",
       "statut_indemnisation": "En attente",
       "observation_admin": "À transmettre à la CNAS",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ARRET-0003",
@@ -68,7 +77,10 @@
       "statut_admin": "Clôturé",
       "statut_indemnisation": "Indemnisé",
       "observation_admin": "Dossier clôturé",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Avance Pret": [
@@ -90,7 +102,10 @@
       "solde_restant": 90000.0,
       "base_autorisation": "Convention de prêt signée (simulation)",
       "statut": "En cours de remboursement",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "AVP-0002",
@@ -110,7 +125,10 @@
       "solde_restant": 30000.0,
       "base_autorisation": "",
       "statut": "Versé",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Budget Annuel": [
@@ -123,7 +141,10 @@
       "realise": 257798.17,
       "ecart_dzd": -5862201.83,
       "ecart_pct": -95.79,
-      "statut_budget": "Sous-Performance"
+      "statut_budget": "Sous-Performance",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-01-CA Restauration",
@@ -134,7 +155,10 @@
       "realise": 2058823.53,
       "ecart_dzd": -281176.47,
       "ecart_pct": -12.02,
-      "statut_budget": "Sous-Performance"
+      "statut_budget": "Sous-Performance",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-01-Salaires",
@@ -145,7 +169,10 @@
       "realise": 982600.0,
       "ecart_dzd": -67400.0,
       "ecart_pct": -6.42,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-01-Achats",
@@ -156,7 +183,10 @@
       "realise": 1320000.0,
       "ecart_dzd": 15000.0,
       "ecart_pct": 1.15,
-      "statut_budget": "Dépassement"
+      "statut_budget": "Dépassement",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-01-Charges",
@@ -167,7 +197,10 @@
       "realise": 585000.0,
       "ecart_dzd": -165000.0,
       "ecart_pct": -22.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-02-CA Hébergement",
@@ -178,7 +211,10 @@
       "realise": 4486238.53,
       "ecart_dzd": -1973761.47,
       "ecart_pct": -30.55,
-      "statut_budget": "Sous-Performance"
+      "statut_budget": "Sous-Performance",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-02-CA Restauration",
@@ -189,7 +225,10 @@
       "realise": 2310924.37,
       "ecart_dzd": -159075.63,
       "ecart_pct": -6.44,
-      "statut_budget": "Sous-Performance"
+      "statut_budget": "Sous-Performance",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-02-Salaires",
@@ -200,7 +239,10 @@
       "realise": 982600.0,
       "ecart_dzd": -67400.0,
       "ecart_pct": -6.42,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-02-Achats",
@@ -211,7 +253,10 @@
       "realise": 640000.0,
       "ecart_dzd": -738000.0,
       "ecart_pct": -53.56,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-02-Charges",
@@ -222,7 +267,10 @@
       "realise": 535000.0,
       "ecart_dzd": -215000.0,
       "ecart_pct": -28.67,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-03-CA Hébergement",
@@ -233,7 +281,10 @@
       "realise": 3504587.16,
       "ecart_dzd": -2275412.84,
       "ecart_pct": -39.37,
-      "statut_budget": "Sous-Performance"
+      "statut_budget": "Sous-Performance",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-03-CA Restauration",
@@ -244,7 +295,10 @@
       "realise": 0,
       "ecart_dzd": -2210000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-03-Salaires",
@@ -255,7 +309,10 @@
       "realise": 982600.0,
       "ecart_dzd": -67400.0,
       "ecart_pct": -6.42,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-03-Achats",
@@ -266,7 +323,10 @@
       "realise": 1280000.0,
       "ecart_dzd": 48000.0,
       "ecart_pct": 3.9,
-      "statut_budget": "Dépassement"
+      "statut_budget": "Dépassement",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-03-Charges",
@@ -277,7 +337,10 @@
       "realise": 910000.0,
       "ecart_dzd": 160000.0,
       "ecart_pct": 21.33,
-      "statut_budget": "Dépassement"
+      "statut_budget": "Dépassement",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-04-CA Hébergement",
@@ -288,7 +351,10 @@
       "realise": 0,
       "ecart_dzd": -6800000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-04-CA Restauration",
@@ -299,7 +365,10 @@
       "realise": 0,
       "ecart_dzd": -2600000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-04-Salaires",
@@ -310,7 +379,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-04-Achats",
@@ -321,7 +393,10 @@
       "realise": 0,
       "ecart_dzd": -1450000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-04-Charges",
@@ -332,7 +407,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-05-CA Hébergement",
@@ -343,7 +421,10 @@
       "realise": 0,
       "ecart_dzd": -7480000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-05-CA Restauration",
@@ -354,7 +435,10 @@
       "realise": 0,
       "ecart_dzd": -2860000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-05-Salaires",
@@ -365,7 +449,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-05-Achats",
@@ -376,7 +463,10 @@
       "realise": 0,
       "ecart_dzd": -1595000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-05-Charges",
@@ -387,7 +477,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-06-CA Hébergement",
@@ -398,7 +491,10 @@
       "realise": 0,
       "ecart_dzd": -8160000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-06-CA Restauration",
@@ -409,7 +505,10 @@
       "realise": 0,
       "ecart_dzd": -3120000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-06-Salaires",
@@ -420,7 +519,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-06-Achats",
@@ -431,7 +533,10 @@
       "realise": 0,
       "ecart_dzd": -1740000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-06-Charges",
@@ -442,7 +547,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-07-CA Hébergement",
@@ -453,7 +561,10 @@
       "realise": 0,
       "ecart_dzd": -8500000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-07-CA Restauration",
@@ -464,7 +575,10 @@
       "realise": 0,
       "ecart_dzd": -3250000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-07-Salaires",
@@ -475,7 +589,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-07-Achats",
@@ -486,7 +603,10 @@
       "realise": 0,
       "ecart_dzd": -1812000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-07-Charges",
@@ -497,7 +617,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-08-CA Hébergement",
@@ -508,7 +631,10 @@
       "realise": 0,
       "ecart_dzd": -8160000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-08-CA Restauration",
@@ -519,7 +645,10 @@
       "realise": 0,
       "ecart_dzd": -3120000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-08-Salaires",
@@ -530,7 +659,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-08-Achats",
@@ -541,7 +673,10 @@
       "realise": 0,
       "ecart_dzd": -1740000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-08-Charges",
@@ -552,7 +687,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-09-CA Hébergement",
@@ -563,7 +701,10 @@
       "realise": 0,
       "ecart_dzd": -7820000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-09-CA Restauration",
@@ -574,7 +715,10 @@
       "realise": 0,
       "ecart_dzd": -2990000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-09-Salaires",
@@ -585,7 +729,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-09-Achats",
@@ -596,7 +743,10 @@
       "realise": 0,
       "ecart_dzd": -1667000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-09-Charges",
@@ -607,7 +757,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-10-CA Hébergement",
@@ -618,7 +771,10 @@
       "realise": 0,
       "ecart_dzd": -7480000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-10-CA Restauration",
@@ -629,7 +785,10 @@
       "realise": 0,
       "ecart_dzd": -2860000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-10-Salaires",
@@ -640,7 +799,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-10-Achats",
@@ -651,7 +813,10 @@
       "realise": 0,
       "ecart_dzd": -1595000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-10-Charges",
@@ -662,7 +827,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-11-CA Hébergement",
@@ -673,7 +841,10 @@
       "realise": 0,
       "ecart_dzd": -6800000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-11-CA Restauration",
@@ -684,7 +855,10 @@
       "realise": 0,
       "ecart_dzd": -2600000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-11-Salaires",
@@ -695,7 +869,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-11-Achats",
@@ -706,7 +883,10 @@
       "realise": 0,
       "ecart_dzd": -1450000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-11-Charges",
@@ -717,7 +897,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-12-CA Hébergement",
@@ -728,7 +911,10 @@
       "realise": 0,
       "ecart_dzd": -7140000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-12-CA Restauration",
@@ -739,7 +925,10 @@
       "realise": 0,
       "ecart_dzd": -2730000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-12-Salaires",
@@ -750,7 +939,10 @@
       "realise": 0,
       "ecart_dzd": -1050000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-12-Achats",
@@ -761,7 +953,10 @@
       "realise": 0,
       "ecart_dzd": -1522000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BUD-2026-12-Charges",
@@ -772,7 +967,10 @@
       "realise": 0,
       "ecart_dzd": -750000.0,
       "ecart_pct": -100.0,
-      "statut_budget": "Conforme"
+      "statut_budget": "Conforme",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Caisse Mensuelle": [
@@ -790,7 +988,10 @@
       "statut_validation": "Validée",
       "valide_par": "Administrator (DAF)",
       "date_validation": "2026-01-31 18:30:00",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Charge et Depense": [
@@ -806,7 +1007,10 @@
       "taux_tva": 19.0,
       "montant_tva": 79800.0,
       "montant_ttc": 499800.0,
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CHG-2026-00002",
@@ -820,7 +1024,10 @@
       "taux_tva": 19.0,
       "montant_tva": 31350.0,
       "montant_ttc": 196350.0,
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CHG-2026-00003",
@@ -834,7 +1041,10 @@
       "taux_tva": 19.0,
       "montant_tva": 18050.0,
       "montant_ttc": 113050.0,
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CHG-2026-00004",
@@ -848,7 +1058,10 @@
       "taux_tva": 19.0,
       "montant_tva": 83600.0,
       "montant_ttc": 523600.0,
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CHG-2026-00005",
@@ -862,7 +1075,10 @@
       "taux_tva": 19.0,
       "montant_tva": 98800.0,
       "montant_ttc": 618800.0,
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CHG-2026-00006",
@@ -876,7 +1092,10 @@
       "taux_tva": 19.0,
       "montant_tva": 74100.0,
       "montant_ttc": 464100.0,
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Client": [
@@ -890,7 +1109,10 @@
       "rc": "16/00-0012458B00",
       "article_imposition": "16120145879",
       "telephone": "+213 23 48 30 00",
-      "adresse": "Djenane El Malik, Hydra, Alger"
+      "adresse": "Djenane El Malik, Hydra, Alger",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "Air Algérie - Direction des Opérations",
@@ -900,7 +1122,10 @@
       "nif": "000016001874512",
       "rc": "16/00-0021547B00",
       "telephone": "+213 21 98 63 63",
-      "adresse": "1 Place Maurice Audin, Alger Centre"
+      "adresse": "1 Place Maurice Audin, Alger Centre",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ATM Mobilis - Direction Régionale Alger",
@@ -910,7 +1135,10 @@
       "nif": "000316096514203",
       "rc": "16/00-0965142B03",
       "telephone": "+213 23 92 10 00",
-      "adresse": "Quartier d'Affaires Bab Ezzouar, Alger"
+      "adresse": "Quartier d'Affaires Bab Ezzouar, Alger",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "COSIDER Groupe Spa",
@@ -920,7 +1148,10 @@
       "nif": "000016004512398",
       "rc": "16/00-0045123B00",
       "telephone": "+213 23 53 40 40",
-      "adresse": "Route de Dar El Beïda, Alger"
+      "adresse": "Route de Dar El Beïda, Alger",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "Touring Club d'Algérie (Agence)",
@@ -930,7 +1161,10 @@
       "nif": "000116007891204",
       "rc": "16/00-0078912B01",
       "telephone": "+213 21 73 42 15",
-      "adresse": "Rue Hassiba Ben Bouali, Alger"
+      "adresse": "Rue Hassiba Ben Bouali, Alger",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "Client Passager Comptoir (Walk-in)",
@@ -939,7 +1173,10 @@
       "delai_paiement_jours": 0,
       "nif": "—",
       "telephone": "—",
-      "adresse": "Réception Hôtel Saint Eugène, Alger"
+      "adresse": "Réception Hôtel Saint Eugène, Alger",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Compte Tresorerie": [
@@ -950,7 +1187,10 @@
       "compte_scf": "531000",
       "banque": "—",
       "solde_initial": 850000.0,
-      "solde_actuel": 995700.0
+      "solde_actuel": 995700.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "Caisse Réception & Restaurant",
@@ -959,7 +1199,10 @@
       "compte_scf": "532000",
       "banque": "—",
       "solde_initial": 320000.0,
-      "solde_actuel": 320000.0
+      "solde_actuel": 320000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BNA Agence Bologhine - DZD",
@@ -969,7 +1212,10 @@
       "banque": "BNA",
       "numero_compte_rib": "00100614030001458921",
       "solde_initial": 14500000.0,
-      "solde_actuel": 19229200.0
+      "solde_actuel": 19229200.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "BEA Alger Centre - DZD",
@@ -979,7 +1225,10 @@
       "banque": "BEA",
       "numero_compte_rib": "00200012020008874105",
       "solde_initial": 8200000.0,
-      "solde_actuel": 10650000.0
+      "solde_actuel": 10650000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CPA Bab El Oued - DZD",
@@ -989,7 +1238,10 @@
       "banque": "Crédit Populaire d'Algérie (CPA)",
       "numero_compte_rib": "004 00175 4000261090 62",
       "solde_initial": 4100000.0,
-      "solde_actuel": 6850000.0
+      "solde_actuel": 6850000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Conge": [
@@ -1005,7 +1257,10 @@
       "date_demande": "2026-08-03",
       "statut": "Approuvé",
       "responsable_validation": "SE-EMP-0001",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CONGE-0002",
@@ -1019,7 +1274,10 @@
       "date_demande": "2026-11-02",
       "statut": "Approuvé",
       "responsable_validation": "SE-EMP-0001",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CONGE-0003",
@@ -1033,7 +1291,10 @@
       "date_demande": "2026-11-20",
       "statut": "Demande",
       "responsable_validation": "SE-EMP-0001",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CONGE-0004",
@@ -1047,7 +1308,10 @@
       "date_demande": "2026-10-12",
       "statut": "Approuvé",
       "responsable_validation": "SE-EMP-0001",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CONGE-0005",
@@ -1061,7 +1325,10 @@
       "date_demande": "2026-09-06",
       "statut": "Validé responsable",
       "responsable_validation": "SE-EMP-0001",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Contrat et Abonnement": [
@@ -1074,7 +1341,10 @@
       "statut": "Actif",
       "montant_echeance": 95000.0,
       "frequence": "Mensuelle",
-      "prochaine_echeance": "2026-11-15"
+      "prochaine_echeance": "2026-11-15",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-2026-0002",
@@ -1085,7 +1355,10 @@
       "statut": "À renouveler (< 30j)",
       "montant_echeance": 95000.0,
       "frequence": "Mensuelle",
-      "prochaine_echeance": "2026-11-20"
+      "prochaine_echeance": "2026-11-20",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Contrat RH": [
@@ -1104,7 +1377,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0002-CRÉ",
@@ -1121,7 +1397,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0003-CRÉ",
@@ -1138,7 +1417,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0004-CRÉ",
@@ -1155,7 +1437,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0005-CRÉ",
@@ -1172,7 +1457,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0006-CRÉ",
@@ -1189,7 +1477,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0007-CRÉ",
@@ -1206,7 +1497,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0008-CRÉ",
@@ -1223,7 +1517,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0009-CRÉ",
@@ -1240,7 +1537,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "En attente de validation RH",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0011-CRÉ",
@@ -1257,7 +1557,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0012-CRÉ",
@@ -1274,7 +1577,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0013-CRÉ",
@@ -1291,7 +1597,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0014-CRÉ",
@@ -1308,7 +1617,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Actif",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CTR-RH-0015-CRÉ",
@@ -1325,7 +1637,10 @@
       "decision_renouvellement": "À décider",
       "statut_workflow": "Clôturé",
       "observation": "Contrat de simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Decaissement": [
@@ -1343,7 +1658,10 @@
       "ref_paiement": "VIR-FRN-0101",
       "validation_daf": 1,
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "DEC-2026-00002",
@@ -1359,7 +1677,10 @@
       "ref_paiement": "CHQ-BNA-45012",
       "validation_daf": 1,
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "DEC-2026-00003",
@@ -1375,7 +1696,10 @@
       "ref_paiement": "BON-CAISSE-2601-01",
       "validation_daf": 1,
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Declaration CNAS": [
@@ -1400,7 +1724,10 @@
       "ref_paiement": "SIM-BDX-2026-01",
       "anomalies": "",
       "observation": "Simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CNAS-DECL-2026-02",
@@ -1423,7 +1750,10 @@
       "ref_paiement": "",
       "anomalies": "",
       "observation": "Simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "CNAS-DECL-2026-03",
@@ -1446,7 +1776,10 @@
       "ref_paiement": "",
       "anomalies": "",
       "observation": "Simulation",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Declaration TVA": [
@@ -1468,7 +1801,10 @@
       "date_paiement": "2026-02-18",
       "solde_fiscal": 0.0,
       "statut": "Payée",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "G50-TVA-2026-02",
@@ -1488,7 +1824,10 @@
       "date_paiement": "",
       "solde_fiscal": 629587.1,
       "statut": "Déclarée (G50)",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "G50-TVA-2026-03",
@@ -1508,7 +1847,10 @@
       "date_paiement": "",
       "solde_fiscal": 392338.05,
       "statut": "Déclarée (G50)",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Ecriture RH": [
@@ -1523,7 +1865,10 @@
       "libelle": "Rémunérations du personnel",
       "debit": 982600.0,
       "credit": 0,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ECR-RH-2026-01-02",
@@ -1536,7 +1881,10 @@
       "libelle": "Cotisations patronales CNAS",
       "debit": 241956.0,
       "credit": 0,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ECR-RH-2026-01-03",
@@ -1549,7 +1897,10 @@
       "libelle": "Personnel — rémunérations dues (net)",
       "debit": 0,
       "credit": 724120.73,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ECR-RH-2026-01-04",
@@ -1562,7 +1913,10 @@
       "libelle": "CNAS (part salariale + patronale)",
       "debit": 0,
       "credit": 325710.0,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ECR-RH-2026-01-05",
@@ -1575,7 +1929,10 @@
       "libelle": "IRG retenu à la source",
       "debit": 0,
       "credit": 174725.27,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Employe": [
@@ -1631,7 +1988,10 @@
       "date_derniere_revision": "2023-03-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 145473.95,
-      "cout_employeur_estime": 262910.0
+      "cout_employeur_estime": 262910.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0002",
@@ -1685,7 +2045,10 @@
       "date_derniere_revision": "2023-03-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 104187.5,
-      "cout_employeur_estime": 179750.0
+      "cout_employeur_estime": 179750.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0003",
@@ -1739,7 +2102,10 @@
       "date_derniere_revision": "2023-03-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 81064.4,
-      "cout_employeur_estime": 134012.0
+      "cout_employeur_estime": 134012.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0004",
@@ -1793,7 +2159,10 @@
       "date_derniere_revision": "2023-03-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 76159.5,
-      "cout_employeur_estime": 124310.0
+      "cout_employeur_estime": 124310.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0005",
@@ -1847,7 +2216,10 @@
       "date_derniere_revision": "2023-03-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 111194.5,
-      "cout_employeur_estime": 193610.0
+      "cout_employeur_estime": 193610.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0006",
@@ -1901,7 +2273,10 @@
       "date_derniere_revision": "2023-03-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 71196.94,
-      "cout_employeur_estime": 114608.0
+      "cout_employeur_estime": 114608.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0007",
@@ -1955,7 +2330,10 @@
       "date_derniere_revision": "2023-03-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 78261.6,
-      "cout_employeur_estime": 128468.0
+      "cout_employeur_estime": 128468.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0008",
@@ -2009,7 +2387,10 @@
       "date_derniere_revision": "2023-03-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 56582.34,
-      "cout_employeur_estime": 86888.0
+      "cout_employeur_estime": 86888.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0009",
@@ -2063,7 +2444,10 @@
       "date_derniere_revision": "2026-05-30",
       "donnee_simulation": 1,
       "salaire_net_estime": 44890.66,
-      "cout_employeur_estime": 64712.0
+      "cout_employeur_estime": 64712.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0010",
@@ -2117,7 +2501,10 @@
       "date_derniere_revision": "2025-02-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 46352.12,
-      "cout_employeur_estime": 67484.0
+      "cout_employeur_estime": 67484.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0011",
@@ -2171,7 +2558,10 @@
       "date_derniere_revision": "2026-07-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 49540.76,
-      "cout_employeur_estime": 73532.0
+      "cout_employeur_estime": 73532.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0012",
@@ -2225,7 +2615,10 @@
       "date_derniere_revision": "2026-08-20",
       "donnee_simulation": 1,
       "salaire_net_estime": 47813.58,
-      "cout_employeur_estime": 70256.0
+      "cout_employeur_estime": 70256.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0013",
@@ -2279,7 +2672,10 @@
       "date_derniere_revision": "2026-02-12",
       "donnee_simulation": 1,
       "salaire_net_estime": 47082.85,
-      "cout_employeur_estime": 68870.0
+      "cout_employeur_estime": 68870.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0014",
@@ -2333,7 +2729,10 @@
       "date_derniere_revision": "2024-06-01",
       "donnee_simulation": 1,
       "salaire_net_estime": 50736.5,
-      "cout_employeur_estime": 75800.0
+      "cout_employeur_estime": 75800.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SE-EMP-0015",
@@ -2388,7 +2787,10 @@
       "donnee_simulation": 1,
       "salaire_net_estime": 41889.26,
       "cout_employeur_estime": 59168.0,
-      "date_sortie": "2026-09-30"
+      "date_sortie": "2026-09-30",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Emprunt et Dette": [
@@ -2403,7 +2805,10 @@
       "mensualite": 825000.0,
       "capital_rembourse": 11250000.0,
       "interets_payes": 1840000.0,
-      "solde_restant": 33750000.0
+      "solde_restant": 33750000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Encaissement": [
@@ -2418,7 +2823,10 @@
       "ref_paiement": "VIR-SNT-2601",
       "statut_cheque": "N/A",
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ENC-2026-00002",
@@ -2431,7 +2839,10 @@
       "ref_paiement": "CAISSE-JAN-01",
       "statut_cheque": "N/A",
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ENC-2026-00003",
@@ -2444,7 +2855,10 @@
       "ref_paiement": "VIR-MOB-2602",
       "statut_cheque": "N/A",
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ENC-2026-00004",
@@ -2457,7 +2871,10 @@
       "ref_paiement": "CHQ-COS-884120",
       "statut_cheque": "En portefeuille (Non encaissé)",
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "ENC-2026-00005",
@@ -2470,7 +2887,10 @@
       "ref_paiement": "TPE-CIB-9921",
       "statut_cheque": "N/A",
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Facture Client": [
@@ -2564,7 +2984,10 @@
       "montant_en_lettres": "Quatre millions deux cent mille Dinars Algériens",
       "montant_encaisse": 4200000.0,
       "reste_a_encaisser": 0.0,
-      "jours_retard": 0
+      "jours_retard": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "FAC-CLI-2026-00002",
@@ -2625,7 +3048,10 @@
       "montant_en_lettres": "Deux cent quatre-vingt-dix mille sept cents Dinars Algériens",
       "montant_encaisse": 290700.0,
       "reste_a_encaisser": 0.0,
-      "jours_retard": 0
+      "jours_retard": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "FAC-CLI-2026-00003",
@@ -2701,7 +3127,10 @@
       "montant_en_lettres": "Deux millions quatre cent cinquante mille Dinars Algériens",
       "montant_encaisse": 2450000.0,
       "reste_a_encaisser": 0.0,
-      "jours_retard": 0
+      "jours_retard": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "FAC-CLI-2026-00004",
@@ -2723,8 +3152,8 @@
           "date_arrivee": "2026-02-10",
           "date_depart": "2026-02-12",
           "nuitees": 2,
-          "nb_personnes": 44,
-          "taxe_sejour": 40000.0,
+          "nb_personnes": 72,
+          "taxe_sejour": 68000.0,
           "total_ttc_sejour": 2100000.0
         },
         {
@@ -2733,8 +3162,8 @@
           "date_arrivee": "2026-02-12",
           "date_depart": "2026-02-14",
           "nuitees": 2,
-          "nb_personnes": 66,
-          "taxe_sejour": 60000.0,
+          "nb_personnes": 108,
+          "taxe_sejour": 102000.0,
           "total_ttc_sejour": 2800000.0
         }
       ],
@@ -2788,7 +3217,10 @@
       "montant_en_lettres": "Quatre millions neuf cent mille Dinars Algériens",
       "montant_encaisse": 2500000.0,
       "reste_a_encaisser": 2400000.0,
-      "jours_retard": 0
+      "jours_retard": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "FAC-CLI-2026-00005",
@@ -2864,7 +3296,10 @@
       "montant_en_lettres": "Deux millions sept cent cinquante mille Dinars Algériens",
       "montant_encaisse": 2750000.0,
       "reste_a_encaisser": 0.0,
-      "jours_retard": 0
+      "jours_retard": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "FAC-CLI-2026-00006",
@@ -2925,7 +3360,10 @@
       "montant_en_lettres": "Trois millions huit cent cinquante mille Dinars Algériens",
       "montant_encaisse": 0,
       "reste_a_encaisser": 3850000.0,
-      "jours_retard": 198
+      "jours_retard": 198,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "FAC-CLI-2026-00007",
@@ -3001,7 +3439,10 @@
       "montant_en_lettres": "Deux millions neuf cent mille Dinars Algériens",
       "montant_encaisse": 0,
       "reste_a_encaisser": 2900000.0,
-      "jours_retard": 0
+      "jours_retard": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Facture Fournisseur": [
@@ -3019,7 +3460,10 @@
       "montant_paye": 1570800.0,
       "reste_a_payer": 0.0,
       "statut": "Payée",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "FAC-FRN-2026-00002",
@@ -3035,7 +3479,10 @@
       "montant_paye": 400000.0,
       "reste_a_payer": 361600.0,
       "statut": "Échue",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "FAC-FRN-2026-00003",
@@ -3051,7 +3498,10 @@
       "montant_paye": 0,
       "reste_a_payer": 1523200.0,
       "statut": "Échue",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Facture Pro Forma": [
@@ -3077,8 +3527,8 @@
           "date_arrivee": "2026-11-15",
           "date_depart": "2026-11-18",
           "nuitees": 3,
-          "nb_personnes": 55,
-          "taxe_sejour": 75000.0,
+          "nb_personnes": 90,
+          "taxe_sejour": 127500.0,
           "total_ttc_sejour": 2160000.0
         },
         {
@@ -3087,8 +3537,8 @@
           "date_arrivee": "2026-11-15",
           "date_depart": "2026-11-18",
           "nuitees": 3,
-          "nb_personnes": 55,
-          "taxe_sejour": 75000.0,
+          "nb_personnes": 90,
+          "taxe_sejour": 127500.0,
           "total_ttc_sejour": 720000.0
         }
       ],
@@ -3199,7 +3649,10 @@
       "date_depart": "2026-11-18",
       "nature_prestation": "Mixte",
       "detail_tva": "TVA 9% : base HT 1 720 183.48 — TVA 154 816.52 | TVA 19% : base HT 831 932.77 — TVA 158 067.23",
-      "montant_en_lettres": "Deux millions huit cent quatre-vingt mille Dinars Algériens"
+      "montant_en_lettres": "Deux millions huit cent quatre-vingt mille Dinars Algériens",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PRO-2026-00002",
@@ -3274,7 +3727,79 @@
       "nuitees": 4,
       "nature_prestation": "Mixte",
       "detail_tva": "TVA 9% : base HT 869 724.77 — TVA 78 275.23 | TVA 19% : base HT 181 512.61 — TVA 34 487.39",
-      "montant_en_lettres": "Un million cent soixante-seize mille Dinars Algériens"
+      "montant_en_lettres": "Un million cent soixante-seize mille Dinars Algériens",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
+    },
+    {
+      "name": "PRO-2026-00003",
+      "date_facture": "2026-12-04",
+      "date_validite": "2026-12-08",
+      "client": "Ooredoo Algérie - Siège Chéraga",
+      "type_client": "Corporate",
+      "ref_devis": "DEV-2026-003",
+      "bon_commande": "BC-OOR-2026-99",
+      "num_bon_commande": "BC-OOR-2026-99",
+      "mode_paiement_prevu": "Virement",
+      "sejours_separes": 0,
+      "taxe_sejour_incluse": 1,
+      "appliquer_taxe_sejour": 1,
+      "date_arrivee": "2026-12-04",
+      "date_depart": "2026-12-08",
+      "statut": "Non validée",
+      "conditions_reglement": "Règlement par virement bancaire CPA à 30 jours.",
+      "notes_proforma": "Hébergement délégation VIP Ooredoo.",
+      "docstatus": 0,
+      "sejours": [
+        {
+          "sejour_no": 1,
+          "date_arrivee": "2026-12-04",
+          "date_depart": "2026-12-08",
+          "nuitees": 4,
+          "nb_personnes": 3,
+          "taxe_sejour": 2000.0,
+          "total_ttc_sejour": 180000.0
+        }
+      ],
+      "lignes": [
+        {
+          "sejour_no": 1,
+          "article": "Single Vue Mer [SGL-MER]",
+          "quantite": 2,
+          "nb_jours": 4,
+          "nb_personnes": 2,
+          "montant_ttc_saisi": 180000.0,
+          "type_ligne": "Hébergement",
+          "taux_tva": 9.0,
+          "taxe_sejour": 4000.0,
+          "montant_ht": 161467.89,
+          "montant_tva": 14532.11,
+          "total_ligne_ttc": 180000.0,
+          "prix_unitaire_ttc": 22000.0,
+          "observation": "Client VIP - Changement observation par auteur"
+        }
+      ],
+      "montant_ht": 161467.89,
+      "montant_tva": 14532.11,
+      "taxe_sejour": 4000.0,
+      "total_ttc_saisi": 180000.0,
+      "droit_timbre": 0.0,
+      "montant_ttc": 180000.0,
+      "ht_hebergement": 161467.89,
+      "ht_services": 0.0,
+      "nb_personnes_total": 2,
+      "nuitees_personnes": 8,
+      "nuitees": 4,
+      "nature_prestation": "Hébergement",
+      "detail_tva": "TVA 9% : base HT 161 467.89 — TVA 14 532.11",
+      "montant_en_lettres": "Cent quatre-vingt mille Dinars Algériens",
+      "cree_par": "USR-002",
+      "cree_par_nom": "Réception & Facturation",
+      "date_creation": "2026-11-04 11:20:00",
+      "modifie_par": "USR-002",
+      "modifie_par_nom": "Réception & Facturation",
+      "date_modification": "2026-11-05 21:15:17"
     }
   ],
   "SE Fiche de Paie Mensuelle": [
@@ -3306,7 +3831,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 1
+      "comptabilise": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-02-SE-EMP-0001",
@@ -3336,7 +3864,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-03-SE-EMP-0001",
@@ -3366,7 +3897,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-01-SE-EMP-0002",
@@ -3396,7 +3930,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 1
+      "comptabilise": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-02-SE-EMP-0002",
@@ -3426,7 +3963,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-03-SE-EMP-0002",
@@ -3456,7 +3996,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-01-SE-EMP-0003",
@@ -3486,7 +4029,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 1
+      "comptabilise": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-02-SE-EMP-0003",
@@ -3516,7 +4062,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-03-SE-EMP-0003",
@@ -3546,7 +4095,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-01-SE-EMP-0004",
@@ -3576,7 +4128,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 1
+      "comptabilise": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-02-SE-EMP-0004",
@@ -3606,7 +4161,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-03-SE-EMP-0004",
@@ -3636,7 +4194,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-01-SE-EMP-0005",
@@ -3666,7 +4227,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 1
+      "comptabilise": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-02-SE-EMP-0005",
@@ -3696,7 +4260,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-03-SE-EMP-0005",
@@ -3726,7 +4293,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-01-SE-EMP-0006",
@@ -3756,7 +4326,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 1
+      "comptabilise": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-02-SE-EMP-0006",
@@ -3786,7 +4359,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-03-SE-EMP-0006",
@@ -3816,7 +4392,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-01-SE-EMP-0007",
@@ -3846,7 +4425,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 1
+      "comptabilise": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-02-SE-EMP-0007",
@@ -3876,7 +4458,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-03-SE-EMP-0007",
@@ -3906,7 +4491,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-01-SE-EMP-0008",
@@ -3936,7 +4524,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 1
+      "comptabilise": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-02-SE-EMP-0008",
@@ -3966,7 +4557,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PAIE-2026-03-SE-EMP-0008",
@@ -3996,7 +4590,10 @@
       "retenue_absences": 0.0,
       "montant_heures_sup": 0.0,
       "nb_heures_sup": 0.0,
-      "comptabilise": 0
+      "comptabilise": 0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Fournisseur": [
@@ -4007,42 +4604,60 @@
       "nif": "001216088451209",
       "rc": "16/00-0884512B12",
       "rib": "00100614030009988776",
-      "telephone": "+213 23 81 12 45"
+      "telephone": "+213 23 81 12 45",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SONELGAZ - Direction Distribution Bologhine",
       "nom_fournisseur": "SONELGAZ - Direction Distribution Bologhine",
       "categorie": "Énergie & Eau (Sonelgaz/SEAAL)",
       "nif": "000016000112233",
-      "telephone": "3303"
+      "telephone": "3303",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "SEAAL - Eau et Assainissement d'Alger",
       "nom_fournisseur": "SEAAL - Eau et Assainissement d'Alger",
       "categorie": "Énergie & Eau (Sonelgaz/SEAAL)",
       "nif": "000616000445566",
-      "telephone": "1594"
+      "telephone": "1594",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "Algérie Télécom Entreprises (Fibre Pro)",
       "nom_fournisseur": "Algérie Télécom Entreprises (Fibre Pro)",
       "categorie": "Télécom & IT",
       "nif": "000216000778899",
-      "telephone": "+213 21 82 38 38"
+      "telephone": "+213 21 82 38 38",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "Blanchisserie Hôtelière de la Baie Spa",
       "nom_fournisseur": "Blanchisserie Hôtelière de la Baie Spa",
       "categorie": "Produits d'Accueil & Linge",
       "nif": "001516077412365",
-      "rib": "00400108401007741236"
+      "rib": "00400108401007741236",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "Eurl Maghreb Ascenseurs & Climatisation CVC",
       "nom_fournisseur": "Eurl Maghreb Ascenseurs & Climatisation CVC",
       "categorie": "Maintenance & Technique",
       "nif": "001416055321478",
-      "rib": "00200012020005532147"
+      "rib": "00200012020005532147",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Immobilisation": [
@@ -4056,7 +4671,10 @@
       "dotation_annuelle": 980000.0,
       "amortissements_cumules": 2533972.6,
       "vnc": 7266027.4,
-      "statut": "En service"
+      "statut": "En service",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "IMMO-2026-0002",
@@ -4068,7 +4686,10 @@
       "dotation_annuelle": 812500.0,
       "amortissements_cumules": 1591438.36,
       "vnc": 4908561.64,
-      "statut": "En service"
+      "statut": "En service",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "IMMO-2026-0003",
@@ -4080,7 +4701,10 @@
       "dotation_annuelle": 1080000.0,
       "amortissements_cumules": 1257534.25,
       "vnc": 4142465.75,
-      "statut": "En service"
+      "statut": "En service",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "IMMO-2026-0004",
@@ -4092,7 +4716,10 @@
       "dotation_annuelle": 483333.33,
       "amortissements_cumules": 476712.33,
       "vnc": 973287.67,
-      "statut": "En service"
+      "statut": "En service",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Ligne Facture Client": [],
@@ -4202,7 +4829,10 @@
       "seuil_tresorerie_critique": 2500000.0,
       "delai_alerte_cheque_jours": 7,
       "delai_alerte_contrat_jours": 30,
-      "name": "SE Parametres Hotel"
+      "name": "SE Parametres Hotel",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Parametres RH": [
@@ -4217,7 +4847,10 @@
       "source_reglementaire": "Paramétrage existant de l'ERP — à confirmer (CNAS)",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-taux_cnas_patronal-2026-01-01",
@@ -4230,7 +4863,10 @@
       "source_reglementaire": "Paramétrage existant de l'ERP — à confirmer (CNAS)",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-irg_bareme-2026-01-01",
@@ -4243,7 +4879,10 @@
       "source_reglementaire": "Barème intégré à l'ERP (fiscal) — à valider expert-comptable",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-diviseur_jour_retenue-2026-01-01",
@@ -4256,7 +4895,10 @@
       "source_reglementaire": "Usage courant — à valider",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-heures_mensuelles-2026-01-01",
@@ -4269,7 +4911,10 @@
       "source_reglementaire": "40 h/sem. — à valider",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-majoration_hs-2026-01-01",
@@ -4282,7 +4927,10 @@
       "source_reglementaire": "À valider selon durée légale / convention",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-conges_jours_par_mois-2026-01-01",
@@ -4295,7 +4943,10 @@
       "source_reglementaire": "Règle usuelle — à valider (texte applicable)",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-conges_plafond_annuel-2026-01-01",
@@ -4308,7 +4959,10 @@
       "source_reglementaire": "Règle usuelle — à valider (texte applicable)",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-conges_mode_comptage-2026-01-01",
@@ -4321,7 +4975,10 @@
       "source_reglementaire": "calendaires | ouvrables — à valider",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-delai_transmission_arret_jours-2026-01-01",
@@ -4334,7 +4991,10 @@
       "source_reglementaire": "À valider (procédure CNAS en vigueur)",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-delai_declaration_cnas_jours-2026-01-01",
@@ -4347,7 +5007,10 @@
       "source_reglementaire": "À valider (échéances CNAS en vigueur)",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-delai_declaration_at_jours-2026-01-01",
@@ -4360,7 +5023,10 @@
       "source_reglementaire": "À valider (procédure CNAS en vigueur)",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-seuil_retards_repetes-2026-01-01",
@@ -4373,7 +5039,10 @@
       "source_reglementaire": "Règle interne — à valider",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-compte_charges_personnel-2026-01-01",
@@ -4386,7 +5055,10 @@
       "source_reglementaire": "Plan SCF — à valider expert-comptable",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-compte_charges_sociales-2026-01-01",
@@ -4399,7 +5071,10 @@
       "source_reglementaire": "Plan SCF — à valider expert-comptable",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-compte_personnel_dus-2026-01-01",
@@ -4412,7 +5087,10 @@
       "source_reglementaire": "Plan SCF — à valider expert-comptable",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-compte_securite_sociale-2026-01-01",
@@ -4425,7 +5103,10 @@
       "source_reglementaire": "Plan SCF — à valider expert-comptable",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-compte_irg-2026-01-01",
@@ -4438,7 +5119,10 @@
       "source_reglementaire": "Plan SCF — à valider expert-comptable",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-compte_avances-2026-01-01",
@@ -4451,7 +5135,10 @@
       "source_reglementaire": "Plan SCF — à valider expert-comptable",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PARAM-RH-compte_banque-2026-01-01",
@@ -4464,7 +5151,10 @@
       "source_reglementaire": "Plan SCF — à valider expert-comptable",
       "statut_validation": "À valider",
       "valide_par": "",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Performance Hoteliere": [
@@ -4479,7 +5169,10 @@
       "ca_hebergement": 540000.0,
       "ca_restaurant": 385000.0,
       "autres_revenus": 65000.0,
-      "ca_total_jour": 990000.0
+      "ca_total_jour": 990000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PERF-2026-02-15",
@@ -4492,7 +5185,10 @@
       "ca_hebergement": 610500.0,
       "ca_restaurant": 420000.0,
       "autres_revenus": 80000.0,
-      "ca_total_jour": 1110500.0
+      "ca_total_jour": 1110500.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PERF-2026-03-15",
@@ -4505,7 +5201,10 @@
       "ca_hebergement": 522000.0,
       "ca_restaurant": 360000.0,
       "autres_revenus": 95000.0,
-      "ca_total_jour": 977000.0
+      "ca_total_jour": 977000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PERF-2026-04-15",
@@ -4518,7 +5217,10 @@
       "ca_hebergement": 665000.0,
       "ca_restaurant": 460000.0,
       "autres_revenus": 110000.0,
-      "ca_total_jour": 1235000.0
+      "ca_total_jour": 1235000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PERF-2026-05-15",
@@ -4531,7 +5233,10 @@
       "ca_hebergement": 741000.0,
       "ca_restaurant": 510000.0,
       "autres_revenus": 140000.0,
-      "ca_total_jour": 1391000.0
+      "ca_total_jour": 1391000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PERF-2026-06-15",
@@ -4544,7 +5249,10 @@
       "ca_hebergement": 800000.0,
       "ca_restaurant": 560000.0,
       "autres_revenus": 150000.0,
-      "ca_total_jour": 1510000.0
+      "ca_total_jour": 1510000.0,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Periode Paie": [
@@ -4566,7 +5274,10 @@
       "cout_employeur": 1224556.0,
       "total_paye": 724120.73,
       "ecriture_generee": 1,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PERIODE-2026-02",
@@ -4586,7 +5297,10 @@
       "cout_employeur": 1224556.0,
       "total_paye": 724120.73,
       "ecriture_generee": 0,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PERIODE-2026-03",
@@ -4606,7 +5320,10 @@
       "cout_employeur": 1224556.0,
       "total_paye": 724120.73,
       "ecriture_generee": 0,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Presence Absence": [
@@ -4621,7 +5338,10 @@
       "statut": "À valider",
       "horaire_prevu": "08:00-17:00",
       "retenue_validee": 0,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PRES-0002",
@@ -4636,7 +5356,10 @@
       "retenue_validee": 0,
       "retard_minutes": 35,
       "heure_arrivee": "08:35",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PRES-0003",
@@ -4651,7 +5374,10 @@
       "retenue_validee": 0,
       "retard_minutes": 20,
       "heure_arrivee": "08:20",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PRES-0004",
@@ -4666,7 +5392,10 @@
       "retenue_validee": 0,
       "retard_minutes": 25,
       "heure_arrivee": "08:25",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PRES-0005",
@@ -4679,7 +5408,10 @@
       "statut": "Validé",
       "horaire_prevu": "08:00-17:00",
       "retenue_validee": 1,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PRES-0006",
@@ -4695,7 +5427,10 @@
       "heures_sup": 3.0,
       "heure_arrivee": "08:00",
       "heure_depart": "20:00",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PRES-0007",
@@ -4708,7 +5443,10 @@
       "statut": "Validé",
       "horaire_prevu": "08:00-17:00",
       "retenue_validee": 0,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "PRES-0008",
@@ -4721,7 +5459,10 @@
       "statut": "Validé",
       "horaire_prevu": "08:00-17:00",
       "retenue_validee": 0,
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Prevision Tresorerie": [
@@ -4755,7 +5496,10 @@
       "solde_releve_corrige": 17540800.0,
       "ecart_final": 0.0,
       "statut": "Validé",
-      "docstatus": 1
+      "docstatus": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Revision Salariale": [
@@ -4774,7 +5518,10 @@
       "motif_ecart": "",
       "validation_rh": "En attente",
       "validation_compta": "En attente",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     },
     {
       "name": "REV-SAL-0002",
@@ -4791,7 +5538,10 @@
       "motif_ecart": "",
       "validation_rh": "Validée",
       "validation_compta": "Validée",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ],
   "SE Sejour Facture Client": [],
@@ -4820,7 +5570,186 @@
       "validation_rh": "En attente",
       "validation_direction": "En attente",
       "statut": "En cours",
-      "donnee_simulation": 1
+      "donnee_simulation": 1,
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
+    }
+  ],
+  "SE Utilisateur": [
+    {
+      "name": "USR-001",
+      "identifiant": "admin",
+      "nom": "Hicham Bakir",
+      "email": "general.manager@sainteugenehotel.com",
+      "role": "Administrateur",
+      "mot_de_passe": "1234",
+      "statut": "Actif",
+      "dernier_acces": "2026-11-05 20:30:00",
+      "date_creation": "2026-01-01 08:00:00",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir"
+    },
+    {
+      "name": "USR-002",
+      "identifiant": "user1",
+      "nom": "Réception & Facturation",
+      "email": "reception@sainteugenehotel.com",
+      "role": "Utilisateur Normal",
+      "mot_de_passe": "user2026",
+      "statut": "Actif",
+      "dernier_acces": "2026-11-05 18:00:00",
+      "date_creation": "2026-01-01 08:00:00",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir"
+    },
+    {
+      "name": "USR-003",
+      "identifiant": "consultant",
+      "nom": "Audit & Contrôle Financier",
+      "email": "consultant@sainteugenehotel.com",
+      "role": "Consultant",
+      "mot_de_passe": "consultant2026",
+      "statut": "Actif",
+      "dernier_acces": "2026-11-05 15:45:00",
+      "date_creation": "2026-01-01 08:00:00",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir"
+    }
+  ],
+  "SE Journal Audit": [
+    {
+      "name": "AUD-2026-00010",
+      "date_heure": "2026-11-05 21:15:17",
+      "user_id": "USR-001",
+      "user_nom": "Hicham Bakir",
+      "user_role": "Administrateur",
+      "action": "Suppression",
+      "doctype_cible": "SE Facture Pro Forma",
+      "document_name": "PRO-2026-00004",
+      "valeur_precedente": "Enregistrement PRO-2026-00004",
+      "details": "Suppression définitive effectuée par Hicham Bakir",
+      "cree_par": "USR-001"
+    },
+    {
+      "name": "AUD-2026-00009",
+      "date_heure": "2026-11-05 21:15:17",
+      "user_id": "USR-002",
+      "user_nom": "Réception & Facturation",
+      "user_role": "Utilisateur Normal",
+      "action": "Création",
+      "doctype_cible": "SE Facture Pro Forma",
+      "document_name": "PRO-2026-00004",
+      "valeur_precedente": "",
+      "details": "Création de PRO-2026-00004 dans SE Facture Pro Forma par Réception & Facturation",
+      "cree_par": "USR-002"
+    },
+    {
+      "name": "AUD-2026-00008",
+      "date_heure": "2026-11-05 21:15:17",
+      "user_id": "USR-002",
+      "user_nom": "Réception & Facturation",
+      "user_role": "Utilisateur Normal",
+      "action": "Modification",
+      "doctype_cible": "SE Facture Pro Forma",
+      "document_name": "PRO-2026-00003",
+      "valeur_precedente": "",
+      "details": "Mise à jour de PRO-2026-00003 par Réception & Facturation",
+      "cree_par": "USR-002"
+    },
+    {
+      "name": "AUD-2026-00007",
+      "date_heure": "2026-11-05 21:15:17",
+      "user_id": "USR-002",
+      "user_nom": "Réception & Facturation",
+      "user_role": "Utilisateur Normal",
+      "action": "Tentative Suppression Bloquée",
+      "doctype_cible": "SE Facture Pro Forma",
+      "document_name": "PRO-2026-00003",
+      "valeur_precedente": "Non autorisé",
+      "details": "Tentative de suppression rejetée pour Réception & Facturation (Rôle: Utilisateur Normal)",
+      "cree_par": "USR-002"
+    },
+    {
+      "name": "AUD-2026-00006",
+      "date_heure": "2026-11-05 21:15:17",
+      "user_id": "USR-003",
+      "user_nom": "Audit & Contrôle Financier",
+      "user_role": "Consultant",
+      "action": "Tentative Suppression Bloquée",
+      "doctype_cible": "SE Client",
+      "document_name": "CLI-001",
+      "valeur_precedente": "Non autorisé",
+      "details": "Tentative de suppression rejetée pour Audit & Contrôle Financier (Rôle: Consultant)",
+      "cree_par": "USR-003"
+    },
+    {
+      "name": "AUD-2026-00005",
+      "date_heure": "2026-11-05 21:15:17",
+      "user_id": "USR-001",
+      "user_nom": "Hicham Bakir",
+      "user_role": "Administrateur",
+      "action": "Suppression",
+      "doctype_cible": "SE Client",
+      "document_name": "CLI-TEST-ADMIN",
+      "valeur_precedente": "Enregistrement CLI-TEST-ADMIN",
+      "details": "Suppression définitive effectuée par Hicham Bakir",
+      "cree_par": "USR-001"
+    },
+    {
+      "name": "AUD-2026-00004",
+      "date_heure": "2026-11-05 21:15:17",
+      "user_id": "USR-001",
+      "user_nom": "Hicham Bakir",
+      "user_role": "Administrateur",
+      "action": "Création",
+      "doctype_cible": "SE Client",
+      "document_name": "CLI-TEST-ADMIN",
+      "valeur_precedente": "",
+      "details": "Création de CLI-TEST-ADMIN dans SE Client par Hicham Bakir",
+      "cree_par": "USR-001"
+    },
+    {
+      "name": "AUD-2026-00001",
+      "date_heure": "2026-11-05 20:00:00",
+      "user_id": "USR-001",
+      "user_nom": "Hicham Bakir",
+      "user_role": "Administrateur",
+      "action": "Connexion",
+      "doctype_cible": "Système",
+      "document_name": "SESSION-ROOT",
+      "details": "Connexion Administrateur réussie au système ERP Hôtel Saint Eugène.",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
+    },
+    {
+      "name": "AUD-2026-00002",
+      "date_heure": "2026-11-05 20:10:00",
+      "user_id": "USR-001",
+      "user_nom": "Hicham Bakir",
+      "user_role": "Administrateur",
+      "action": "Gestion Utilisateur",
+      "doctype_cible": "SE Utilisateur",
+      "document_name": "USR-001",
+      "details": "Initialisation du système de contrôle d'accès avec 3 rôles (Administrateur, Utilisateur Normal, Consultant).",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
+    },
+    {
+      "name": "AUD-2026-00003",
+      "date_heure": "2026-11-05 20:15:00",
+      "user_id": "USR-002",
+      "user_nom": "Réception & Facturation",
+      "user_role": "Utilisateur Normal",
+      "action": "Connexion",
+      "doctype_cible": "Système",
+      "document_name": "SESSION-USER",
+      "details": "Session ouverte pour l'Utilisateur Normal.",
+      "cree_par": "USR-001",
+      "cree_par_nom": "Hicham Bakir",
+      "date_creation": "2026-11-03 10:00:00"
     }
   ]
 }

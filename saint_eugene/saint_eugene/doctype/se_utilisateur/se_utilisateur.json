@@ -1,0 +1,85 @@
+{
+  "name": "SE Utilisateur",
+  "module": "Saint Eugene",
+  "doctype": "DocType",
+  "is_submittable": 0,
+  "track_changes": 1,
+  "fields": [
+    {
+      "fieldname": "sb_ident",
+      "fieldtype": "Section Break",
+      "label": "Identité & Authentification"
+    },
+    {
+      "fieldname": "identifiant",
+      "fieldtype": "Data",
+      "label": "Identifiant / Login",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "nom",
+      "fieldtype": "Data",
+      "label": "Nom Complet",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "cb_role",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "role",
+      "fieldtype": "Select",
+      "label": "Rôle & Niveau d'Accès",
+      "options": "Administrateur\nUtilisateur Normal\nConsultant",
+      "default": "Utilisateur Normal",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "statut",
+      "fieldtype": "Select",
+      "label": "Statut du Compte",
+      "options": "Actif\nInactif",
+      "default": "Actif",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "sb_secu",
+      "fieldtype": "Section Break",
+      "label": "Sécurité & Contact"
+    },
+    {
+      "fieldname": "email",
+      "fieldtype": "Data",
+      "label": "Adresse Email",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "mot_de_passe",
+      "fieldtype": "Data",
+      "label": "Mot de Passe",
+      "reqd": 1
+    },
+    {
+      "fieldname": "cb_meta",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "dernier_acces",
+      "fieldtype": "Data",
+      "label": "Dernière Connexion",
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "date_creation",
+      "fieldtype": "Data",
+      "label": "Date de Création",
+      "read_only": 1
+    }
+  ]
+}
