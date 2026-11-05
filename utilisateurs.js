@@ -11,7 +11,7 @@ window.UTILISATEURS_CONFIG = [
   {
     "nom": "Hicham Bakir",
     "role": "Contrôle de Gestion / DAF (Hicham Bakir)",
-    "mot_de_passe": "1234"
+    "mot_de_passe": "123454321"
   },
   {
     "nom": "Direction Générale",
