@@ -694,8 +694,8 @@ def recompute_all_links(db: dict) -> None:
     # 1bis. Factures Pro Forma
     for pro in db.get("SE Facture Pro Forma", []):
         compute_invoice_dict(pro, cfg)
-        if not pro.get("statut"):
-            pro["statut"] = "Pro Forma"
+        if not pro.get("statut") or pro.get("statut") not in ("Validée", "Non validée"):
+            pro["statut"] = "Non validée"
 
     # 2. Factures Fournisseurs
     for ff in db["SE Facture Fournisseur"]:
@@ -1066,6 +1066,26 @@ HTML_INDEX = r"""<!DOCTYPE html>
   <div class="content" id="mainContent"></div>
 </section>
 
+<div class="modal-backdrop" id="deleteConfirmModal" style="z-index:9999;">
+  <div class="modal" style="max-width:480px;text-align:left;border-top:4px solid #dc2626;">
+    <div class="modal-hdr" style="background:#0f172a;">
+      <h3 style="color:#f87171;display:flex;align-items:center;gap:8px;">⚠️ Confirmation de Suppression</h3>
+      <button class="btn" style="padding:3px 9px;" onclick="closeDeleteConfirmModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:18px 20px;">
+      <p style="font-size:13.5px;color:#1e293b;line-height:1.5;margin:0 0 14px 0;font-weight:600;">
+        Êtes-vous sûr de vouloir supprimer cet élément ? Cette action peut être irréversible.
+      </p>
+      <div id="deleteDocDetails" style="font-size:12px;background:#f8fafc;border:1px solid #e2e8f0;padding:10px 12px;border-radius:6px;margin-bottom:12px;color:#475569;"></div>
+      <div id="deleteWarningBlock" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:6px;font-size:12px;line-height:1.45;margin-bottom:8px;"></div>
+    </div>
+    <div class="modal-ftr" style="display:flex;justify-content:flex-end;gap:10px;padding:12px 20px;background:#f8fafc;">
+      <button type="button" class="btn" style="padding:6px 14px;" onclick="closeDeleteConfirmModal()">Annuler</button>
+      <button type="button" id="btnConfirmDelete" class="btn" style="background:#dc2626;color:#fff;border:none;font-weight:700;padding:6px 18px;" onclick="executeDeleteDoc()">Supprimer</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="docModal">
   <div class="modal">
     <div class="modal-hdr">
@@ -1144,7 +1164,7 @@ function fmtDZD(val) {
 function pillClass(st) {
   if (!st) return "gray";
   const green = ["Payée", "Validée", "Validé", "Pointé", "Équilibré", "Conforme", "Objectif Atteint", "Sain", "Actif", "En service", "Crédit Reporté"];
-  const orange = ["Partielle", "Non pointé", "Sous-Performance", "Sous Tension", "En attente signature DAF", "À renouveler (< 30j)", "Déclarée (G50)"];
+  const orange = ["Partielle", "Non pointé", "Sous-Performance", "Sous Tension", "En attente signature DAF", "À renouveler (< 30j)", "Déclarée (G50)", "Non validée"];
   const red = ["Impayée", "Échue", "Dépassement", "Critique", "Avec Écart", "Rejetée", "Expiré", "En retard", "Annulée", "Annulé"];
   if (green.includes(st)) return "green";
   if (orange.includes(st)) return "orange";
@@ -1289,7 +1309,7 @@ function showList(doctype, search = "") {
 
   const filtered = rows.filter(r => !search || JSON.stringify(r).toLowerCase().includes(search.toLowerCase()));
 
-  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${f.label}</th>`).join("");
+  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${f.label}</th>`).join("") + `<th style="text-align:center;width:48px;">Action</th>`;
   let trHtml = filtered.map(r => {
     let tds = `<td><b>${r.name}</b></td>`;
     listFields.forEach(f => {
@@ -1308,6 +1328,9 @@ function showList(doctype, search = "") {
         tds += `<td>${val ?? "—"}</td>`;
       }
     });
+    tds += `<td style="text-align:center;" onclick="event.stopPropagation();">
+      <button type="button" class="btn" style="padding:2px 6px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:4px;font-size:11px;cursor:pointer;" title="Supprimer cet élément" onclick="triggerDeleteDoc('${doctype}', '${r.name.replace(/'/g, "\\'")}')">🗑️</button>
+    </td>`;
     return `<tr onclick="openDoc('${doctype}', '${r.name.replace(/'/g, "\\'")}')">${tds}</tr>`;
   }).join("");
 
@@ -1854,7 +1877,7 @@ function renderInvoiceLinesRows(doc) {
       <td id="inv_ht_${idx}" style="padding:6px;text-align:right;color:#334155;font-variant-numeric:tabular-nums;">${fmtDZD(ln.montant_ht || 0)}</td>
       <td id="inv_tva_${idx}" style="padding:6px;text-align:center;font-size:11px;color:#64748b;">${ln.taux_tva || 9}%</td>
       <td style="padding:6px;">
-        <input type="text" placeholder="Remarque, n° BC..." value="${ln.obs || ln.observation || ln.remarque || ''}" oninput="CURRENT_DOC.lignes[${idx}].obs=this.value; CURRENT_DOC.lignes[${idx}].observation=this.value; CURRENT_DOC.lignes[${idx}].remarque=this.value;" style="width:100%;box-sizing:border-box;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;">
+        <textarea rows="1" placeholder="Observations chambre (ex: VIP, lit sup, vue mer...)" oninput="CURRENT_DOC.lignes[${idx}].observation=this.value; CURRENT_DOC.lignes[${idx}].obs=this.value; CURRENT_DOC.lignes[${idx}].remarque=this.value;" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;resize:vertical;min-height:30px;line-height:1.3;font-family:inherit;">${ln.observation || ln.obs || ln.remarque || ''}</textarea>
       </td>
       <td style="padding:6px;text-align:center;">
         <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceLine(${idx})" title="Supprimer la ligne">✕</button>
@@ -2044,6 +2067,14 @@ function renderInvoiceModal(doctype, doc, isNew) {
         <label>${isProforma ? 'Date de Validité' : "Date d'Échéance"}</label>
         <input type="date" id="inv_date_echeance" value="${doc.date_echeance || doc.date_validite || '2026-11-25'}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
       </div>
+      ${isProforma ? `
+      <div class="form-group">
+        <label>Statut Pro Forma *</label>
+        <select id="inv_statut" onchange="CURRENT_DOC.statut=this.value;">
+          <option value="Non validée" ${doc.statut === "Non validée" || !doc.statut ? "selected" : ""}>Non validée</option>
+          <option value="Validée" ${doc.statut === "Validée" ? "selected" : ""}>Validée</option>
+        </select>
+      </div>` : ''}
       <div class="form-group">
         <label>N° Bon de Commande (BC) / Réf. Commande</label>
         <input type="text" id="inv_bon_commande" placeholder="Ex: BC-2026/045 ou Réf Client..." value="${doc.bon_commande || doc.num_bon_commande || ''}" onchange="CURRENT_DOC.bon_commande=this.value; CURRENT_DOC.num_bon_commande=this.value;">
@@ -2126,6 +2157,7 @@ function renderInvoiceModal(doctype, doc, isNew) {
             <th style="padding:7px;width:140px;text-align:right;background:#b45309;">Total TTC Saisi / Calculé *</th>
             <th style="padding:7px;width:95px;text-align:right;">Base HT</th>
             <th style="padding:7px;width:55px;text-align:center;">TVA</th>
+            <th style="padding:7px;min-width:140px;">Observations (Chambre)</th>
             <th style="padding:7px;width:35px;text-align:center;"></th>
           </tr>
         </thead>
@@ -2144,8 +2176,9 @@ function renderInvoiceModal(doctype, doc, isNew) {
 
   document.getElementById("modalBody").innerHTML = html;
 
-  let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;">`;
+  let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">`;
   if (!isNew) {
+    ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🗑️ Supprimer</button>`;
     if (typeof openPrintPreview === "function") {
       ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
     }
@@ -2247,7 +2280,10 @@ function renderDocModal(doctype, doc, isNew) {
   document.getElementById("modalBody").innerHTML = formHtml;
 
   const printable = ["SE Facture Client", "SE Caisse Mensuelle", "SE Fiche de Paie Mensuelle", "SE Declaration TVA"].includes(doctype);
-  let ftrHtml = `<div>`;
+  let ftrHtml = `<div style="display:flex;gap:6px;align-items:center;">`;
+  if (!isNew) {
+    ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🗑️ Supprimer</button>`;
+  }
   if (printable && !isNew) {
     ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${doctype}', '${doc.name.replace(/'/g, "\\'")}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
   }
@@ -2297,6 +2333,113 @@ async function saveCurrentDoc(isNew) {
 
 function openPrintPreview(doctype, name) {
   window.open(`/print?doctype=${encodeURIComponent(doctype)}&name=${encodeURIComponent(name)}`, "_blank");
+}
+
+
+let PENDING_DELETE_DOCTYPE = null;
+let PENDING_DELETE_NAME = null;
+
+function checkDeleteIntegrity(doctype, docName) {
+  const db = APP_STATE.db || {};
+  if (doctype === "SE Client") {
+    const facs = (db["SE Facture Client"] || []).filter(f => f.client === docName || f.nom_client === docName || f.ref_societe === docName);
+    if (facs.length > 0) {
+      return {
+        blocked: true,
+        message: `⚠️ <b>Suppression bloquée pour conformité comptable SCF :</b> Ce client est lié à <b>${facs.length} facture(s) enregistrée(s)</b> (ex: ${facs[0].name}). La suppression directe briserait le lettrage des comptes tiers (SCF 411). Veuillez plutôt archiver ou désactiver ce client.`
+      };
+    }
+  } else if (doctype === "SE Facture Client") {
+    const encs = (db["SE Encaissement"] || []).filter(e => e.facture_liee === docName && e.statut !== "Annulé");
+    if (encs.length > 0) {
+      return {
+        blocked: true,
+        message: `⚠️ <b>Suppression bloquée :</b> Cette facture est rattachée à <b>${encs.length} encaissement(s) comptabilisé(s)</b> (ex: ${encs[0].name}). Supprimez ou annulez d'abord les encaissements pour préserver les écritures de trésorerie (SCF 512/530).`
+      };
+    }
+  } else if (doctype === "SE Fournisseur") {
+    const facs = (db["SE Facture Fournisseur"] || []).filter(f => f.fournisseur === docName);
+    if (facs.length > 0) {
+      return {
+        blocked: true,
+        message: `⚠️ <b>Suppression bloquée :</b> Ce fournisseur possède <b>${facs.length} facture(s) d'achat</b> (ex: ${facs[0].name}). La suppression directe compromettrait la déclaration de TVA déductible (G50).`
+      };
+    }
+  } else if (doctype === "SE Facture Fournisseur") {
+    const decs = (db["SE Decaissement"] || []).filter(d => d.facture_liee === docName && d.statut !== "Annulé");
+    if (decs.length > 0) {
+      return {
+        blocked: true,
+        message: `⚠️ <b>Suppression bloquée :</b> Cette facture fournisseur est associée à <b>${decs.length} décaissement(s)</b>. Supprimez d'abord les règlements correspondants.`
+      };
+    }
+  } else if (doctype === "SE Employe") {
+    const paies = (db["SE Fiche de Paie Mensuelle"] || []).filter(p => p.employe === docName);
+    if (paies.length > 0) {
+      return {
+        blocked: true,
+        message: `⚠️ <b>Suppression déconseillée pour conformité CNAS :</b> Cet employé possède <b>${paies.length} bulletin(s) de paie</b>. Pour préserver l'historique social et les déclarations DAS/CNAS, il est recommandé de renseigner sa <b>Date de sortie</b> et la situation <b>'Sorti'</b>.`
+      };
+    }
+  } else if (doctype === "SE Compte Tresorerie") {
+    return {
+      blocked: true,
+      message: `⚠️ <b>Compte réservé :</b> Les comptes de trésorerie officiels (CPA, BNA, Caisses) sont indispensables à la comptabilité générale.`
+    };
+  }
+  return { blocked: false, message: "" };
+}
+
+function triggerDeleteDoc(doctype, docName) {
+  PENDING_DELETE_DOCTYPE = doctype;
+  PENDING_DELETE_NAME = docName;
+  const detailsEl = document.getElementById("deleteDocDetails");
+  const warnEl = document.getElementById("deleteWarningBlock");
+  const btnEl = document.getElementById("btnConfirmDelete");
+  if (detailsEl) {
+    detailsEl.innerHTML = `<b>Élément sélectionné :</b> ${docName} <span style="color:#64748b;">(${getNavLabel(doctype)})</span>`;
+  }
+  const check = checkDeleteIntegrity(doctype, docName);
+  if (check.blocked) {
+    warnEl.style.display = "block";
+    warnEl.innerHTML = check.message;
+    btnEl.disabled = true;
+    btnEl.style.opacity = "0.45";
+    btnEl.style.cursor = "not-allowed";
+    btnEl.title = "Action bloquée pour protéger l'intégrité comptable";
+  } else {
+    warnEl.style.display = "none";
+    warnEl.innerHTML = "";
+    btnEl.disabled = false;
+    btnEl.style.opacity = "1";
+    btnEl.style.cursor = "pointer";
+    btnEl.title = "";
+  }
+  document.getElementById("deleteConfirmModal").classList.add("open");
+}
+
+function closeDeleteConfirmModal() {
+  document.getElementById("deleteConfirmModal").classList.remove("open");
+  PENDING_DELETE_DOCTYPE = null;
+  PENDING_DELETE_NAME = null;
+}
+
+async function executeDeleteDoc() {
+  if (!PENDING_DELETE_DOCTYPE || !PENDING_DELETE_NAME) return;
+  const dt = PENDING_DELETE_DOCTYPE;
+  const name = PENDING_DELETE_NAME;
+  closeDeleteConfirmModal();
+  closeModal();
+  const res = await fetch("/api/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ doctype: dt, name: name })
+  });
+  APP_STATE = await res.json();
+  window.APP_STATE = APP_STATE;
+  if (dt === "SE Parametres Hotel") showWorkspace();
+  else showList(dt);
+  alert(`L'élément ${name} a été supprimé avec succès.`);
 }
 
 function closeModal() {
@@ -2351,6 +2494,7 @@ def render_print_html(db: dict, doctype: str, name: str) -> str:
               <td style="padding:8px;border-bottom:1px solid #e2e8f0;">
                 <b>{ln.get('article', 'Prestation')}</b> ({ln.get('type_ligne', 'Hébergement')})
                 {f'<span style="font-size:11px;color:#64748b;">[Séjour #{ln.get("sejour_no", 1)}]</span>' if len(sejours) > 1 else ''}
+                {f'<div style="font-size:11px;color:#475569;margin-top:3px;font-style:italic;line-height:1.3;">📝 <b>Observation :</b> ' + str(ln.get('observation') or ln.get('obs') or ln.get('remarque') or '').replace('\n', '<br>') + '</div>' if (ln.get('observation') or ln.get('obs') or ln.get('remarque')) else ''}
               </td>
               <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:right;">{pu:,.2f}</td>
               <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;">{int(qty) if qty.is_integer() else qty}</td>
@@ -2502,6 +2646,23 @@ class SaintEugeneHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        if self.path == "/api/delete":
+            length = int(self.headers.get("Content-Length", "0"))
+            data = json.loads(self.rfile.read(length).decode("utf-8"))
+            dt = data["doctype"]
+            name = data["name"]
+            db = get_db()
+            rows = db.setdefault(dt, [])
+            db[dt] = [r for r in rows if r.get("name") != name]
+            save_db(db)
+            payload = {"schemas": SCHEMAS, "db": db, "dashboard": compute_dashboard_payload(db)}
+            body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         if self.path == "/api/save":
             length = int(self.headers.get("Content-Length", "0"))
             data = json.loads(self.rfile.read(length).decode("utf-8"))

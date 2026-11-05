@@ -109,6 +109,11 @@
       "fieldtype": "Currency",
       "label": "Prix Unitaire TTC (DZD)",
       "read_only": 1
+    },
+    {
+      "fieldname": "observation",
+      "fieldtype": "Small Text",
+      "label": "Observations Chambre"
     }
   ],
   "index_web_pages_for_search": 0,

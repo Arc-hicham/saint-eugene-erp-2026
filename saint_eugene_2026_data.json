@@ -2514,7 +2514,8 @@
           "montant_ht": 2176146.79,
           "montant_tva": 195853.21,
           "total_ligne_ttc": 2400000.0,
-          "prix_unitaire_ttc": 42357.14
+          "prix_unitaire_ttc": 42357.14,
+          "observation": "Chambre VIP vue panoramique\nLit supplémentaire enfant"
         },
         {
           "sejour_no": 1,
@@ -2722,8 +2723,8 @@
           "date_arrivee": "2026-02-10",
           "date_depart": "2026-02-12",
           "nuitees": 2,
-          "nb_personnes": 20,
-          "taxe_sejour": 16000.0,
+          "nb_personnes": 44,
+          "taxe_sejour": 40000.0,
           "total_ttc_sejour": 2100000.0
         },
         {
@@ -2732,8 +2733,8 @@
           "date_arrivee": "2026-02-12",
           "date_depart": "2026-02-14",
           "nuitees": 2,
-          "nb_personnes": 30,
-          "taxe_sejour": 24000.0,
+          "nb_personnes": 66,
+          "taxe_sejour": 60000.0,
           "total_ttc_sejour": 2800000.0
         }
       ],
@@ -3065,7 +3066,7 @@
       "sejours_separes": 1,
       "taxe_sejour_incluse": 1,
       "appliquer_taxe_sejour": 1,
-      "statut": "Pro Forma",
+      "statut": "Non validée",
       "conditions_reglement": "Acompte 50% à la confirmation, solde à réception de facture par virement bancaire BNA.",
       "notes_proforma": "Séminaire Stratégique Direction Générale & hébergement exécutif 4 étoiles.",
       "docstatus": 0,
@@ -3076,8 +3077,8 @@
           "date_arrivee": "2026-11-15",
           "date_depart": "2026-11-18",
           "nuitees": 3,
-          "nb_personnes": 25,
-          "taxe_sejour": 30000.0,
+          "nb_personnes": 55,
+          "taxe_sejour": 75000.0,
           "total_ttc_sejour": 2160000.0
         },
         {
@@ -3086,8 +3087,8 @@
           "date_arrivee": "2026-11-15",
           "date_depart": "2026-11-18",
           "nuitees": 3,
-          "nb_personnes": 25,
-          "taxe_sejour": 30000.0,
+          "nb_personnes": 55,
+          "taxe_sejour": 75000.0,
           "total_ttc_sejour": 720000.0
         }
       ],
@@ -3213,7 +3214,7 @@
       "appliquer_taxe_sejour": 1,
       "date_arrivee": "2026-12-01",
       "date_depart": "2026-12-05",
-      "statut": "Confirmée",
+      "statut": "Validée",
       "conditions_reglement": "Règlement sous 30 jours fin de mois après vérification des bons de commande.",
       "notes_proforma": "Hébergement équipage escale Alger - Décembre 2026.",
       "docstatus": 0,
@@ -4160,7 +4161,7 @@
     {
       "name": "OPB-2026-00006",
       "compte_bancaire": "CPA Bab El Oued - DZD",
-      "banque": "CPA",
+      "banque": "Crédit Populaire d'Algérie (CPA)",
       "date_operation": "2026-02-26",
       "libelle": "Encaissement ENC-2026-00005 - Touring Club d'Algérie (Agence)",
       "type_operation": "Remise Chèque",

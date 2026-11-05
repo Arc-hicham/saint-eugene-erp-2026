@@ -251,8 +251,8 @@
       "fieldname": "statut",
       "fieldtype": "Select",
       "label": "Statut",
-      "options": "Brouillon\nEnvoyée\nAcceptée\nFacturée\nExpirée\nRefusée",
-      "default": "Brouillon",
+      "options": "Validée\nNon validée",
+      "default": "Non validée",
       "in_list_view": 1,
       "in_standard_filter": 1
     },

@@ -473,9 +473,13 @@
     rhRenderActiveView();
   };
 
-  // Suppression d'un salarié
-  window.rhSupprimerEmploye = async function(empId){
-    if(!confirm(`Confirmez-vous la suppression du salarié ${empId} ?`)){
+  // Suppression d'un salarié avec confirmation unifiée et contrôle d'intégrité
+  window.rhSupprimerEmploye = function(empId){
+    if(typeof window.triggerDeleteDoc === "function"){
+      window.triggerDeleteDoc("SE Employe", empId);
+      return;
+    }
+    if(!confirm(`Êtes-vous sûr de vouloir supprimer cet élément ? Cette action peut être irréversible.\n\nSalarié : ${empId}`)){
       return;
     }
     const db = rhGetDb();
