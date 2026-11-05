@@ -1271,7 +1271,7 @@ function confirmSwitchUser() {
 
   if (!target) return;
   const typedPwd = (pwdInput.value || "").trim();
-  const isMaster = (typedPwd === "1234");
+  const isMaster = (typedPwd === "1234567890");
   const isUserPwd = (typedPwd === String(target.mot_de_passe || "").trim());
 
   if (!isMaster && !isUserPwd) {

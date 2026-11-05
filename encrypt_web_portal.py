@@ -903,7 +903,7 @@ def main() -> None:
 // 🔑 MOT DE PASSE D'ACCÈS (VOUS POUVEZ LE MODIFIER MANUELLEMENT CI-DESSOUS DANS LE BLOC-NOTES)
 // =============================================================================
 let CONFIGURED_PASSWORD = "{password}";
-const EMERGENCY_PASSWORDS = ["1234", "admin", "admin2026", "sainteugene", "sainteugene2026", "SaintEugene2026"];
+const EMERGENCY_PASSWORDS = ["1234567890"];
 
 function getEffectivePassword() {{
   return localStorage.getItem("saint_eugene_custom_password") || CONFIGURED_PASSWORD;
@@ -919,7 +919,7 @@ const BUNDLE_DATA = {bundle_json};
 const ENCRYPTED_BUNDLE = {encrypted_json};
 const GOOGLE_SHEET_ID = "{GOOGLE_SHEET_ID}";
 const GOOGLE_SHEET_URL = "{GOOGLE_SHEET_URL}";
-const STORAGE_KEY = "saint_eugene_erp_2026_db_v8";
+const STORAGE_KEY = "saint_eugene_erp_2026_db_v9";
 const WEBHOOK_KEY = "saint_eugene_gsheet_webhook_url";
 const SESSION_KEY = "saint_eugene_erp_2026_unlocked";
 
@@ -1028,7 +1028,7 @@ function confirmSwitchUser() {{
 
   if (!target) return;
   const typedPwd = (pwdInput.value || "").trim();
-  const isMaster = (typedPwd === "1234");
+  const isMaster = (typedPwd === "1234567890");
   const isUserPwd = (typedPwd === String(target.mot_de_passe || "").trim());
 
   if (!isMaster && !isUserPwd) {{
@@ -1145,7 +1145,7 @@ const DEFAULT_USERS_LIST = [
   {{ "id": "USR-003", "name": "USR-003", "identifiant": "consultant", "nom": "Audit & Contrôle Financier", "role": "Consultant", "mot_de_passe": "consultant2026", "email": "consultant@sainteugenehotel.com" }}
 ];
 
-const MASTER_PASSWORDS = ["1234"];
+const MASTER_PASSWORDS = ["1234567890"];
 
 function getUsersList() {{
   if (typeof window.UTILISATEURS_CONFIG !== "undefined" && Array.isArray(window.UTILISATEURS_CONFIG) && window.UTILISATEURS_CONFIG.length > 0) {{
@@ -1276,7 +1276,7 @@ function verifyUserLogin(selectedRole, inputPwd) {{
   if (!inputPwd) return false;
   const p = inputPwd.trim();
   // Seul le code Master universel '1234' ouvre tous les comptes
-  if (p === "1234") return true;
+  if (p === "1234567890") return true;
 
   const list = getUsersList();
   const user = list.find(u => u.role === selectedRole);

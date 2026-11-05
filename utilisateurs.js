@@ -5,7 +5,7 @@
 // 1. Administrateur (admin / 123454321) — Accès Total
 // 2. Utilisateur Normal (user1 / user2026) — Opérationnel & Propres Documents
 // 3. Consultant (consultant / consultant2026) — Lecture Seule & Impression
-// Code Master Universel : 1234 (Ouvre tous les comptes)
+// Code Master Universel : 1234567890 (Ouvre tous les comptes)
 // =============================================================================
 
 window.UTILISATEURS_CONFIG = [
