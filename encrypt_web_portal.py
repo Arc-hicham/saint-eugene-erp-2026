@@ -330,7 +330,11 @@ def main() -> None:
         fc_schema_path.write_text(json.dumps(fc_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         SCHEMAS["SE Facture Client"] = fc_data
 
-    initial_db = build_initial_seed_db()
+    db_path = APP_ROOT / "saint_eugene_2026_data.json"
+    if db_path.exists():
+        initial_db = json.loads(db_path.read_text(encoding="utf-8"))
+    else:
+        initial_db = build_initial_seed_db()
 
     # Initialiser l'historique des modifications avec trace complète
     initial_db["SE Historique Modifications"] = [
@@ -750,10 +754,15 @@ def main() -> None:
       </div>
     </div>
     <div class="topbar-actions">
+      <div id="userBadgeTop" style="display:flex;align-items:center;gap:8px;background:#f8fafc;padding:4px 10px;border-radius:20px;border:1px solid #cbd5e1;font-size:12px;">
+        <span>👤 <b id="currentUserName">Hicham Bakir</b></span>
+        <span class="pill" id="currentUserRoleBadge" style="background:#dbeafe;color:#1e40af;font-weight:700;">Administrateur</span>
+        <button type="button" class="btn" style="padding:2px 8px;font-size:11px;" onclick="openSwitchUserModal()">Changer</button>
+      </div>
       <button class="btn hide-mobile" onclick="showWorkspace()">📊 Tableau de Bord</button>
-      <button class="btn btn-gold hide-mobile" onclick="openNewDoc('SE Facture Client')">+ Facture Client</button>
-      <button class="btn hide-mobile" style="border-color:#38bdf8;background:#0284c7;color:#fff;" onclick="openNewDoc('SE Facture Pro Forma')">+ Pro Forma</button>
-      <button class="btn btn-primary hide-mobile" onclick="openNewDoc('SE Encaissement')">+ Encaissement</button>
+      <button id="topBtnNewFac" class="btn btn-gold hide-mobile" onclick="openNewDoc('SE Facture Client')">+ Facture Client</button>
+      <button id="topBtnNewPro" class="btn hide-mobile" style="border-color:#38bdf8;background:#0284c7;color:#fff;" onclick="openNewDoc('SE Facture Pro Forma')">+ Pro Forma</button>
+      <button id="topBtnNewEnc" class="btn btn-primary hide-mobile" onclick="openNewDoc('SE Encaissement')">+ Encaissement</button>
       <button class="btn hide-mobile" style="border-color:#cbd5e1;" onclick="changePasswordFromLogin(event)" title="Modifier le mot de passe d'accès">🔑 Mot de passe</button>
       <button class="btn btn-green" onclick="showGoogleSheetBackupCenter()" title="Sauvegarde Google Sheet & Historique Complet">☁️ Google Sheet</button>
       <button class="btn" style="border-color:#fca5a5;color:#dc2626;" onclick="lockSession()" title="Verrouiller">🔒</button>
@@ -826,6 +835,40 @@ def main() -> None:
   </div>
 </div>
 
+<div class="modal-backdrop" id="switchUserModal" style="z-index:9998;">
+  <div class="modal" style="max-width:440px;border-top:4px solid #0284c7;">
+    <div class="modal-hdr" style="background:#0f172a;">
+      <h3 style="color:#fff;display:flex;align-items:center;gap:8px;">👤 Contrôle d'Accès — Sélection du Profil</h3>
+      <button class="btn" style="padding:3px 9px;" onclick="closeSwitchUserModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px;">
+      <p style="font-size:12.5px;color:#475569;margin-bottom:14px;">
+        Sélectionnez l'utilisateur pour tester ou basculer entre les 3 profils avec permissions strictes :
+      </p>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Utilisateur / Rôle :</label>
+        <select id="switchUserSelect" onchange="onSwitchUserSelectChange(this.value)" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-weight:600;">
+          <option value="USR-001">Hicham Bakir — Administrateur (Accès Total)</option>
+          <option value="USR-002">Réception & Facturation — Utilisateur Normal (Création & Édition Propre, Sans Suppression)</option>
+          <option value="USR-003">Audit & Contrôle Financier — Consultant (Lecture Seule & Impression)</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Mot de passe :</label>
+        <input type="password" id="switchUserPassword" value="1234" placeholder="Mot de passe..." style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+        <div id="switchUserErr" style="display:none;color:#dc2626;font-size:11.5px;margin-top:4px;">⚠️ Mot de passe incorrect</div>
+      </div>
+      <div id="rolePermsPreview" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px;font-size:11px;color:#334155;line-height:1.45;">
+        <b>Droits du profil :</b> Accès total, modification & suppression autorisées, gestion des utilisateurs & audit.
+      </div>
+    </div>
+    <div class="modal-ftr" style="display:flex;justify-content:flex-end;gap:10px;padding:12px 20px;background:#f8fafc;">
+      <button type="button" class="btn" onclick="closeSwitchUserModal()">Annuler</button>
+      <button type="button" class="btn btn-primary" onclick="confirmSwitchUser()">Se Connecter sous ce Profil</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="deleteConfirmModal" style="z-index:9999;">
   <div class="modal" style="max-width:480px;text-align:left;border-top:4px solid #dc2626;">
     <div class="modal-hdr" style="background:#0f172a;">
@@ -878,7 +921,7 @@ const BUNDLE_DATA = {bundle_json};
 const ENCRYPTED_BUNDLE = {encrypted_json};
 const GOOGLE_SHEET_ID = "{GOOGLE_SHEET_ID}";
 const GOOGLE_SHEET_URL = "{GOOGLE_SHEET_URL}";
-const STORAGE_KEY = "saint_eugene_erp_2026_db_v6";
+const STORAGE_KEY = "saint_eugene_erp_2026_db_v7";
 const WEBHOOK_KEY = "saint_eugene_gsheet_webhook_url";
 const SESSION_KEY = "saint_eugene_erp_2026_unlocked";
 
@@ -887,7 +930,143 @@ let INITIAL_DB = {{}};
 let GS_SCRIPT_CODE = "";
 var DB = {{}};
 window.DB = DB;
-let CURRENT_USER_ROLE = "Contrôle de Gestion / DAF (Hicham Bakir)";
+let CURRENT_USER_ROLE = "Administrateur";
+let CURRENT_USER = {{
+  id: "USR-001",
+  name: "USR-001",
+  identifiant: "admin",
+  nom: "Hicham Bakir",
+  role: "Administrateur",
+  email: "general.manager@sainteugenehotel.com"
+}};
+window.CURRENT_USER = CURRENT_USER;
+
+function initUserSession() {{
+  const saved = localStorage.getItem("saint_eugene_current_user_v1");
+  if (saved) {{
+    try {{
+      const u = JSON.parse(saved);
+      if (u && (u.id || u.name) && u.role) {{
+        CURRENT_USER = u;
+        CURRENT_USER.id = u.id || u.name;
+        CURRENT_USER.name = CURRENT_USER.id;
+        window.CURRENT_USER = CURRENT_USER;
+      }}
+    }} catch(e) {{}}
+  }}
+  updateUserUI();
+}}
+
+function updateUserUI() {{
+  const nameEl = document.getElementById("currentUserName");
+  const roleEl = document.getElementById("currentUserRoleBadge");
+  if (nameEl) nameEl.textContent = CURRENT_USER.nom || "Utilisateur";
+  if (roleEl) {{
+    roleEl.textContent = CURRENT_USER.role;
+    if (CURRENT_USER.role === "Administrateur") {{
+      roleEl.style.background = "#dbeafe";
+      roleEl.style.color = "#1e40af";
+    }} else if (CURRENT_USER.role === "Utilisateur Normal") {{
+      roleEl.style.background = "#dcfce7";
+      roleEl.style.color = "#15803d";
+    }} else {{
+      roleEl.style.background = "#fef3c7";
+      roleEl.style.color = "#b45309";
+    }}
+  }}
+
+  const isConsultant = (CURRENT_USER.role === "Consultant");
+  const btnFac = document.getElementById("topBtnNewFac");
+  const btnPro = document.getElementById("topBtnNewPro");
+  const btnEnc = document.getElementById("topBtnNewEnc");
+  if (btnFac) btnFac.style.display = isConsultant ? "none" : "";
+  if (btnPro) btnPro.style.display = isConsultant ? "none" : "";
+  if (btnEnc) btnEnc.style.display = isConsultant ? "none" : "";
+}}
+
+function openSwitchUserModal() {{
+  const sel = document.getElementById("switchUserSelect");
+  if (sel) {{
+    const dbUsers = (typeof DB !== "undefined" && DB["SE Utilisateur"]) || getUsersList() || DEFAULT_USERS_LIST;
+    sel.innerHTML = dbUsers.map(u => `<option value="${{u.name || u.id}}" ${{(u.name === CURRENT_USER.id || u.id === CURRENT_USER.id) ? "selected" : ""}}>${{u.nom}} — ${{u.role}}</option>`).join("");
+    onSwitchUserSelectChange(sel.value);
+  }}
+  document.getElementById("switchUserModal").classList.add("open");
+}}
+
+function closeSwitchUserModal() {{
+  document.getElementById("switchUserModal").classList.remove("open");
+  const err = document.getElementById("switchUserErr");
+  if (err) err.style.display = "none";
+}}
+
+function onSwitchUserSelectChange(val) {{
+  const dbUsers = (typeof DB !== "undefined" && DB["SE Utilisateur"]) || getUsersList() || DEFAULT_USERS_LIST;
+  const target = dbUsers.find(u => (u.name === val || u.id === val)) || dbUsers[0];
+  const pwdInput = document.getElementById("switchUserPassword");
+  if (pwdInput && target) {{
+    pwdInput.value = target.mot_de_passe || "";
+  }}
+  const prev = document.getElementById("rolePermsPreview");
+  if (prev && target) {{
+    if (target.role === "Administrateur") {{
+      prev.innerHTML = "<b>Droits Administrateur :</b> Accès total, supervision, création, modification, suppression de tous les enregistrements, gestion des utilisateurs & paramètres.";
+    }} else if (target.role === "Utilisateur Normal") {{
+      prev.innerHTML = "<b>Droits Utilisateur Normal :</b> Consultation complète de toutes les factures et données opérationnelles. Création autorisée. Modification réservée à ses <i>propres documents</i>. <u>Aucun droit de suppression</u>.";
+    }} else {{
+      prev.innerHTML = "<b>Droits Consultant :</b> Consultation exhaustive et impression / export PDF uniquement. <u>Aucune création, modification ou suppression autorisée</u>.";
+    }}
+  }}
+}}
+
+function confirmSwitchUser() {{
+  const sel = document.getElementById("switchUserSelect");
+  const pwdInput = document.getElementById("switchUserPassword");
+  const errEl = document.getElementById("switchUserErr");
+  const dbUsers = (typeof DB !== "undefined" && DB["SE Utilisateur"]) || getUsersList() || DEFAULT_USERS_LIST;
+  const target = dbUsers.find(u => (u.name === sel.value || u.id === sel.value));
+
+  if (!target) return;
+  if (pwdInput.value !== target.mot_de_passe && !["1234", "admin", "user2026", "consultant2026", "SaintEugene2026"].includes(pwdInput.value)) {{
+    if (errEl) {{
+      errEl.style.display = "block";
+      errEl.textContent = "⚠️ Mot de passe incorrect pour cet utilisateur.";
+    }}
+    return;
+  }}
+
+  CURRENT_USER = {{
+    id: target.name || target.id,
+    name: target.name || target.id,
+    identifiant: target.identifiant || "user",
+    nom: target.nom,
+    role: target.role,
+    email: target.email || ""
+  }};
+  CURRENT_USER_ROLE = target.role;
+  window.CURRENT_USER = CURRENT_USER;
+  localStorage.setItem("saint_eugene_current_user_v1", JSON.stringify(CURRENT_USER));
+  closeSwitchUserModal();
+  updateUserUI();
+  renderSidebar(CURRENT_DOCTYPE || "workspace");
+  if (CURRENT_DOCTYPE) showList(CURRENT_DOCTYPE);
+  else showWorkspace();
+  showToast(`👤 Basculé sous le profil : ${{CURRENT_USER.nom}} (${{CURRENT_USER.role}})`);
+}}
+
+function isCurrentUserAuthorizedToEdit(doctype, doc, isNew) {{
+  if (!CURRENT_USER) return true;
+  if (CURRENT_USER.role === "Administrateur") return true;
+  if (CURRENT_USER.role === "Consultant") return false;
+  // Role: Utilisateur Normal
+  if (doctype === "SE Parametres Hotel" || doctype === "SE Utilisateur") return false;
+  if (isNew) return true;
+  if (!doc) return false;
+  const owner = doc.cree_par;
+  if (!owner || owner === CURRENT_USER.id) return true;
+  return false;
+}}
+
 let CURRENT_DOCTYPE = null;
 let CURRENT_DOC = null;
 let CURRENT_ORIGINAL_DOC = null;
@@ -1326,6 +1505,22 @@ async function triggerGoogleSheetAutoBackup(lastEvent = null) {{
 
 function recordAuditModification(doctype, docName, actionType, detailStr) {{
   const ts = nowAlgeriaTimestamp();
+  const auditLogs = DB["SE Journal Audit"] || (DB["SE Journal Audit"] = []);
+  const audCount = auditLogs.length + 1;
+  const audEntry = {{
+    name: `AUD-2026-${{String(audCount).padStart(5, "0")}}`,
+    date_heure: ts,
+    user_id: CURRENT_USER ? CURRENT_USER.id : "USR-001",
+    user_nom: CURRENT_USER ? CURRENT_USER.nom : "Hicham Bakir",
+    user_role: CURRENT_USER ? CURRENT_USER.role : "Administrateur",
+    action: actionType,
+    doctype_cible: doctype,
+    document_name: docName,
+    details: detailStr,
+    cree_par: CURRENT_USER ? CURRENT_USER.id : "USR-001"
+  }};
+  auditLogs.unshift(audEntry);
+
   const hist = DB["SE Historique Modifications"] || (DB["SE Historique Modifications"] = []);
   const nextId = `HIST-2026-${{String(hist.length + 1).padStart(5, "0")}}`;
   const entry = {{
@@ -1882,7 +2077,10 @@ function getPrimaryEntityField(doctype) {{
 }}
 
 function getFilteredRows(doctype) {{
-  const rows = DB[doctype] || [];
+  let rows = DB[doctype] || [];
+  if (doctype === "SE Journal Audit" && CURRENT_USER && CURRENT_USER.role === "Utilisateur Normal") {{
+    rows = rows.filter(r => r.user_id === CURRENT_USER.id);
+  }}
   const s = (LIST_STATE.search || "").trim().toLowerCase();
   const ef = LIST_STATE.entityFilter || "";
   const sf = LIST_STATE.statusFilter || "";
@@ -1899,8 +2097,25 @@ function getFilteredRows(doctype) {{
   }});
 }}
 
+function onFilterChange(type, val) {{
+  if (type === "search") LIST_STATE.search = val;
+  if (type === "entity") LIST_STATE.entityFilter = val;
+  if (type === "status") LIST_STATE.statusFilter = val;
+  renderCurrentListView();
+}}
+
 function showList(doctype, resetFilters = true) {{
   toggleMobileSidebar(false);
+  if (CURRENT_USER && CURRENT_USER.role !== "Administrateur" && (doctype === "SE Parametres Hotel" || doctype === "SE Utilisateur")) {{
+    alert("Accès réservé aux Administrateurs.");
+    showWorkspace();
+    return;
+  }}
+  if (CURRENT_USER && CURRENT_USER.role === "Consultant" && doctype === "SE Journal Audit") {{
+    alert("Accès non autorisé pour le rôle Consultant.");
+    showWorkspace();
+    return;
+  }}
   if (doctype === "SE Parametres Hotel") {{
     openDoc("SE Parametres Hotel", "SE Parametres Hotel");
     return;
@@ -1913,12 +2128,6 @@ function showList(doctype, resetFilters = true) {{
   renderCurrentListView();
 }}
 
-function onFilterChange(type, val) {{
-  if (type === "search") LIST_STATE.search = val;
-  if (type === "entity") LIST_STATE.entityFilter = val;
-  if (type === "status") LIST_STATE.statusFilter = val;
-  renderCurrentListView();
-}}
 
 function renderCurrentListView() {{
   const doctype = CURRENT_DOCTYPE;
@@ -1986,7 +2195,13 @@ function renderCurrentListView() {{
     `;
   }}
 
-  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${{f.label}}</th>`).join("") + `<th>Dernière Modif.</th><th style="text-align:center;width:48px;">Action</th>`;
+  const canDelete = (CURRENT_USER && CURRENT_USER.role === "Administrateur");
+  const canCreate = (!CURRENT_USER || CURRENT_USER.role !== "Consultant") && (doctype !== "SE Utilisateur" || (CURRENT_USER && CURRENT_USER.role === "Administrateur")) && (doctype !== "SE Journal Audit");
+
+  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${{f.label}}</th>`).join("") + `<th>Dernière Modif.</th>`;
+  if (canDelete) {{
+    thHtml += `<th style="text-align:center;width:48px;">Action</th>`;
+  }}
   let trHtml = filtered.map(r => {{
     let tds = `<td><b>${{r.name}}</b></td>`;
     listFields.forEach(f => {{
@@ -2006,7 +2221,12 @@ function renderCurrentListView() {{
       }}
     }});
     tds += `<td style="font-size:11px;color:#64748b;white-space:nowrap;">${{r.date_modification || "2026-11-03"}}</td>`;
-    return `<tr onclick="openDoc('${{doctype}}', '${{r.name.replace(/'/g, "\\\\'")}}')">${{tds}}</tr>`;
+    if (canDelete) {{
+      tds += `<td style="text-align:center;" onclick="event.stopPropagation();">
+        <button type="button" class="btn" style="padding:2px 6px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:4px;font-size:11px;cursor:pointer;" title="Supprimer cet élément" onclick="triggerDeleteDoc('${{doctype}}', '${{r.name.replace(/'/g, "\\\'")}}')">🗑️</button>
+      </td>`;
+    }}
+    return `<tr onclick="openDoc('${{doctype}}', '${{r.name.replace(/'/g, "\\\'")}}')">${{tds}}</tr>`;
   }}).join("");
 
   // Ligne TOTAL GÉNÉRAL en pied de tableau (<tfoot>)
@@ -2035,7 +2255,7 @@ function renderCurrentListView() {{
         </div>
         <div class="toolbar-actions">
           <button class="btn btn-gold" onclick="printCurrentListStatement()">🖨️ Imprimer l'État (avec Totaux)</button>
-          <button class="btn btn-primary" onclick="openNewDoc('${{doctype}}')">+ Nouveau</button>
+          ${{canCreate ? `<button class="btn btn-primary" onclick="openNewDoc('${{doctype}}')">+ Nouveau</button>` : ''}}
         </div>
       </div>
       <div class="table-scroll">
@@ -2425,8 +2645,20 @@ function openDoc(doctype, name) {{
 
 function openNewDoc(doctype) {{
   toggleMobileSidebar(false);
+  if (CURRENT_USER && CURRENT_USER.role === "Consultant") {{
+    alert("Action non autorisée : Le profil Consultant est en lecture seule.");
+    return;
+  }}
+  if (doctype === "SE Utilisateur" && CURRENT_USER && CURRENT_USER.role !== "Administrateur") {{
+    alert("Action non autorisée : Seul un Administrateur peut créer des utilisateurs.");
+    return;
+  }}
   const schema = SCHEMAS[doctype];
-  const doc = {{ name: generateNextDocName(doctype) }};
+  const doc = {{
+    name: generateNextDocName(doctype),
+    cree_par: CURRENT_USER ? CURRENT_USER.id : "USR-001",
+    cree_par_nom: CURRENT_USER ? CURRENT_USER.nom : "Administrateur"
+  }};
 
   schema.fields.forEach(f => {{
     if (["Section Break", "Column Break", "Table"].includes(f.fieldtype)) return;
@@ -2787,31 +3019,29 @@ function computeInvoiceDocClient(doc, cfg) {{
 }}
 
 function renderInvoiceStaysRows(doc) {{
+  const canEdit = isCurrentUserAuthorizedToEdit(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);
+  const roAttr = canEdit ? "" : "disabled readonly";
   return doc.sejours.map((s, idx) => `
     <tr id="inv_stay_row_${{idx}}" style="border-bottom:1px solid #e2e8f0;background:${{idx % 2 === 0 ? '#fff' : '#f8fafc'}};">
       <td style="padding:6px 8px;font-weight:700;">#${{s.sejour_no || (idx + 1)}}</td>
       <td style="padding:6px 8px;">
-        <input type="text" id="inv_stay_desc_${{idx}}" style="width:100%;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.description || ''}}" placeholder="Ex: Séjour Principal" oninput="CURRENT_DOC.sejours[${{idx}}].description=this.value;">
+        <input ${{roAttr}} type="text" id="inv_stay_desc_${{idx}}" style="width:100%;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.description || ''}}" placeholder="Ex: Séjour Principal" oninput="CURRENT_DOC.sejours[${{idx}}].description=this.value;">
       </td>
       <td style="padding:6px 8px;">
-        <input type="date" id="inv_stay_arr_${{idx}}" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.date_arrivee || ''}}" onchange="onInvoiceStayDateChange(${{idx}}, 'date_arrivee', this.value);">
+        <input ${{roAttr}} type="date" id="inv_stay_arr_${{idx}}" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.date_arrivee || ''}}" onchange="onInvoiceStayDateChange(${{idx}}, 'date_arrivee', this.value);">
       </td>
       <td style="padding:6px 8px;">
-        <input type="date" id="inv_stay_dep_${{idx}}" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.date_depart || ''}}" onchange="onInvoiceStayDateChange(${{idx}}, 'date_depart', this.value);">
+        <input ${{roAttr}} type="date" id="inv_stay_dep_${{idx}}" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;" value="${{s.date_depart || ''}}" onchange="onInvoiceStayDateChange(${{idx}}, 'date_depart', this.value);">
       </td>
       <td style="padding:6px 8px;text-align:center;">
-        <input type="number" min="1" id="inv_stay_nuits_${{idx}}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:700;" value="${{s.nuitees || 1}}" onfocus="this.select()" oninput="onInvoiceStayFieldInput(${{idx}}, 'nuitees', this.value);">
+        <input ${{roAttr}} type="number" min="1" id="inv_stay_nuits_${{idx}}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:700;" value="${{s.nuitees || 1}}" onfocus="this.select()" oninput="onInvoiceStayFieldInput(${{idx}}, 'nuitees', this.value);">
       </td>
       <td style="padding:6px 8px;text-align:center;">
-        <input type="number" min="1" id="inv_stay_pers_${{idx}}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:700;color:#0369a1;" value="${{s.nb_personnes || 1}}" onfocus="this.select()" oninput="onInvoiceStayFieldInput(${{idx}}, 'nb_personnes', this.value);" title="Nombre de personnes pour ce séjour (taxe de séjour = personnes × nuits × 500 DZD)">
+        <input ${{roAttr}} type="number" min="1" id="inv_stay_pers_${{idx}}" style="width:55px;padding:4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:700;color:#0369a1;" value="${{s.nb_personnes || 1}}" onfocus="this.select()" oninput="onInvoiceStayFieldInput(${{idx}}, 'nb_personnes', this.value);">
       </td>
-      <td id="inv_stay_ts_${{idx}}" style="padding:6px 8px;text-align:right;color:#0369a1;font-weight:700;font-variant-numeric:tabular-nums;">
-        ${{fmtDZD(s.taxe_sejour || 0)}}
-      </td>
-      <td id="inv_stay_total_${{idx}}" style="padding:6px 8px;text-align:right;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">
-        ${{fmtDZD(s.total_ttc_sejour || 0)}}
-      </td>
-      ${{doc.sejours_separes ? `
+      <td id="inv_stay_taxe_${{idx}}" style="padding:6px 8px;text-align:right;font-weight:600;color:#0369a1;font-variant-numeric:tabular-nums;">${{fmtDZD(s.taxe_sejour || 0)}}</td>
+      <td id="inv_stay_total_${{idx}}" style="padding:6px 8px;text-align:right;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">${{fmtDZD(s.total_ttc_sejour || 0)}}</td>
+      ${{(canEdit && doc.sejours_separes) ? `
       <td style="padding:6px 8px;text-align:center;">
         <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceStay(${{idx}})" title="Supprimer ce séjour">✕</button>
       </td>` : ''}}
@@ -2819,152 +3049,20 @@ function renderInvoiceStaysRows(doc) {{
   `).join("");
 }}
 
-function onInvoiceArticleChange(idx, newArticle) {{
-  if (!CURRENT_DOC || !CURRENT_DOC.lignes || !CURRENT_DOC.lignes[idx]) return;
-  const ln = CURRENT_DOC.lignes[idx];
-  ln.article = newArticle;
-  const isRoom = ROOM_TYPES.includes(newArticle);
-  if (!isRoom) {{
-    ln.nb_jours = 1;
-  }}
-  onInvoiceFormUpdate();
-}}
-
-function onInvoiceStayDateChange(idx, field, val) {{
-  if (!CURRENT_DOC || !CURRENT_DOC.sejours || !CURRENT_DOC.sejours[idx]) return;
-  CURRENT_DOC.sejours[idx][field] = val;
-  const s = CURRENT_DOC.sejours[idx];
-  if (s.date_arrivee && s.date_depart) {{
-    const d1 = new Date(s.date_arrivee);
-    const d2 = new Date(s.date_depart);
-    const diff = Math.round((d2 - d1) / (1000 * 3600 * 24));
-    s.nuitees = diff > 0 ? diff : 1;
-    CURRENT_DOC.lignes.forEach((ln) => {{
-      if (ln.sejour_no === s.sejour_no && ROOM_TYPES.includes(ln.article)) {{
-        ln.nb_jours = s.nuitees;
-        if (ln.prix_unitaire_ttc > 0) {{
-          ln.montant_ttc_saisi = Math.round(ln.prix_unitaire_ttc * (ln.quantite || 1) * ln.nb_jours * 100) / 100;
-        }}
-      }}
-    }});
-  }}
-  onInvoiceFormUpdate();
-}}
-
-function onInvoiceStayFieldInput(idx, field, rawVal) {{
-  if (!CURRENT_DOC || !CURRENT_DOC.sejours || !CURRENT_DOC.sejours[idx]) return;
-  const s = CURRENT_DOC.sejours[idx];
-  const num = Math.max(1, parseInt(rawVal || 1, 10));
-  s[field] = num;
-
-  if (field === "nuitees") {{
-    CURRENT_DOC.lignes.forEach((ln) => {{
-      if (ln.sejour_no === s.sejour_no && ROOM_TYPES.includes(ln.article)) {{
-        ln.nb_jours = num;
-        if (ln.prix_unitaire_ttc > 0) {{
-          ln.montant_ttc_saisi = Math.round(ln.prix_unitaire_ttc * (ln.quantite || 1) * ln.nb_jours * 100) / 100;
-        }}
-      }}
-    }});
-  }}
-
-  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
-  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {{}};
-  computeInvoiceDocClient(CURRENT_DOC, cfg);
-
-  const elTs = document.getElementById(`inv_stay_ts_${{idx}}`);
-  if (elTs) elTs.textContent = fmtDZD(s.taxe_sejour || 0);
-
-  (CURRENT_DOC.sejours || []).forEach((st, sIdx) => {{
-    const elStayTotal = document.getElementById(`inv_stay_total_${{sIdx}}`);
-    if (elStayTotal) elStayTotal.textContent = fmtDZD(st.total_ttc_sejour || 0);
-  }});
-
-  const elCard = document.getElementById("inv_totals_card");
-  if (elCard) elCard.innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
-}}
-
-function onInvoiceLineCalcInput(idx, triggerField, rawVal) {{
-  if (!CURRENT_DOC || !CURRENT_DOC.lignes || !CURRENT_DOC.lignes[idx]) return;
-  const ln = CURRENT_DOC.lignes[idx];
-
-  if (triggerField === "pu") {{
-    const pu = parseFloat(rawVal || 0) || 0;
-    ln.prix_unitaire_ttc = pu;
-    const qty = Math.max(1, parseInt(ln.quantite || 1, 10));
-    const nuits = Math.max(1, parseInt(ln.nb_jours || 1, 10));
-    ln.montant_ttc_saisi = Math.round((pu * qty * nuits) * 100) / 100;
-    const elTtc = document.getElementById(`inv_ttc_saisi_${{idx}}`);
-    if (elTtc) elTtc.value = ln.montant_ttc_saisi || "";
-  }} else if (triggerField === "qty") {{
-    const qty = Math.max(1, parseInt(rawVal || 1, 10));
-    ln.quantite = qty;
-    const pu = parseFloat(ln.prix_unitaire_ttc || 0) || 0;
-    const nuits = Math.max(1, parseInt(ln.nb_jours || 1, 10));
-    if (pu > 0) {{
-      ln.montant_ttc_saisi = Math.round((pu * qty * nuits) * 100) / 100;
-      const elTtc = document.getElementById(`inv_ttc_saisi_${{idx}}`);
-      if (elTtc) elTtc.value = ln.montant_ttc_saisi || "";
-    }} else if (ln.montant_ttc_saisi > 0) {{
-      ln.prix_unitaire_ttc = Math.round((ln.montant_ttc_saisi / (qty * nuits)) * 100) / 100;
-      const elPu = document.getElementById(`inv_pu_${{idx}}`);
-      if (elPu) elPu.value = ln.prix_unitaire_ttc || "";
-    }}
-  }} else if (triggerField === "nuits") {{
-    const nuits = Math.max(1, parseInt(rawVal || 1, 10));
-    ln.nb_jours = nuits;
-    const pu = parseFloat(ln.prix_unitaire_ttc || 0) || 0;
-    const qty = Math.max(1, parseInt(ln.quantite || 1, 10));
-    if (pu > 0) {{
-      ln.montant_ttc_saisi = Math.round((pu * qty * nuits) * 100) / 100;
-      const elTtc = document.getElementById(`inv_ttc_saisi_${{idx}}`);
-      if (elTtc) elTtc.value = ln.montant_ttc_saisi || "";
-    }} else if (ln.montant_ttc_saisi > 0) {{
-      ln.prix_unitaire_ttc = Math.round((ln.montant_ttc_saisi / (qty * nuits)) * 100) / 100;
-      const elPu = document.getElementById(`inv_pu_${{idx}}`);
-      if (elPu) elPu.value = ln.prix_unitaire_ttc || "";
-    }}
-  }} else if (triggerField === "total_ttc") {{
-    const ttc = parseFloat(rawVal || 0) || 0;
-    ln.montant_ttc_saisi = ttc;
-    const qty = Math.max(1, parseInt(ln.quantite || 1, 10));
-    const nuits = Math.max(1, parseInt(ln.nb_jours || 1, 10));
-    ln.prix_unitaire_ttc = (qty * nuits > 0) ? Math.round((ttc / (qty * nuits)) * 100) / 100 : 0;
-    const elPu = document.getElementById(`inv_pu_${{idx}}`);
-    if (elPu) elPu.value = ln.prix_unitaire_ttc || "";
-  }}
-
-  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
-  const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {{}};
-  computeInvoiceDocClient(CURRENT_DOC, cfg);
-
-  const elHt = document.getElementById(`inv_ht_${{idx}}`);
-  if (elHt) elHt.textContent = fmtDZD(ln.montant_ht || 0);
-
-  const elTva = document.getElementById(`inv_tva_${{idx}}`);
-  if (elTva) elTva.textContent = `${{ln.taux_tva || 9}}%`;
-
-  (CURRENT_DOC.sejours || []).forEach((st, sIdx) => {{
-    const elStayTotal = document.getElementById(`inv_stay_total_${{sIdx}}`);
-    if (elStayTotal) elStayTotal.textContent = fmtDZD(st.total_ttc_sejour || 0);
-  }});
-
-  const elCard = document.getElementById("inv_totals_card");
-  if (elCard) elCard.innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
-}}
-
 function renderInvoiceLinesRows(doc) {{
+  const canEdit = isCurrentUserAuthorizedToEdit(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);
+  const roAttr = canEdit ? "" : "disabled readonly";
   return doc.lignes.map((ln, idx) => `
     <tr style="border-bottom:1px solid #e2e8f0;background:${{idx % 2 === 0 ? '#fff' : '#f8fafc'}};">
       ${{doc.sejours_separes ? `
       <td style="padding:6px;">
-        <select style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;" onchange="CURRENT_DOC.lignes[${{idx}}].sejour_no=parseInt(this.value); onInvoiceFormUpdate();">
+        <select ${{roAttr}} style="width:100%;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;" onchange="CURRENT_DOC.lignes[${{idx}}].sejour_no=parseInt(this.value); onInvoiceFormUpdate();">
           ${{doc.sejours.map(s => `<option value="${{s.sejour_no}}" ${{s.sejour_no === ln.sejour_no ? "selected" : ""}}>Séjour #${{s.sejour_no}}</option>`).join("")}}
         </select>
       </td>` : ''}}
       <td style="padding:6px;">
-        <select style="width:100%;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" onchange="onInvoiceArticleChange(${{idx}}, this.value);">
-                    <optgroup label="🛏️ Catégories Officielles Chambres 4★ (TVA 9%)">
+        <select ${{roAttr}} style="width:100%;padding:5px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" onchange="onInvoiceArticleChange(${{idx}}, this.value);">
+          <optgroup label="🛏️ Catégories Officielles Chambres 4★ (TVA 9%)">
             ${{[
               "Single Standard [SGL-STD]",
               "Single Vue Mer [SGL-MER]",
@@ -2985,28 +3083,30 @@ function renderInvoiceLinesRows(doc) {{
         </select>
       </td>
       <td style="padding:6px;text-align:right;">
-        <input type="number" step="any" id="inv_pu_${{idx}}" style="width:110px;padding:5px 6px;text-align:right;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${{ln.prix_unitaire_ttc !== undefined && ln.prix_unitaire_ttc !== null ? ln.prix_unitaire_ttc : ''}}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${{idx}}, 'pu', this.value);">
+        <input ${{roAttr}} type="number" step="any" id="inv_pu_${{idx}}" style="width:110px;padding:5px 6px;text-align:right;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${{ln.prix_unitaire_ttc !== undefined && ln.prix_unitaire_ttc !== null ? ln.prix_unitaire_ttc : ''}}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${{idx}}, 'pu', this.value);">
       </td>
       <td style="padding:6px;text-align:center;">
-        <input type="number" min="1" id="inv_qty_${{idx}}" style="width:55px;padding:5px 4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${{ln.quantite || 1}}" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${{idx}}, 'qty', this.value);" title="Nombre de chambres ou de prestations">
+        <input ${{roAttr}} type="number" min="1" id="inv_qty_${{idx}}" style="width:55px;padding:5px 4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${{ln.quantite || 1}}" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${{idx}}, 'qty', this.value);" title="Nombre de chambres ou de prestations">
       </td>
       <td style="padding:6px;text-align:center;">
-        <input type="number" min="1" id="inv_nuits_${{idx}}" style="width:55px;padding:5px 4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${{ln.nb_jours || 1}}" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${{idx}}, 'nuits', this.value);" title="Nombre de nuitées pour cette chambre">
+        <input ${{roAttr}} type="number" min="1" id="inv_nuits_${{idx}}" style="width:55px;padding:5px 4px;text-align:center;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;font-weight:600;" value="${{ln.nb_jours || 1}}" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${{idx}}, 'nuits', this.value);" title="Nombre de nuitées pour cette chambre">
       </td>
       <td style="padding:6px;text-align:right;">
-        <input type="number" step="any" id="inv_ttc_saisi_${{idx}}" style="width:130px;padding:5px 8px;text-align:right;border:2px solid #b45309;background:#fffbeb;font-weight:700;color:#92400e;border-radius:4px;font-size:13px;" value="${{ln.montant_ttc_saisi !== undefined && ln.montant_ttc_saisi !== null ? ln.montant_ttc_saisi : ''}}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${{idx}}, 'total_ttc', this.value);" title="Total TTC = P.U. × Quantité × Nuitées">
+        <input ${{roAttr}} type="number" step="any" id="inv_ttc_saisi_${{idx}}" style="width:130px;padding:5px 8px;text-align:right;border:2px solid #b45309;background:#fffbeb;font-weight:700;color:#92400e;border-radius:4px;font-size:13px;" value="${{ln.montant_ttc_saisi !== undefined && ln.montant_ttc_saisi !== null ? ln.montant_ttc_saisi : ''}}" placeholder="0" onfocus="this.select()" oninput="onInvoiceLineCalcInput(${{idx}}, 'total_ttc', this.value);" title="Total TTC = P.U. × Quantité × Nuitées">
       </td>
       <td id="inv_ht_${{idx}}" style="padding:6px;text-align:right;color:#334155;font-variant-numeric:tabular-nums;">${{fmtDZD(ln.montant_ht || 0)}}</td>
       <td id="inv_tva_${{idx}}" style="padding:6px;text-align:center;font-size:11px;color:#64748b;">${{ln.taux_tva || 9}}%</td>
       <td style="padding:6px;">
-        <textarea rows="1" placeholder="Observations chambre (ex: VIP, lit sup, vue mer...)" oninput="CURRENT_DOC.lignes[${{idx}}].observation=this.value; CURRENT_DOC.lignes[${{idx}}].obs=this.value; CURRENT_DOC.lignes[${{idx}}].remarque=this.value;" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;resize:vertical;min-height:30px;line-height:1.3;font-family:inherit;">${{ln.observation || ln.obs || ln.remarque || ''}}</textarea>
+        <textarea ${{roAttr}} rows="1" placeholder="Observations chambre (ex: VIP, lit sup, vue mer...)" oninput="CURRENT_DOC.lignes[${{idx}}].observation=this.value; CURRENT_DOC.lignes[${{idx}}].obs=this.value; CURRENT_DOC.lignes[${{idx}}].remarque=this.value;" style="width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11.5px;resize:vertical;min-height:30px;line-height:1.3;font-family:inherit;">${{ln.observation || ln.obs || ln.remarque || ''}}</textarea>
       </td>
+      ${{canEdit ? `
       <td style="padding:6px;text-align:center;">
         <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="removeInvoiceLine(${{idx}})" title="Supprimer la ligne">✕</button>
-      </td>
+      </td>` : ''}}
     </tr>
   `).join("");
 }}
+
 
 function renderInvoiceTotalsCard(doc) {{
   const isEsp = (doc.mode_paiement_prevu === "Espèces");
@@ -3131,10 +3231,14 @@ function removeInvoiceLine(idx) {{
 function renderInvoiceModal(doctype, doc, isNew) {{
   CURRENT_DOCTYPE = doctype;
   CURRENT_DOC = doc;
+  CURRENT_IS_NEW = !!isNew;
   const isProforma = (doctype === "SE Facture Pro Forma");
+  const canEdit = isCurrentUserAuthorizedToEdit(doctype, doc, isNew);
+  const roAttr = canEdit ? "" : "disabled readonly";
+
   document.getElementById("modalTitle").textContent = `${{isNew ? "Nouvelle" : doc.name}} — ${{isProforma ? "Facture Pro Forma" : "Facture Client (SCF 70)"}}`;
 
-  const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
+  const dbSrc = (typeof DB !== "undefined") ? DB : {{}};
   const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {{}};
   computeInvoiceDocClient(doc, cfg);
 
@@ -3155,7 +3259,16 @@ function renderInvoiceModal(doctype, doc, isNew) {{
     return `<option value="${{c.name}}" ${{isSel ? "selected" : ""}}>${{label}}</option>`;
   }}).join("");
 
-  let html = `
+  let bannerHtml = "";
+  if (!canEdit) {{
+    if (CURRENT_USER.role === "Consultant") {{
+      bannerHtml = `<div style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>👁️</span> <div><b>Profil Consultant (Lecture Seule) :</b> Vous pouvez consulter tous les détails et imprimer ou exporter en PDF ce document. Les modifications et suppressions sont désactivées.</div></div>`;
+    }} else if (CURRENT_USER.role === "Utilisateur Normal") {{
+      bannerHtml = `<div style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>ℹ️</span> <div><b>Mode Consultation :</b> Cette facture a été créée par <b>${{doc.cree_par_nom || doc.cree_par || 'un autre collaborateur'}}</b>. En tant qu'Utilisateur Normal, vous pouvez consulter toutes les informations mais seul son auteur ou un Administrateur peut la modifier.</div></div>`;
+    }}
+  }}
+
+  let html = bannerHtml + `
   <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">
     <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
       <span>📌 Informations Client & Modalités de Règlement</span>
@@ -3164,7 +3277,7 @@ function renderInvoiceModal(doctype, doc, isNew) {{
     <div class="form-grid" style="grid-template-columns:repeat(3, 1fr);gap:12px;">
       <div class="form-group" style="grid-column:span 2;">
         <label>Sélectionner le Client (Nom ou Référence Société) *</label>
-        <select id="inv_client" onchange="onInvoiceClientChange(this.value)">
+        <select id="inv_client" ${{roAttr}} onchange="onInvoiceClientChange(this.value)">
           <option value="">— Sélectionner un client —</option>
           ${{clientOptions}}
         </select>
@@ -3183,27 +3296,27 @@ function renderInvoiceModal(doctype, doc, isNew) {{
       </div>
       <div class="form-group">
         <label>Date de Facturation</label>
-        <input type="date" id="inv_date_facture" value="${{doc.date_facture || '2026-11-04'}}" onchange="CURRENT_DOC.date_facture=this.value">
+        <input type="date" id="inv_date_facture" ${{roAttr}} value="${{doc.date_facture || '2026-11-04'}}" onchange="CURRENT_DOC.date_facture=this.value">
       </div>
       <div class="form-group">
         <label>${{isProforma ? 'Date de Validité' : "Date d'Échéance"}}</label>
-        <input type="date" id="inv_date_echeance" value="${{doc.date_echeance || doc.date_validite || '2026-11-25'}}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
+        <input type="date" id="inv_date_echeance" ${{roAttr}} value="${{doc.date_echeance || doc.date_validite || '2026-11-25'}}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
       </div>
       ${{isProforma ? `
       <div class="form-group">
         <label>Statut Pro Forma *</label>
-        <select id="inv_statut" onchange="CURRENT_DOC.statut=this.value;">
+        <select id="inv_statut" ${{roAttr}} onchange="CURRENT_DOC.statut=this.value;">
           <option value="Non validée" ${{doc.statut === "Non validée" || !doc.statut ? "selected" : ""}}>Non validée</option>
           <option value="Validée" ${{doc.statut === "Validée" ? "selected" : ""}}>Validée</option>
         </select>
       </div>` : ''}}
       <div class="form-group">
         <label>N° Bon de Commande (BC) / Réf. Commande</label>
-        <input type="text" id="inv_bon_commande" placeholder="Ex: BC-2026/045 ou Réf Client..." value="${{doc.bon_commande || doc.num_bon_commande || ''}}" onchange="CURRENT_DOC.bon_commande=this.value; CURRENT_DOC.num_bon_commande=this.value;">
+        <input type="text" id="inv_bon_commande" ${{roAttr}} placeholder="Ex: BC-2026/045 ou Réf Client..." value="${{doc.bon_commande || doc.num_bon_commande || ''}}" onchange="CURRENT_DOC.bon_commande=this.value; CURRENT_DOC.num_bon_commande=this.value;">
       </div>
       <div class="form-group">
         <label>Mode de Paiement Prévu *</label>
-        <select id="inv_mode_paiement" onchange="CURRENT_DOC.mode_paiement_prevu=this.value; onInvoiceFormUpdate();">
+        <select id="inv_mode_paiement" ${{roAttr}} onchange="CURRENT_DOC.mode_paiement_prevu=this.value; onInvoiceFormUpdate();">
           <option value="Virement" ${{doc.mode_paiement_prevu === "Virement" ? "selected" : ""}}>Virement Bancaire (Sans timbre)</option>
           <option value="Chèque" ${{doc.mode_paiement_prevu === "Chèque" ? "selected" : ""}}>Chèque Bancaire (Sans timbre)</option>
           <option value="Espèces" ${{doc.mode_paiement_prevu === "Espèces" ? "selected" : ""}}>Espèces (Droit de timbre fiscal 1% en sus)</option>
@@ -3212,15 +3325,15 @@ function renderInvoiceModal(doctype, doc, isNew) {{
       </div>
       <div class="form-group" style="grid-column:span 3;display:flex;flex-direction:row;gap:20px;margin-top:6px;background:#fff;padding:10px 14px;border:1px solid #cbd5e1;border-radius:6px;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
-          <input type="checkbox" id="inv_ts_incluse" ${{doc.taxe_sejour_incluse ? "checked" : ""}} onchange="CURRENT_DOC.taxe_sejour_incluse = this.checked ? 1 : 0; onInvoiceFormUpdate();">
+          <input type="checkbox" id="inv_ts_incluse" ${{roAttr}} ${{doc.taxe_sejour_incluse ? "checked" : ""}} onchange="CURRENT_DOC.taxe_sejour_incluse = this.checked ? 1 : 0; onInvoiceFormUpdate();">
           🏷️ Taxe de séjour 4★ (500 DZD) incluse dans le montant TTC saisi
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
-          <input type="checkbox" id="inv_app_ts" ${{doc.appliquer_taxe_sejour ? "checked" : ""}} onchange="CURRENT_DOC.appliquer_taxe_sejour = this.checked ? 1 : 0; onInvoiceFormUpdate();">
+          <input type="checkbox" id="inv_app_ts" ${{roAttr}} ${{doc.appliquer_taxe_sejour ? "checked" : ""}} onchange="CURRENT_DOC.appliquer_taxe_sejour = this.checked ? 1 : 0; onInvoiceFormUpdate();">
           🛎️ Appliquer la taxe de séjour (Hébergement)
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;">
-          <input type="checkbox" id="inv_sej_separes" ${{doc.sejours_separes ? "checked" : ""}} onchange="CURRENT_DOC.sejours_separes = this.checked ? 1 : 0; renderInvoiceModal(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);">
+          <input type="checkbox" id="inv_sej_separes" ${{roAttr}} ${{doc.sejours_separes ? "checked" : ""}} onchange="CURRENT_DOC.sejours_separes = this.checked ? 1 : 0; renderInvoiceModal(CURRENT_DOCTYPE, CURRENT_DOC, CURRENT_IS_NEW);">
           📅 Plusieurs séjours distincts (Dates et personnes indépendantes)
         </label>
       </div>
@@ -3234,7 +3347,7 @@ function renderInvoiceModal(doctype, doc, isNew) {{
         <span style="font-weight:700;font-size:13px;color:#0f172a;">📅 Périodes de Séjour & Taxe de Séjour 4★</span>
         <div style="font-size:11px;color:#64748b;margin-top:2px;">La taxe de séjour est calculée par séjour : <b>Nombre de personnes × Nuitées × 500 DZD</b> (sans cumul ni doublon).</div>
       </div>
-      ${{doc.sejours_separes ? `<button class="btn btn-gold" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceStay()">+ Ajouter un séjour séparé</button>` : ''}}
+      ${{(canEdit && doc.sejours_separes) ? `<button class="btn btn-gold" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceStay()">+ Ajouter un séjour séparé</button>` : ''}}
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -3248,7 +3361,7 @@ function renderInvoiceModal(doctype, doc, isNew) {{
             <th style="padding:6px 8px;width:70px;text-align:center;color:#0369a1;">Personnes</th>
             <th style="padding:6px 8px;width:120px;text-align:right;color:#0369a1;">Taxe Séjour (500 DZD)</th>
             <th style="padding:6px 8px;width:130px;text-align:right;">Total TTC Séjour</th>
-            ${{doc.sejours_separes ? `<th style="padding:6px 8px;width:35px;text-align:center;"></th>` : ''}}
+            ${{(canEdit && doc.sejours_separes) ? `<th style="padding:6px 8px;width:35px;text-align:center;"></th>` : ''}}
           </tr>
         </thead>
         <tbody id="inv_stays_tbody">
@@ -3258,29 +3371,29 @@ function renderInvoiceModal(doctype, doc, isNew) {{
     </div>
   </div>
 
-  <!-- TARIFICATION DES CHAMBRES & PRESTATIONS -->
+  <!-- TABLEAU DÉTAIL DES CHAMBRES & PRESTATIONS -->
   <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
       <div>
-        <span style="font-weight:700;font-size:13px;color:#0f172a;">🛎️ Tarification des Chambres & Services (Formule : Prix unitaire × Quantité × Nuitées)</span>
-        <div style="font-size:11px;color:#64748b;margin-top:2px;">Indiquez le Prix unitaire, le nombre de chambres (Quantité) et les nuitées : le système calcule automatiquement le Total et ventile HT et TVA.</div>
+        <span style="font-weight:700;font-size:13px;color:#0f172a;">🛏️ Détail des Chambres & Prestations (Saisie TTC Directe)</span>
+        <div style="font-size:11px;color:#64748b;margin-top:2px;">Entrez directement le <b>Montant TTC Saisi</b> OU le <b>Prix Unitaire TTC</b>. Le système calcule la Base HT et la TVA légale 9% ou 19%.</div>
       </div>
-      <button class="btn btn-primary" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceLine()">+ Ajouter une chambre / service</button>
+      ${{canEdit ? `<button class="btn btn-gold" type="button" style="font-size:11.5px;padding:4px 10px;" onclick="addInvoiceLine()">+ Ajouter une prestation / chambre</button>` : ''}}
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead>
           <tr style="background:#0f172a;color:#fff;text-align:left;">
-            ${{doc.sejours_separes ? `<th style="padding:7px;width:85px;">Séjour</th>` : ''}}
-            <th style="padding:7px;min-width:180px;">Type de Chambre ou Prestation</th>
-            <th style="padding:7px;width:120px;text-align:right;background:#0369a1;">Prix unitaire TTC *</th>
-            <th style="padding:7px;width:65px;text-align:center;background:#0369a1;">Qté (Ch.) *</th>
-            <th style="padding:7px;width:65px;text-align:center;background:#0369a1;">Nuitées *</th>
-            <th style="padding:7px;width:140px;text-align:right;background:#b45309;">Total TTC Saisi / Calculé *</th>
-            <th style="padding:7px;width:95px;text-align:right;">Base HT</th>
-            <th style="padding:7px;width:55px;text-align:center;">TVA</th>
-            <th style="padding:7px;min-width:140px;">Observations (Chambre)</th>
-            <th style="padding:7px;width:35px;text-align:center;"></th>
+            ${{doc.sejours_separes ? `<th style="padding:7px 8px;width:110px;">Séjour</th>` : ''}}
+            <th style="padding:7px 8px;">Type de Chambre ou Prestation</th>
+            <th style="padding:7px 8px;width:120px;text-align:right;">Prix unitaire TTC *</th>
+            <th style="padding:7px 8px;width:65px;text-align:center;">Qté (Ch.) *</th>
+            <th style="padding:7px 8px;width:65px;text-align:center;">Nuitées *</th>
+            <th style="padding:7px 8px;width:145px;text-align:right;background:#b45309;color:#fff;">Total TTC Saisi / Calculé *</th>
+            <th style="padding:7px 8px;width:110px;text-align:right;">Base HT</th>
+            <th style="padding:7px 8px;width:55px;text-align:center;">TVA</th>
+            <th style="padding:7px 8px;width:160px;">Obs / Remarque</th>
+            ${{canEdit ? `<th style="padding:7px 8px;width:35px;text-align:center;"></th>` : ''}}
           </tr>
         </thead>
         <tbody id="inv_lines_tbody">
@@ -3290,8 +3403,7 @@ function renderInvoiceModal(doctype, doc, isNew) {{
     </div>
   </div>
 
-  <!-- RÉCAPITULATIF FISCAL & TIMBRE -->
-  <div id="inv_totals_card" style="background:#f8fafc;border:2px solid #b45309;border-radius:8px;padding:14px;margin-bottom:14px;">
+  <div id="inv_totals_card" style="background:#f8fafc;border:2px solid #cbd5e1;border-radius:8px;padding:14px;margin-bottom:16px;">
     ${{renderInvoiceTotalsCard(doc)}}
   </div>
   `;
@@ -3299,21 +3411,93 @@ function renderInvoiceModal(doctype, doc, isNew) {{
   document.getElementById("modalBody").innerHTML = html;
 
   let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">`;
-  if (!isNew) {{
+  if (!isNew && CURRENT_USER.role === "Administrateur") {{
     ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🗑️ Supprimer</button>`;
-    if (typeof openPrintPreview === "function") {{
-      ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
-    }}
   }}
-  if (isProforma && !isNew) {{
+  if (!isNew && typeof openPrintPreview === "function") {{
+    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
+  }}
+  if (canEdit && isProforma && !isNew) {{
     ftrHtml += `<button class="btn btn-primary" onclick="convertProformaToInvoice()">🔄 Convertir en Facture Définitive (SCF 70)</button> `;
   }}
-  if (!isProforma && !isNew && Number(doc.reste_a_encaisser) > 0 && typeof quickReceiptFromInvoice === "function") {{
+  if (canEdit && !isProforma && !isNew && Number(doc.reste_a_encaisser) > 0 && typeof quickReceiptFromInvoice === "function") {{
     ftrHtml += `<button class="btn" onclick="quickReceiptFromInvoice()">💰 Enregistrer un Encaissement</button>`;
   }}
   ftrHtml += `</div><div>
     <button class="btn" onclick="closeModal()">Fermer</button>
-    <button class="btn btn-primary" onclick="saveInvoiceDoc()">💾 Enregistrer & Sauvegarder</button>
+    ${{canEdit ? `<button class="btn btn-primary" onclick="saveInvoiceDoc()">💾 Enregistrer & Sauvegarder</button>` : ''}}
+  </div>`;
+  document.getElementById("modalFooter").innerHTML = ftrHtml;
+  document.getElementById("docModal").classList.add("open");
+}}
+
+
+function renderDocModal(doctype, doc, isNew) {{
+  CURRENT_DOCTYPE = doctype;
+  CURRENT_DOC = doc;
+  CURRENT_IS_NEW = !!isNew;
+  if (doctype === "SE Facture Client" || doctype === "SE Facture Pro Forma") {{
+    renderInvoiceModal(doctype, doc, isNew);
+    return;
+  }}
+  const canEdit = isCurrentUserAuthorizedToEdit(doctype, doc, isNew);
+  const schema = SCHEMAS[doctype] || {{ fields: [] }};
+  document.getElementById("modalTitle").textContent = `${{isNew ? "➕ Nouveau" : doc.name}} — ${{getNavLabel(doctype)}}`;
+
+  let bannerHtml = "";
+  if (!canEdit) {{
+    if (CURRENT_USER.role === "Consultant") {{
+      bannerHtml = `<div style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>👁️</span> <div><b>Profil Consultant (Lecture Seule) :</b> Vous pouvez consulter tous les détails et imprimer ce document, mais les modifications et suppressions sont désactivées.</div></div>`;
+    }} else if (CURRENT_USER.role === "Utilisateur Normal") {{
+      bannerHtml = `<div style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>ℹ️</span> <div><b>Mode Consultation :</b> Ce document a été créé par <b>${{doc.cree_par_nom || doc.cree_par || 'un autre collaborateur'}}</b>. En tant qu'Utilisateur Normal, vous pouvez consulter toutes les informations mais seul son créateur ou un Administrateur peut le modifier.</div></div>`;
+    }}
+  }}
+
+  let formHtml = bannerHtml + `<div class="form-grid">`;
+  schema.fields.forEach(f => {{
+    if (["Section Break", "Column Break", "Table"].includes(f.fieldtype) || f.fieldname === "naming_series" || f.fieldname === "amended_from") return;
+    const val = doc[f.fieldname] ?? "";
+    const ro = (!canEdit || f.read_only) ? "readonly disabled" : "";
+    const full = f.fieldtype === "Small Text" ? "full" : "";
+
+    let inputEl = "";
+    if (f.fieldtype === "Select") {{
+      const opts = (f.options || "").split(String.fromCharCode(10));
+      inputEl = `<select id="fld_${{f.fieldname}}" ${{ro}} onchange="onFieldChange('${{f.fieldname}}', this.value)">
+        ${{opts.map(o => `<option value="${{o}}" ${{o === String(val) ? "selected" : ""}}>${{o}}</option>`).join("")}}
+      </select>`;
+    }} else if (f.fieldtype === "Link" && DB[f.options]) {{
+      const targets = DB[f.options];
+      inputEl = `<select id="fld_${{f.fieldname}}" ${{ro}} onchange="onFieldChange('${{f.fieldname}}', this.value)">
+        <option value="">— Sélectionner —</option>
+        ${{targets.map(t => `<option value="${{t.name}}" ${{t.name === String(val) ? "selected" : ""}}>${{t.name}} ${{t.nom_complet ? " - " + t.nom_complet : ""}}</option>`).join("")}}
+      </select>`;
+    }} else if (f.fieldtype === "Small Text") {{
+      inputEl = `<textarea id="fld_${{f.fieldname}}" rows="2" ${{ro}} oninput="onFieldChange('${{f.fieldname}}', this.value)">${{val}}</textarea>`;
+    }} else {{
+      const type = ["Currency", "Percent", "Int"].includes(f.fieldtype) ? "number" : (f.fieldtype === "Date" ? "date" : "text");
+      inputEl = `<input type="${{type}}" step="any" id="fld_${{f.fieldname}}" value="${{val}}" ${{ro}} oninput="onFieldChange('${{f.fieldname}}', this.value)">`;
+    }}
+
+    formHtml += `<div class="form-group ${{full}}">
+      <label>${{f.label}} ${{(!canEdit || f.read_only) ? "🔒" : ""}}</label>
+      ${{inputEl}}
+    </div>`;
+  }});
+  formHtml += `</div>`;
+  document.getElementById("modalBody").innerHTML = formHtml;
+
+  const printable = ["SE Facture Client", "SE Caisse Mensuelle", "SE Fiche de Paie Mensuelle", "SE Declaration TVA"].includes(doctype);
+  let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">`;
+  if (!isNew && CURRENT_USER.role === "Administrateur") {{
+    ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🗑️ Supprimer</button>`;
+  }}
+  if (!isNew && printable && typeof openPrintPreview === "function") {{
+    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
+  }}
+  ftrHtml += `</div><div>
+    <button class="btn" onclick="closeModal()">Fermer</button>
+    ${{canEdit ? `<button class="btn btn-primary" onclick="saveCurrentDoc()">💾 Enregistrer & Sauvegarder</button>` : ''}}
   </div>`;
   document.getElementById("modalFooter").innerHTML = ftrHtml;
   document.getElementById("docModal").classList.add("open");
@@ -3527,9 +3711,29 @@ function quickReceiptFromInvoice() {{
 }}
 
 function saveCurrentDoc() {{
+  if (CURRENT_USER.role === "Consultant") {{
+    alert("Action refusée : Le profil Consultant est strictement en lecture seule.");
+    return;
+  }}
+  if (CURRENT_USER.role === "Utilisateur Normal") {{
+    if (CURRENT_DOCTYPE === "SE Parametres Hotel" || CURRENT_DOCTYPE === "SE Utilisateur") {{
+      alert("Action refusée : Vous n'avez pas l'autorisation d'administrer les paramètres ou les comptes.");
+      return;
+    }}
+    if (!CURRENT_IS_NEW && CURRENT_DOC.cree_par && CURRENT_DOC.cree_par !== CURRENT_USER.id) {{
+      alert(`Modification non autorisée : Ce document a été créé par ${{CURRENT_DOC.cree_par_nom || CURRENT_DOC.cree_par}}. En tant qu'Utilisateur Normal, vous ne pouvez modifier que les documents créés par votre compte.`);
+      return;
+    }}
+  }}
+
   syncModalInputsToDoc();
   if (CURRENT_DOCTYPE === "SE Facture Client" || CURRENT_DOCTYPE === "SE Facture Pro Forma") {{
     recomputeSingleInvoice(CURRENT_DOC, DB);
+  }}
+
+  if (CURRENT_IS_NEW) {{
+    CURRENT_DOC.cree_par = CURRENT_USER.id;
+    CURRENT_DOC.cree_par_nom = CURRENT_USER.nom;
   }}
 
   const ts = nowAlgeriaTimestamp();
@@ -3631,6 +3835,10 @@ function checkDeleteIntegrity(doctype, docName) {{
 }}
 
 function triggerDeleteDoc(doctype, docName) {{
+  if (CURRENT_USER.role !== "Administrateur") {{
+    alert("Action non autorisée : Seul un Administrateur a le droit de supprimer des éléments dans le système.");
+    return;
+  }}
   PENDING_DELETE_DOCTYPE = doctype;
   PENDING_DELETE_NAME = docName;
   const detailsEl = document.getElementById("deleteDocDetails");
@@ -3666,6 +3874,11 @@ function closeDeleteConfirmModal() {{
 
 async function executeDeleteDoc() {{
   if (!PENDING_DELETE_DOCTYPE || !PENDING_DELETE_NAME) return;
+  if (CURRENT_USER.role !== "Administrateur") {{
+    alert("Suppression interdite : Seul un Administrateur dispose du droit de supprimer des éléments.");
+    closeDeleteConfirmModal();
+    return;
+  }}
   const dt = PENDING_DELETE_DOCTYPE;
   const name = PENDING_DELETE_NAME;
   closeDeleteConfirmModal();

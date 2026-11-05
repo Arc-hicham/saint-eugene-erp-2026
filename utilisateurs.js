@@ -1,36 +1,38 @@
 // =============================================================================
 // 👥 LISTE DES UTILISATEURS & MOTS DE PASSE — HÔTEL SAINT EUGÈNE 4★
 // =============================================================================
-// Pour ajouter un utilisateur :
-// 1. Ouvrez ce fichier avec le Bloc-notes (Notepad)
-// 2. Ajoutez une ligne avec : nom, role, et mot_de_passe
-// 3. Enregistrez (Ctrl + S). C'est tout !
+// Exactement 3 Rôles Officiels :
+// 1. Administrateur (Accès Total & Supervision)
+// 2. Utilisateur Normal (Création & Édition de ses propres documents, Sans Suppression)
+// 3. Consultant (Lecture Seule & Impression A4 / PDF)
 // =============================================================================
 
 window.UTILISATEURS_CONFIG = [
   {
+    "id": "USR-001",
+    "name": "USR-001",
+    "identifiant": "admin",
     "nom": "Hicham Bakir",
-    "role": "Contrôle de Gestion / DAF (Hicham Bakir)",
-    "mot_de_passe": "123454321"
+    "role": "Administrateur",
+    "mot_de_passe": "1234",
+    "email": "general.manager@sainteugenehotel.com"
   },
   {
-    "nom": "Direction Générale",
-    "role": "Mahmoudi Massinisa",
-    "mot_de_passe": "massi123"
+    "id": "USR-002",
+    "name": "USR-002",
+    "identifiant": "user1",
+    "nom": "Réception & Facturation",
+    "role": "Utilisateur Normal",
+    "mot_de_passe": "user2026",
+    "email": "reception@sainteugenehotel.com"
   },
   {
-    "nom": "Chef Comptable",
-    "role": "Chef Comptable SCF & Audit",
-    "mot_de_passe": "compta2026"
-  },
-  {
-    "nom": "Réception & Caisses",
-    "role": "Réception & Caisses Hôtel 4★",
-    "mot_de_passe": "reception2026"
-  },
-  {
-    "nom": "Administrateur",
-    "role": "Administrateur Système",
-    "mot_de_passe": "admin"
+    "id": "USR-003",
+    "name": "USR-003",
+    "identifiant": "consultant",
+    "nom": "Audit & Contrôle Financier",
+    "role": "Consultant",
+    "mot_de_passe": "consultant2026",
+    "email": "consultant@sainteugenehotel.com"
   }
 ];
