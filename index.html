@@ -3331,5 +3331,112 @@ populateUsersSelect();
   } catch (e) {}
 })();
 </script>
+  <!-- SUPABASE REAL-TIME ENGINE FOR HÔTEL SAINT EUGÈNE ERP 2026 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+  const SUPABASE_URL = 'https://tlkfhkabsqrpwwjxjzxw.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_AiHJ7ss39KnEkzGu8TcRgg_hZa9MHix';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let isApplyingRemoteUpdate = false;
+
+  // 1. Collect all localStorage keys used by the ERP
+  function getFullLocalState() {
+    const state = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && !key.startsWith('sb-')) {
+        state[key] = localStorage.getItem(key);
+      }
+    }
+    return state;
+  }
+
+  // 2. Push instantaneously to Supabase (<50ms)
+  async function pushToSupabase() {
+    if (isApplyingRemoteUpdate) return;
+    const payload = getFullLocalState();
+    const { error } = await supabase
+      .from('erp_state')
+      .upsert({
+        id: 'exercice_2026',
+        data: payload,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Erreur Supabase:', error.message);
+    } else {
+      console.log('⚡ Synchronisé instantanément sur Supabase');
+    }
+  }
+
+  // 3. Automatically hook into localStorage.setItem so EVERY action saves immediately
+  const originalSetItem = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, value) {
+    originalSetItem(key, value);
+    if (!isApplyingRemoteUpdate && !key.startsWith('sb-')) {
+      pushToSupabase();
+    }
+  };
+
+  // 4. Load the latest data from Supabase when the page opens
+  async function pullFromSupabase() {
+    const { data, error } = await supabase
+      .from('erp_state')
+      .select('data')
+      .eq('id', 'exercice_2026')
+      .single();
+
+    if (!error && data && data.data) {
+      const remoteKeys = Object.keys(data.data);
+      if (remoteKeys.length > 0) {
+        isApplyingRemoteUpdate = true;
+        let hasChanges = false;
+        remoteKeys.forEach(k => {
+          if (localStorage.getItem(k) !== data.data[k]) {
+            originalSetItem(k, data.data[k]);
+            hasChanges = true;
+          }
+        });
+        isApplyingRemoteUpdate = false;
+        if (hasChanges) {
+          window.location.reload(); // Refresh once with the latest cloud state
+        }
+      } else if (localStorage.length > 0) {
+        // First run: upload your existing local ERP data into Supabase
+        pushToSupabase();
+      }
+    }
+  }
+
+  // 5. Listen for live changes from other PCs/Phones in real time
+  supabase
+    .channel('saint-eugene-live')
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'erp_state', filter: 'id=eq.exercice_2026' },
+      (payload) => {
+        if (!payload.new || !payload.new.data) return;
+        isApplyingRemoteUpdate = true;
+        let changed = false;
+        Object.keys(payload.new.data).forEach(k => {
+          if (localStorage.getItem(k) !== payload.new.data[k]) {
+            originalSetItem(k, payload.new.data[k]);
+            changed = true;
+          }
+        });
+        isApplyingRemoteUpdate = false;
+        if (changed && typeof window.renderAll === 'function') {
+          window.renderAll();
+        }
+      }
+    )
+    .subscribe();
+
+  window.addEventListener('DOMContentLoaded', pullFromSupabase);
+})();
+</script>
 </body>
 </html>
