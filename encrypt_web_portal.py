@@ -722,9 +722,7 @@ def main() -> None:
       <input type="password" id="loginPassword" placeholder="Entrez le mot de passe..." required autofocus autocomplete="current-password">
     </div>
     <button type="submit" class="login-btn" id="loginBtn">🔓 Déverrouiller l'Espace Financier</button>
-    <div style="margin-top:12px;text-align:center;">
-      <button type="button" class="btn" style="width:100%;font-size:12px;padding:8px;border-color:#cbd5e1;background:#fff;" onclick="openUsersManagementModal(event)">👥 Gérer les Utilisateurs & Mots de Passe</button>
-    </div>
+
     <div class="login-footer">
       🔒 Données chiffrées de bout en bout • Normes SCF Algérie
     </div>
@@ -855,7 +853,7 @@ def main() -> None:
       </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label>Mot de passe :</label>
-        <input type="password" id="switchUserPassword" value="1234" placeholder="Mot de passe..." style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+        <input type="password" id="switchUserPassword" value="" placeholder="Entrez le mot de passe..." autocomplete="new-password" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
         <div id="switchUserErr" style="display:none;color:#dc2626;font-size:11.5px;margin-top:4px;">⚠️ Mot de passe incorrect</div>
       </div>
       <div id="rolePermsPreview" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px;font-size:11px;color:#334155;line-height:1.45;">
@@ -921,7 +919,7 @@ const BUNDLE_DATA = {bundle_json};
 const ENCRYPTED_BUNDLE = {encrypted_json};
 const GOOGLE_SHEET_ID = "{GOOGLE_SHEET_ID}";
 const GOOGLE_SHEET_URL = "{GOOGLE_SHEET_URL}";
-const STORAGE_KEY = "saint_eugene_erp_2026_db_v7";
+const STORAGE_KEY = "saint_eugene_erp_2026_db_v8";
 const WEBHOOK_KEY = "saint_eugene_gsheet_webhook_url";
 const SESSION_KEY = "saint_eugene_erp_2026_unlocked";
 
@@ -991,6 +989,8 @@ function openSwitchUserModal() {{
     sel.innerHTML = dbUsers.map(u => `<option value="${{u.name || u.id}}" ${{(u.name === CURRENT_USER.id || u.id === CURRENT_USER.id) ? "selected" : ""}}>${{u.nom}} — ${{u.role}}</option>`).join("");
     onSwitchUserSelectChange(sel.value);
   }}
+  const pwdField = document.getElementById("switchUserPassword");
+  if (pwdField) pwdField.value = "";
   document.getElementById("switchUserModal").classList.add("open");
 }}
 
@@ -1004,8 +1004,8 @@ function onSwitchUserSelectChange(val) {{
   const dbUsers = (typeof DB !== "undefined" && DB["SE Utilisateur"]) || getUsersList() || DEFAULT_USERS_LIST;
   const target = dbUsers.find(u => (u.name === val || u.id === val)) || dbUsers[0];
   const pwdInput = document.getElementById("switchUserPassword");
-  if (pwdInput && target) {{
-    pwdInput.value = target.mot_de_passe || "";
+  if (pwdInput) {{
+    pwdInput.value = "";
   }}
   const prev = document.getElementById("rolePermsPreview");
   if (prev && target) {{
@@ -1027,7 +1027,11 @@ function confirmSwitchUser() {{
   const target = dbUsers.find(u => (u.name === sel.value || u.id === sel.value));
 
   if (!target) return;
-  if (pwdInput.value !== target.mot_de_passe && !["1234", "admin", "user2026", "consultant2026", "SaintEugene2026"].includes(pwdInput.value)) {{
+  const typedPwd = (pwdInput.value || "").trim();
+  const isMaster = (typedPwd === "1234");
+  const isUserPwd = (typedPwd === String(target.mot_de_passe || "").trim());
+
+  if (!isMaster && !isUserPwd) {{
     if (errEl) {{
       errEl.style.display = "block";
       errEl.textContent = "⚠️ Mot de passe incorrect pour cet utilisateur.";
@@ -1136,12 +1140,12 @@ function rc4Drop4096Decrypt(keyBytes, cipherBytes) {{
 // 👥 GESTION DES UTILISATEURS & AUTHENTIFICATION — HÔTEL SAINT EUGÈNE 4★
 // =============================================================================
 const DEFAULT_USERS_LIST = [
-  {{ "id": "USR-001", "name": "USR-001", "identifiant": "admin", "nom": "Hicham Bakir", "role": "Administrateur", "mot_de_passe": "1234", "email": "general.manager@sainteugenehotel.com" }},
+  {{ "id": "USR-001", "name": "USR-001", "identifiant": "admin", "nom": "Hicham Bakir", "role": "Administrateur", "mot_de_passe": "123454321", "email": "general.manager@sainteugenehotel.com" }},
   {{ "id": "USR-002", "name": "USR-002", "identifiant": "user1", "nom": "Réception & Facturation", "role": "Utilisateur Normal", "mot_de_passe": "user2026", "email": "reception@sainteugenehotel.com" }},
   {{ "id": "USR-003", "name": "USR-003", "identifiant": "consultant", "nom": "Audit & Contrôle Financier", "role": "Consultant", "mot_de_passe": "consultant2026", "email": "consultant@sainteugenehotel.com" }}
 ];
 
-const MASTER_PASSWORDS = ["1234", "SaintEugene2026", "sainteugene2026", "admin", "admin2026"];
+const MASTER_PASSWORDS = ["1234"];
 
 function getUsersList() {{
   if (typeof window.UTILISATEURS_CONFIG !== "undefined" && Array.isArray(window.UTILISATEURS_CONFIG) && window.UTILISATEURS_CONFIG.length > 0) {{
@@ -1204,7 +1208,7 @@ function renderUsersListTable() {{
             <td style="padding:6px 8px;font-weight:600;">${{u.nom || 'Utilisateur'}}</td>
             <td style="padding:6px 8px;color:#475569;">${{u.role || ''}}</td>
             <td style="padding:6px 8px;">
-              <input type="text" style="padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:12px;width:120px;" value="${{u.mot_de_passe || ''}}" onchange="updateUserPassword(${{idx}}, this.value)">
+              <span style="letter-spacing:2px;font-family:monospace;color:#64748b;">••••••••</span>
             </td>
             <td style="padding:6px 8px;text-align:center;">
               <button type="button" class="btn" style="padding:2px 6px;color:#dc2626;" onclick="deleteUser(${{idx}})" title="Supprimer">✕</button>
@@ -1271,16 +1275,16 @@ function downloadUsersJsFile() {{
 function verifyUserLogin(selectedRole, inputPwd) {{
   if (!inputPwd) return false;
   const p = inputPwd.trim();
-  if (MASTER_PASSWORDS.includes(p) || MASTER_PASSWORDS.map(x => x.toLowerCase()).includes(p.toLowerCase())) {{
-    return true;
-  }}
+  // Seul le code Master universel '1234' ouvre tous les comptes
+  if (p === "1234") return true;
+
   const list = getUsersList();
   const user = list.find(u => u.role === selectedRole);
   if (user) {{
     const userPwd = String(user.mot_de_passe || "").trim();
-    if (p === userPwd || p.toLowerCase() === userPwd.toLowerCase()) return true;
+    if (p === userPwd) return true;
   }}
-  return list.some(u => String(u.mot_de_passe || "").trim().toLowerCase() === p.toLowerCase());
+  return false;
 }}
 
 async function handleUnlock(e) {{
@@ -2217,7 +2221,11 @@ function renderCurrentListView() {{
       }} else if (f.fieldname === "jours_retard") {{
         tds += `<td>${{Number(val) > 0 ? `<span class="pill red">+${{val}} j</span>` : `<span style="color:#94a3b8">0 j</span>`}}</td>`;
       }} else {{
+        if (f.fieldname === "mot_de_passe") {{
+        tds += `<td><span style="letter-spacing:2px;font-family:monospace;color:#64748b;">••••••••</span></td>`;
+      }} else {{
         tds += `<td>${{val ?? "—"}}</td>`;
+      }}
       }}
     }});
     tds += `<td style="font-size:11px;color:#64748b;white-space:nowrap;">${{r.date_modification || "2026-11-03"}}</td>`;

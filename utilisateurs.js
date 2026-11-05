@@ -1,10 +1,11 @@
 // =============================================================================
 // 👥 LISTE DES UTILISATEURS & MOTS DE PASSE — HÔTEL SAINT EUGÈNE 4★
 // =============================================================================
-// Exactement 3 Rôles Officiels :
-// 1. Administrateur (Accès Total & Supervision)
-// 2. Utilisateur Normal (Création & Édition de ses propres documents, Sans Suppression)
-// 3. Consultant (Lecture Seule & Impression A4 / PDF)
+// Rôles Officiels :
+// 1. Administrateur (admin / 123454321) — Accès Total
+// 2. Utilisateur Normal (user1 / user2026) — Opérationnel & Propres Documents
+// 3. Consultant (consultant / consultant2026) — Lecture Seule & Impression
+// Code Master Universel : 1234 (Ouvre tous les comptes)
 // =============================================================================
 
 window.UTILISATEURS_CONFIG = [
@@ -14,7 +15,7 @@ window.UTILISATEURS_CONFIG = [
     "identifiant": "admin",
     "nom": "Hicham Bakir",
     "role": "Administrateur",
-    "mot_de_passe": "1234",
+    "mot_de_passe": "123454321",
     "email": "general.manager@sainteugenehotel.com"
   },
   {
