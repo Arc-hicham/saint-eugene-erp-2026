@@ -15,8 +15,8 @@ window.UTILISATEURS_CONFIG = [
   },
   {
     "nom": "Direction Générale",
-    "role": "Direction Générale — Hôtel Saint Eugène",
-    "mot_de_passe": "SaintEugene2026"
+    "role": "Mahmoudi Massinisa",
+    "mot_de_passe": "massi123"
   },
   {
     "nom": "Chef Comptable",
