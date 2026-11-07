@@ -779,6 +779,7 @@ def main() -> None:
       <div class="topbar-title">
         <span id="viewTitle">Direction Saint Eugène 2026</span>
         <span class="badge-scf">Normes SCF Algérie • DZD</span>
+        <span id="liveTodayBadge" title="Date du jour détectée automatiquement" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;white-space:nowrap;">📅 —</span>
         <span id="liveSyncBadge" onclick="showGoogleSheetBackupCenter()" title="État de la Synchronisation Temps Réel & Sauvegarde Cloud" style="cursor:pointer;background:#dcfce7;color:#15803d;border:1px solid #86efac;font-size:11px;padding:2px 9px;border-radius:999px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">🟢 En ligne & Synchronisé</span>
       </div>
     </div>
@@ -1209,6 +1210,43 @@ function nowAlgeriaTimestamp() {{
   const pad = n => String(n).padStart(2, "0");
   return `${{d.getFullYear()}}-${{pad(d.getMonth() + 1)}}-${{pad(d.getDate())}} ${{pad(d.getHours())}}:${{pad(d.getMinutes())}}:${{pad(d.getSeconds())}}`;
 }}
+
+function todayAlgeriaDate() {{
+  const d = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `${{d.getFullYear()}}-${{pad(d.getMonth() + 1)}}-${{pad(d.getDate())}}`;
+}}
+
+function currentAlgeriaMonth() {{
+  const d = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `${{d.getFullYear()}}-${{pad(d.getMonth() + 1)}}`;
+}}
+
+function addDaysToDateStr(dateStr, days) {{
+  const base = dateStr ? new Date(dateStr + "T12:00:00") : new Date();
+  if (isNaN(base.getTime())) return todayAlgeriaDate();
+  base.setDate(base.getDate() + Number(days || 0));
+  const pad = n => String(n).padStart(2, "0");
+  return `${{base.getFullYear()}}-${{pad(base.getMonth() + 1)}}-${{pad(base.getDate())}}`;
+}}
+
+function updateLiveTodayBadge() {{
+  const el = document.getElementById("liveTodayBadge");
+  if (!el) return;
+  try {{
+    const d = new Date();
+    const formatted = d.toLocaleDateString("fr-FR", {{ weekday: "short", day: "2-digit", month: "short", year: "numeric" }});
+    el.innerHTML = `📅 ${{formatted}} (${{todayAlgeriaDate()}})`;
+  }} catch (e) {{
+    el.innerHTML = `📅 ${{todayAlgeriaDate()}}`;
+  }}
+}}
+window.todayAlgeriaDate = todayAlgeriaDate;
+window.currentAlgeriaMonth = currentAlgeriaMonth;
+window.addDaysToDateStr = addDaysToDateStr;
+setInterval(updateLiveTodayBadge, 30000);
+setTimeout(updateLiveTodayBadge, 50);
 
 function showToast(msg) {{
   const el = document.getElementById("toastBanner");
@@ -1979,7 +2017,7 @@ function computeIrgAlgerie(imposable) {{
 }}
 
 function recomputeSingleInvoice(fac, db) {{
-  const todayStr = "2026-11-03";
+  const todayStr = todayAlgeriaDate();
   const cfg = (db["SE Parametres Hotel"] && db["SE Parametres Hotel"][0]) || {{}};
   const tarifTs = Number(cfg.taxe_sejour_nuitee_adulte || 500);
   const ht = Number(fac.montant_ht || 0);
@@ -2023,7 +2061,7 @@ function recomputeSingleInvoice(fac, db) {{
 }}
 
 function recomputeAllLinks(db) {{
-  const todayStr = "2026-11-03";
+  const todayStr = todayAlgeriaDate();
   const cfg = (db["SE Parametres Hotel"] && db["SE Parametres Hotel"][0]) || {{}};
   const capChambres = Number(cfg.capacite_chambres || 45);
 
@@ -2814,7 +2852,7 @@ function renderCurrentListView() {{
         tds += `<td>${{val ?? "—"}}</td>`;
       }}
     }});
-    tds += `<td style="font-size:11px;color:#64748b;white-space:nowrap;">${{r.date_modification || "2026-11-03"}}</td>`;
+    tds += `<td style="font-size:11px;color:#64748b;white-space:nowrap;">${{r.date_modification || todayAlgeriaDate()}}</td>`;
     const safeName = String(r.name || "").replace(/'/g, "\\'");
     if (canDelete) {{
       tds += `<td style="text-align:center;" onclick="event.stopPropagation();">
@@ -3341,7 +3379,9 @@ function generateNextDocName(doctype) {{
     return `${{prefix}}${{String(maxNum + 1).padStart(5, "0")}}`;
   }}
   if (doctype === "SE Performance Hoteliere") {{
-    return `PERF-2026-11-${{String((rows.length % 28) + 1).padStart(2, "0")}}`;
+    const basePerf = `PERF-${{todayAlgeriaDate()}}`;
+    if (!rows.some(r => r.name === basePerf)) return basePerf;
+    return `${{basePerf}}-${{String(rows.length + 1).padStart(2, "0")}}`;
   }}
   return `${{doctype.replace(/\\s+/g, "-")}}-${{String(rows.length + 1).padStart(4, "0")}}`;
 }}
@@ -3371,19 +3411,23 @@ function openNewDoc(doctype) {{
     cree_par_nom: CURRENT_USER ? CURRENT_USER.nom : "Administrateur"
   }};
 
+  const todayStr = todayAlgeriaDate();
   schema.fields.forEach(f => {{
     if (["Section Break", "Column Break", "Table"].includes(f.fieldtype)) return;
     if (f.default !== undefined && f.default !== "") {{
-      doc[f.fieldname] = f.default === "Today" ? "2026-11-03" : f.default;
+      doc[f.fieldname] = f.default === "Today" ? todayStr : f.default;
     }} else if (f.fieldtype === "Select" && f.options) {{
       const firstOpt = f.options.split("\\n")[0];
       if (firstOpt) doc[f.fieldname] = firstOpt;
     }} else if (["Currency", "Percent", "Int"].includes(f.fieldtype)) {{
       doc[f.fieldname] = 0;
     }} else if (f.fieldtype === "Date") {{
-      doc[f.fieldname] = "2026-11-03";
+      doc[f.fieldname] = todayStr;
     }}
   }});
+  if (doc.mois !== undefined) {{
+    doc.mois = currentAlgeriaMonth();
+  }}
 
   if (doctype === "SE Facture Client" || doctype === "SE Facture Pro Forma") {{
     const firstClient = (DB["SE Client"] || [])[0];
@@ -3391,21 +3435,22 @@ function openNewDoc(doctype) {{
       doc.client = LIST_STATE.entityFilter || firstClient.name;
       doc.type_client = firstClient.type_client || "Corporate";
     }}
-    doc.date_facture = "2026-11-03";
-    doc.date_arrivee = "2026-11-01";
-    doc.date_depart = "2026-11-03";
-    doc.nuitees = 2;
+    doc.date_facture = todayStr;
+    doc.date_arrivee = todayStr;
+    doc.date_depart = addDaysToDateStr(todayStr, 3);
+    doc.nuitees = 3;
     doc.nb_adultes = 1;
     doc.nature_prestation = "Hébergement";
     doc.taux_tva = "9";
     doc.appliquer_taxe_sejour = 1;
     doc.mode_paiement_prevu = "Virement";
-    doc.date_echeance = "2026-12-03";
-    doc.statut = (doctype === "SE Facture Pro Forma") ? "Brouillon" : "Validée";
+    doc.date_echeance = addDaysToDateStr(todayStr, 30);
+    doc.date_validite = addDaysToDateStr(todayStr, 15);
+    doc.statut = (doctype === "SE Facture Pro Forma") ? "Non validée" : "Validée";
     recomputeSingleInvoice(doc, DB);
   }} else if (doctype === "SE Encaissement") {{
     const unpaid = (DB["SE Facture Client"] || []).find(f => Number(f.reste_a_encaisser) > 0) || (DB["SE Facture Client"] || [])[0];
-    doc.date_encaissement = "2026-11-03";
+    doc.date_encaissement = todayStr;
     doc.statut = "Validé";
     if (unpaid) {{
       doc.facture_liee = unpaid.name;
@@ -3419,7 +3464,7 @@ function openNewDoc(doctype) {{
       doc.compte_destination = "BNA Agence Bologhine - DZD";
     }}
   }} else if (doctype === "SE Performance Hoteliere") {{
-    doc.date_jour = "2026-11-03";
+    doc.date_jour = todayStr;
     doc.chambres_disponibles = 45;
     doc.chambres_vendues = 32;
     doc.ca_hebergement = 576000;
@@ -3547,8 +3592,8 @@ function computeInvoiceDocClient(doc, cfg) {{
     doc.sejours = [{{
       sejour_no: 1,
       description: "Séjour Principal",
-      date_arrivee: doc.date_arrivee || "2026-11-04",
-      date_depart: doc.date_depart || "2026-11-07",
+      date_arrivee: doc.date_arrivee || todayAlgeriaDate(),
+      date_depart: doc.date_depart || addDaysToDateStr(doc.date_arrivee || todayAlgeriaDate(), 3),
       nuitees: 3,
       nb_personnes: 1,
       taxe_sejour: 0,
@@ -4039,8 +4084,8 @@ function addInvoiceStay() {{
   CURRENT_DOC.sejours.push({{
     sejour_no: nextNo,
     description: `Séjour #${{nextNo}}`,
-    date_arrivee: CURRENT_DOC.date_facture || "2026-11-04",
-    date_depart: "2026-11-07",
+    date_arrivee: CURRENT_DOC.date_facture || todayAlgeriaDate(),
+    date_depart: addDaysToDateStr(CURRENT_DOC.date_facture || todayAlgeriaDate(), 3),
     nuitees: 3,
     nb_personnes: 1,
     taxe_sejour: 0,
@@ -4154,11 +4199,11 @@ function renderInvoiceModal(doctype, doc, isNew) {{
       </div>
       <div class="form-group">
         <label>Date de Facturation</label>
-        <input type="date" id="inv_date_facture" ${{roAttr}} value="${{doc.date_facture || '2026-11-04'}}" onchange="CURRENT_DOC.date_facture=this.value">
+        <input type="date" id="inv_date_facture" ${{roAttr}} value="${{doc.date_facture || todayAlgeriaDate()}}" onchange="CURRENT_DOC.date_facture=this.value">
       </div>
       <div class="form-group">
         <label>${{isProforma ? 'Date de Validité' : "Date d'Échéance"}}</label>
-        <input type="date" id="inv_date_echeance" ${{roAttr}} value="${{doc.date_echeance || doc.date_validite || '2026-11-25'}}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
+        <input type="date" id="inv_date_echeance" ${{roAttr}} value="${{doc.date_echeance || doc.date_validite || addDaysToDateStr(todayAlgeriaDate(), isProforma ? 15 : 30)}}" onchange="CURRENT_DOC.date_echeance=this.value; CURRENT_DOC.date_validite=this.value;">
       </div>
       ${{isProforma ? `
       <div class="form-group">
@@ -4405,7 +4450,8 @@ function convertProformaToInvoice() {{
     newInvoice.docstatus = 1;
     delete newInvoice.date_validite;
     delete newInvoice.ref_devis;
-    newInvoice.date_echeance = "2026-11-25";
+    newInvoice.date_facture = todayAlgeriaDate();
+    newInvoice.date_echeance = addDaysToDateStr(todayAlgeriaDate(), 30);
     
     renderInvoiceModal("SE Facture Client", newInvoice, true);
   }}
@@ -4491,7 +4537,7 @@ function quickReceiptFromInvoice() {{
   CURRENT_ORIGINAL_DOC = null;
   renderDocModal("SE Encaissement", {{
     name: generateNextDocName("SE Encaissement"),
-    date_encaissement: "2026-11-03",
+    date_encaissement: todayAlgeriaDate(),
     client: inv.client,
     facture_liee: inv.name,
     montant: Number(inv.reste_a_encaisser) > 0 ? inv.reste_a_encaisser : inv.montant_ttc,

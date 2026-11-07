@@ -8,11 +8,24 @@
 (function(){
   "use strict";
 
-  // État local du module RH
+  function rhTodayDate(){
+    if (typeof window.todayAlgeriaDate === "function") return window.todayAlgeriaDate();
+    const d = new Date();
+    const pad = n => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  function rhCurrentMonth(){
+    if (typeof window.currentAlgeriaMonth === "function") return window.currentAlgeriaMonth();
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }
+
+  // État local du module RH (période détectée automatiquement sur le mois en cours)
   window.RH_STATE = {
     activeTab: "dashboard", // "dashboard", "employees", "payroll", "cnas"
     currentEmpId: null,
-    payrollPeriod: "2026-03",
+    payrollPeriod: rhCurrentMonth(),
     filterSearch: "",
     filterSituation: "TOUS" // "TOUS", "Actif", "Sorti", "Non déclaré"
   };
@@ -542,9 +555,14 @@
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
             <select onchange="window.rhChangePeriod(this.value)" style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:700;">
-              <option value="2026-03" ${RH_STATE.payrollPeriod === "2026-03" ? "selected" : ""}>Mars 2026</option>
-              <option value="2026-02" ${RH_STATE.payrollPeriod === "2026-02" ? "selected" : ""}>Février 2026</option>
-              <option value="2026-01" ${RH_STATE.payrollPeriod === "2026-01" ? "selected" : ""}>Janvier 2026</option>
+              ${(() => {
+                const yr = new Date().getFullYear();
+                const mNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+                return mNames.map((mn, i) => {
+                  const val = `${yr}-${String(i + 1).padStart(2, "0")}`;
+                  return `<option value="${val}" ${RH_STATE.payrollPeriod === val ? "selected" : ""}>${mn} ${yr}</option>`;
+                }).reverse().join("");
+              })()}
             </select>
             <button onclick="window.rhCalculerPaieMasse()" style="background:#059669;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;">
               ⚡ Calculer la Paie (${enPosteEmps.length} Salariés en poste)
@@ -759,8 +777,8 @@
       const m = String(e.name || "").match(/(\d+)$/);
       if(m) maxId = Math.max(maxId, parseInt(m[1], 10));
     });
-    const nextMatricule = `EMP-2026-${String(maxId + 1).padStart(4, "0")}`;
-    const todayStr = new Date().toISOString().split("T")[0];
+    const nextMatricule = `EMP-${new Date().getFullYear()}-${String(maxId + 1).padStart(4, "0")}`;
+    const todayStr = rhTodayDate();
 
     modal.innerHTML = `
       <div style="background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
@@ -866,7 +884,7 @@
     const nom = (fd.get("nom") || "").trim();
     const prenom = (fd.get("prenom") || "").trim();
     const salaire = Number(fd.get("salaire_base_contractuel")) || 50000;
-    const dateEntree = fd.get("date_embauche") || new Date().toISOString().split("T")[0];
+    const dateEntree = fd.get("date_embauche") || rhTodayDate();
     const dateSortie = (fd.get("date_sortie") || "").trim();
 
     // Règle automatique : si date_sortie est présente => Situation = Sorti
@@ -920,7 +938,7 @@
     }
     modal.style.display = "flex";
 
-    const dateEntree = e.date_embauche || e.date_entree || e.date_recrutement || new Date().toISOString().split("T")[0];
+    const dateEntree = e.date_embauche || e.date_entree || e.date_recrutement || rhTodayDate();
     const dateSortie = e.date_sortie || "";
     const isEnPoste = rhIsEmployeEnPoste(e);
     const situation = !isEnPoste ? "Sorti" : (e.statut_professionnel || e.situation || "Actif");
