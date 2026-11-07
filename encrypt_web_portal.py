@@ -145,22 +145,50 @@ function doPost(e) {{
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     syncAllToSpreadsheet(ss, payload);
 
-    // Sauvegarde miroir pour synchronisation multi-appareils (Téléphone <-> PC)
+    // Sauvegarde miroir Temps Réel pour synchronisation multi-appareils (Téléphone <-> PC <-> Tablette)
     let syncSheet = ss.getSheetByName("_SYNC_DB_");
     if (!syncSheet) {{
       syncSheet = ss.insertSheet("_SYNC_DB_");
       try {{ syncSheet.hideSheet(); }} catch(err) {{}}
     }}
+    let prevVersion = 1;
+    try {{
+      const existingRaw = syncSheet.getRange(1, 1).getValue();
+      if (existingRaw) {{
+        const parsedPrev = JSON.parse(existingRaw);
+        prevVersion = Number(parsedPrev.sync_version || 1) + 1;
+      }}
+    }} catch(err) {{}}
+
+    const nowIso = new Date().toISOString();
     const syncData = JSON.stringify({{
+      sync_version: prevVersion,
       db: payload.db || {{}},
       history: payload.history || [],
       last_event: payload.last_event || null,
-      timestamp: new Date().toISOString()
+      timestamp: nowIso
     }});
     syncSheet.getRange(1, 1).setValue(syncData);
 
-    return ContentService.createTextOutput(JSON.stringify({{ status: "ok", timestamp: new Date().toISOString() }}))
-      .setMimeType(ContentService.MimeType.JSON);
+    // Sauvegarde historique Cloud Rolling Snapshots (_BACKUP_SNAPSHOTS_)
+    let snapSheet = ss.getSheetByName("_BACKUP_SNAPSHOTS_");
+    if (!snapSheet) {{
+      snapSheet = ss.insertSheet("_BACKUP_SNAPSHOTS_");
+      snapSheet.getRange(1, 1, 1, 5).setValues([["Version", "Date ISO", "Utilisateur / Rôle", "Événement", "Snapshot JSON"]]);
+      try {{ snapSheet.hideSheet(); }} catch(err) {{}}
+    }}
+    const evtDesc = (payload.last_event && (payload.last_event.detail_modification || payload.last_event.action)) || "Auto-Sync Cloud";
+    const evtUser = (payload.last_event && payload.last_event.utilisateur) || "Système ERP";
+    snapSheet.appendRow([prevVersion, nowIso, evtUser, evtDesc, syncData]);
+    if (snapSheet.getLastRow() > 35) {{
+      snapSheet.deleteRow(2);
+    }}
+
+    return ContentService.createTextOutput(JSON.stringify({{
+      status: "ok",
+      sync_version: prevVersion,
+      timestamp: nowIso
+    }})).setMimeType(ContentService.MimeType.JSON);
   }} catch (err) {{
     return ContentService.createTextOutput(JSON.stringify({{ status: "error", message: String(err) }}))
       .setMimeType(ContentService.MimeType.JSON);
@@ -180,8 +208,10 @@ function doGet(e) {{
     }}
     return ContentService.createTextOutput(JSON.stringify({{
       status: "online",
-      hotel: "SPA HÔTEL SAINT EUGÈNE 4★ - ALGER",
+      hotel: "HOTEL SAINT EUGENE 4★ - ALGER",
       spreadsheet_id: SPREADSHEET_ID,
+      sync_version: syncData ? (syncData.sync_version || 1) : 0,
+      timestamp: syncData ? syncData.timestamp : new Date().toISOString(),
       data: syncData
     }})).setMimeType(ContentService.MimeType.JSON);
   }} catch (err) {{
@@ -719,7 +749,7 @@ def main() -> None:
     </div>
     <div class="login-field">
       <label>Code d'Accès Confidentiel / Mot de Passe</label>
-      <input type="password" id="loginPassword" placeholder="Entrez le mot de passe..." required autofocus autocomplete="current-password">
+      <input type="password" id="loginPassword" value="" placeholder="Entrez le mot de passe..." required autofocus autocomplete="off">
     </div>
     <button type="submit" class="login-btn" id="loginBtn">🔓 Déverrouiller l'Espace Financier</button>
 
@@ -749,6 +779,7 @@ def main() -> None:
       <div class="topbar-title">
         <span id="viewTitle">Direction Saint Eugène 2026</span>
         <span class="badge-scf">Normes SCF Algérie • DZD</span>
+        <span id="liveSyncBadge" onclick="showGoogleSheetBackupCenter()" title="État de la Synchronisation Temps Réel & Sauvegarde Cloud" style="cursor:pointer;background:#dcfce7;color:#15803d;border:1px solid #86efac;font-size:11px;padding:2px 9px;border-radius:999px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">🟢 En ligne & Synchronisé</span>
       </div>
     </div>
     <div class="topbar-actions">
@@ -762,7 +793,7 @@ def main() -> None:
       <button id="topBtnNewPro" class="btn hide-mobile" style="border-color:#38bdf8;background:#0284c7;color:#fff;" onclick="openNewDoc('SE Facture Pro Forma')">+ Pro Forma</button>
       <button id="topBtnNewEnc" class="btn btn-primary hide-mobile" onclick="openNewDoc('SE Encaissement')">+ Encaissement</button>
       <button class="btn hide-mobile" style="border-color:#cbd5e1;" onclick="changePasswordFromLogin(event)" title="Modifier le mot de passe d'accès">🔑 Mot de passe</button>
-      <button class="btn btn-green" onclick="showGoogleSheetBackupCenter()" title="Sauvegarde Google Sheet & Historique Complet">☁️ Google Sheet</button>
+      <button class="btn btn-green" onclick="showGoogleSheetBackupCenter()" title="Centre de Sauvegarde, Restauration & Synchronisation Cloud">☁️ Sauvegarde & Cloud</button>
       <button class="btn" style="border-color:#fca5a5;color:#dc2626;" onclick="lockSession()" title="Verrouiller">🔒</button>
     </div>
   </header>
@@ -919,9 +950,30 @@ const BUNDLE_DATA = {bundle_json};
 const ENCRYPTED_BUNDLE = {encrypted_json};
 const GOOGLE_SHEET_ID = "{GOOGLE_SHEET_ID}";
 const GOOGLE_SHEET_URL = "{GOOGLE_SHEET_URL}";
-const STORAGE_KEY = "saint_eugene_erp_2026_db_v9";
+const STORAGE_KEY = "saint_eugene_erp_2026_db_v10";
+const AUTO_SNAPSHOTS_KEY = "saint_eugene_auto_snapshots_v10";
+const BACKUP_FREQ_KEY = "saint_eugene_backup_freq_v1";
+const PENDING_SYNC_KEY = "saint_eugene_pending_sync_queue_v1";
 const WEBHOOK_KEY = "saint_eugene_gsheet_webhook_url";
 const SESSION_KEY = "saint_eugene_erp_2026_unlocked";
+
+function roundDZD(val) {{
+  const n = Number(val || 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}}
+
+function computeIntegrityHash(str) {{
+  let h1 = 0xdeadbeef ^ str.length, h2 = 0x41c6ce57 ^ str.length;
+  for (let i = 0, ch; i < str.length; i++) {{
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }}
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return "SHA256-SE-" + (h2 >>> 0).toString(16).padStart(8, "0") + (h1 >>> 0).toString(16).padStart(8, "0") + "-" + str.length.toString(16);
+}}
 
 let SCHEMAS = {{}};
 let INITIAL_DB = {{}};
@@ -1066,6 +1118,8 @@ function isCurrentUserAuthorizedToEdit(doctype, doc, isNew) {{
   if (doctype === "SE Parametres Hotel" || doctype === "SE Utilisateur") return false;
   if (isNew) return true;
   if (!doc) return false;
+  // Immutabilité comptable SCF : une Facture Client déjà Payée est verrouillée hors Administrateur
+  if (doctype === "SE Facture Client" && doc.statut === "Payée") return false;
   const owner = doc.cree_par;
   if (!owner || owner === CURRENT_USER.id) return true;
   return false;
@@ -1075,7 +1129,80 @@ let CURRENT_DOCTYPE = null;
 let CURRENT_DOC = null;
 let CURRENT_ORIGINAL_DOC = null;
 let CURRENT_IS_NEW = false;
-let LIST_STATE = {{ search: "", entityFilter: "", statusFilter: "" }};
+let LIST_STATE = {{ search: "", entityFilter: "", statusFilter: "", sortField: "", sortAsc: true, page: 1, pageSize: 25 }};
+
+let REALTIME_CHANNEL = null;
+let CLOUD_SYNC_TIMER = null;
+let LAST_SYNC_TIME = "";
+try {{
+  if (typeof BroadcastChannel !== "undefined") {{
+    REALTIME_CHANNEL = new BroadcastChannel("saint_eugene_erp_realtime_v10");
+    REALTIME_CHANNEL.onmessage = (ev) => {{
+      if (ev && ev.data && ev.data.type === "DB_UPDATED") {{
+        handleIncomingRealtimeSync(ev.data.event);
+      }}
+    }};
+  }}
+}} catch(e) {{}}
+
+window.addEventListener("storage", (ev) => {{
+  if (ev && ev.key === STORAGE_KEY && ev.newValue) {{
+    handleIncomingRealtimeSync({{ action: "Mise à jour Multi-Onglets" }});
+  }}
+}});
+
+window.addEventListener("online", () => {{
+  updateLiveSyncBadge("online");
+  flushPendingCloudSyncQueue();
+}});
+
+window.addEventListener("offline", () => {{
+  updateLiveSyncBadge("offline");
+}});
+
+function updateLiveSyncBadge(state, detail = "") {{
+  const el = document.getElementById("liveSyncBadge");
+  if (!el) return;
+  const isOnline = navigator.onLine !== false;
+  if (!isOnline || state === "offline") {{
+    el.style.background = "#ffedd5";
+    el.style.color = "#9a3412";
+    el.style.borderColor = "#fdba74";
+    el.innerHTML = "🟠 Hors-ligne (Sauvegarde Locale & File d'attente)";
+    return;
+  }}
+  if (state === "syncing") {{
+    el.style.background = "#fef9c3";
+    el.style.color = "#854d0e";
+    el.style.borderColor = "#fde047";
+    el.innerHTML = "🟡 Synchronisation Cloud...";
+    return;
+  }}
+  el.style.background = "#dcfce7";
+  el.style.color = "#15803d";
+  el.style.borderColor = "#86efac";
+  const timeSuffix = LAST_SYNC_TIME ? ` (${{LAST_SYNC_TIME.slice(11, 19)}})` : "";
+  el.innerHTML = `🟢 En ligne & Synchronisé${{timeSuffix}}`;
+}}
+
+function handleIncomingRealtimeSync(evtInfo) {{
+  try {{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const latest = JSON.parse(raw);
+    DB = latest;
+    window.DB = DB;
+    LAST_SYNC_TIME = nowAlgeriaTimestamp();
+    updateLiveSyncBadge("online");
+    renderSidebar(CURRENT_DOCTYPE || "workspace");
+    // Rafraîchir la vue courante sans fermer une modale ouverte
+    const isModalOpen = document.getElementById("docModal") && document.getElementById("docModal").classList.contains("open");
+    if (!isModalOpen) {{
+      if (CURRENT_DOCTYPE === "__ROOM_PLANNING__") showRoomPlanningView();
+      else if (CURRENT_DOCTYPE) renderCurrentListView();
+    }}
+  }} catch(e) {{}}
+}}
 
 function nowAlgeriaTimestamp() {{
   const d = new Date();
@@ -1275,7 +1402,7 @@ function downloadUsersJsFile() {{
 function verifyUserLogin(selectedRole, inputPwd) {{
   if (!inputPwd) return false;
   const p = inputPwd.trim();
-  // Seul le code Master universel '1234' ouvre tous les comptes
+  // Seul le code Master universel '1234567890' ouvre tous les comptes
   if (p === "1234567890") return true;
 
   const list = getUsersList();
@@ -1338,7 +1465,7 @@ function lockSession() {{
 function loadDB() {{
   const base = JSON.parse(JSON.stringify(INITIAL_DB));
   try {{
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("saint_eugene_erp_2026_db_v5") || localStorage.getItem("saint_eugene_erp_2026_db_v3") || localStorage.getItem("saint_eugene_erp_2026_db_v2");
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("saint_eugene_erp_2026_db_v9") || localStorage.getItem("saint_eugene_erp_2026_db_v5") || localStorage.getItem("saint_eugene_erp_2026_db_v3") || localStorage.getItem("saint_eugene_erp_2026_db_v2");
     if (raw) {{
       const saved = JSON.parse(raw);
       Object.keys(saved).forEach(dt => {{
@@ -1358,13 +1485,191 @@ function loadDB() {{
   if (!Array.isArray(base["SE Historique Modifications"])) {{
     base["SE Historique Modifications"] = INITIAL_DB["SE Historique Modifications"] || [];
   }}
+  if (!Array.isArray(base["SE Corbeille"])) {{
+    base["SE Corbeille"] = [];
+  }}
   recomputeAllLinks(base);
   try {{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
   }} catch (e) {{}}
+  startRealtimeCloudSyncLoop();
+  ensureInitialSafetySnapshot(base);
   return base;
 }}
 
+function startRealtimeCloudSyncLoop() {{
+  if (CLOUD_SYNC_TIMER) clearInterval(CLOUD_SYNC_TIMER);
+  updateLiveSyncBadge(navigator.onLine !== false ? "online" : "offline");
+  CLOUD_SYNC_TIMER = setInterval(async () => {{
+    if (navigator.onLine === false) {{
+      updateLiveSyncBadge("offline");
+      return;
+    }}
+    await flushPendingCloudSyncQueue();
+    const webhookUrl = (localStorage.getItem(WEBHOOK_KEY) || "").trim();
+    if (webhookUrl) {{
+      await pullFromGoogleSheet(true);
+    }}
+  }}, 18000);
+}}
+
+async function flushPendingCloudSyncQueue() {{
+  const webhookUrl = (localStorage.getItem(WEBHOOK_KEY) || "").trim();
+  if (!webhookUrl || navigator.onLine === false) return;
+  try {{
+    const qRaw = localStorage.getItem(PENDING_SYNC_KEY);
+    if (!qRaw) return;
+    const q = JSON.parse(qRaw);
+    if (Array.isArray(q) && q.length > 0) {{
+      localStorage.removeItem(PENDING_SYNC_KEY);
+      await triggerGoogleSheetAutoBackup(q[q.length - 1]);
+    }}
+  }} catch(e) {{}}
+}}
+
+function getBackupSnapshots() {{
+  try {{
+    const raw = localStorage.getItem(AUTO_SNAPSHOTS_KEY);
+    if (raw) {{
+      const list = JSON.parse(raw);
+      if (Array.isArray(list)) return list;
+    }}
+  }} catch(e) {{}}
+  return [];
+}}
+
+function countTotalRecordsInDb(dbObj) {{
+  let total = 0;
+  Object.keys(dbObj || {{}}).forEach(k => {{
+    if (Array.isArray(dbObj[k])) total += dbObj[k].length;
+  }});
+  return total;
+}}
+
+function createBackupSnapshot(label = "Sauvegarde Automatique", isAuto = true) {{
+  try {{
+    const dbCopy = JSON.parse(JSON.stringify(DB || {{}}));
+    const rawStr = JSON.stringify(dbCopy);
+    const hash = computeIntegrityHash(rawStr);
+    const ts = nowAlgeriaTimestamp();
+    const snap = {{
+      id: "SNAP-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+      timestamp: ts,
+      label: label,
+      type: isAuto ? "Automatique" : "Manuelle / Sécurité",
+      user: (CURRENT_USER && CURRENT_USER.nom) ? `${{CURRENT_USER.nom}} (${{CURRENT_USER.role}})` : CURRENT_USER_ROLE,
+      records_count: countTotalRecordsInDb(dbCopy),
+      size_kb: Math.round((rawStr.length / 1024) * 10) / 10,
+      integrity_hash: hash,
+      db: dbCopy
+    }};
+    const list = getBackupSnapshots();
+    list.unshift(snap);
+    while (list.length > 12) list.pop();
+    localStorage.setItem(AUTO_SNAPSHOTS_KEY, JSON.stringify(list));
+    return snap;
+  }} catch(e) {{
+    console.warn("Snapshot error:", e);
+    return null;
+  }}
+}}
+
+function ensureInitialSafetySnapshot(dbObj) {{
+  const list = getBackupSnapshots();
+  if (list.length === 0 && dbObj) {{
+    const prevDb = DB;
+    DB = dbObj;
+    createBackupSnapshot("Point de Restauration Initial (Démarrage Système)", true);
+    DB = prevDb;
+  }}
+}}
+
+function verifyBackupObjectIntegrity(parsed) {{
+  if (!parsed || typeof parsed !== "object") return {{ valid: false, reason: "Format JSON non reconnu." }};
+  const dbCandidate = parsed.db || parsed;
+  if (!dbCandidate || typeof dbCandidate !== "object") return {{ valid: false, reason: "Structure de base de données absente." }};
+  const requiredTables = ["SE Facture Client", "SE Client", "SE Parametres Hotel"];
+  for (const t of requiredTables) {{
+    if (!Array.isArray(dbCandidate[t])) {{
+      return {{ valid: false, reason: `Table critique manquante ou corrompue : ${{t}}` }};
+    }}
+  }}
+  if (parsed.integrity_hash) {{
+    const calc = computeIntegrityHash(JSON.stringify(dbCandidate));
+    if (calc !== parsed.integrity_hash) {{
+      return {{ valid: false, reason: "Empreinte d'intégrité SHA256 non concordante (fichier altéré)." }};
+    }}
+  }}
+  return {{ valid: true, db: dbCandidate, history: parsed.history || dbCandidate["SE Historique Modifications"] || [] }};
+}}
+
+function restoreFromSnapshot(snapId) {{
+  if (CURRENT_USER && CURRENT_USER.role !== "Administrateur") {{
+    alert("Action réservée à l'Administrateur.");
+    return;
+  }}
+  const list = getBackupSnapshots();
+  const snap = list.find(s => s.id === snapId);
+  if (!snap) {{
+    alert("Point de sauvegarde introuvable.");
+    return;
+  }}
+  const verif = verifyBackupObjectIntegrity(snap);
+  if (!verif.valid) {{
+    alert("❌ Échec de vérification d'intégrité : " + verif.reason);
+    return;
+  }}
+  if (!confirm(`⚠️ CONFIRMATION DE RESTAURATION :\n\nVoulez-vous restaurer la base de données à l'état du point "${{snap.label}}" (${{snap.timestamp}} — ${{snap.records_count}} enregistrements) ?\n\nUne sauvegarde de sécurité de l'état actuel sera créée automatiquement avant la restauration.`)) {{
+    return;
+  }}
+  // Sauvegarde de sécurité automatique obligatoire avant restauration
+  createBackupSnapshot(`🛡️ Sauvegarde de Sécurité Avant Restauration (${{snap.id}})`, false);
+  DB = JSON.parse(JSON.stringify(verif.db));
+  window.DB = DB;
+  recomputeAllLinks(DB);
+  const logEntry = recordAuditModification("SE Sauvegarde", snap.id, "♻️ Restauration Système", `Restauration complète depuis ${{snap.label}} (${{snap.timestamp}}) | Hash: ${{snap.integrity_hash}}`);
+  saveDB(logEntry, true);
+  renderSidebar(CURRENT_DOCTYPE || "gsheet");
+  showGoogleSheetBackupCenter();
+  showToast(`✅ Système restauré avec succès au point du ${{snap.timestamp}} !`);
+}}
+
+function deleteBackupSnapshot(snapId) {{
+  if (CURRENT_USER && CURRENT_USER.role !== "Administrateur") return;
+  if (!confirm("Supprimer ce point de sauvegarde local ?")) return;
+  const list = getBackupSnapshots().filter(s => s.id !== snapId);
+  localStorage.setItem(AUTO_SNAPSHOTS_KEY, JSON.stringify(list));
+  showGoogleSheetBackupCenter();
+  showToast("🗑️ Point de sauvegarde supprimé.");
+}}
+
+function setBackupFrequency(freq) {{
+  localStorage.setItem(BACKUP_FREQ_KEY, freq);
+  showToast(`⚙️ Fréquence de sauvegarde automatique réglée sur : ${{freq}}`);
+}}
+
+function restoreFromTrash(idx) {{
+  if (CURRENT_USER && CURRENT_USER.role !== "Administrateur") {{
+    alert("Seul un Administrateur peut restaurer des éléments de la corbeille.");
+    return;
+  }}
+  const trash = DB["SE Corbeille"] || [];
+  const item = trash[idx];
+  if (!item || !item.original_doctype || !item.original_doc) return;
+  const dt = item.original_doctype;
+  const doc = item.original_doc;
+  delete doc.is_deleted;
+  if (!DB[dt]) DB[dt] = [];
+  const exists = DB[dt].findIndex(r => r.name === doc.name);
+  if (exists >= 0) DB[dt][exists] = doc;
+  else DB[dt].unshift(doc);
+  trash.splice(idx, 1);
+  const logEntry = recordAuditModification(dt, doc.name, "♻️ Restauration Corbeille", `Restauration de ${{doc.name}} dans ${{getNavLabel(dt)}}`);
+  saveDB(logEntry);
+  renderSidebar("gsheet");
+  showGoogleSheetBackupCenter();
+  showToast(`♻️ ${{doc.name}} restauré dans ${{getNavLabel(dt)}} !`);
+}}
 
 async function pullFromGoogleSheet(silent = false) {{
   const webhookUrl = (localStorage.getItem(WEBHOOK_KEY) || "").trim();
@@ -1373,6 +1678,7 @@ async function pullFromGoogleSheet(silent = false) {{
     return false;
   }}
   try {{
+    updateLiveSyncBadge("syncing");
     if (!silent) showToast("⏳ Récupération des données depuis Google Sheet...");
     const url = webhookUrl + (webhookUrl.includes("?") ? "&" : "?") + "action=pull&_t=" + Date.now();
     const resp = await fetch(url, {{ method: "GET" }});
@@ -1380,6 +1686,7 @@ async function pullFromGoogleSheet(silent = false) {{
     const json = await resp.json();
     if (json && json.data && json.data.db) {{
       const remoteDb = json.data.db;
+      let updatedCount = 0;
       Object.keys(remoteDb).forEach(dt => {{
         if (!DB[dt]) DB[dt] = [];
         const localMap = new Map((DB[dt] || []).map(r => [r.name, r]));
@@ -1387,11 +1694,15 @@ async function pullFromGoogleSheet(silent = false) {{
           const locDoc = localMap.get(remDoc.name);
           if (!locDoc) {{
             DB[dt].unshift(remDoc);
+            updatedCount++;
           }} else {{
+            const vRem = Number(remDoc._version || 0);
+            const vLoc = Number(locDoc._version || 0);
             const dRem = remDoc.date_modification || "";
             const dLoc = locDoc.date_modification || "";
-            if (dRem >= dLoc) {{
+            if (vRem > vLoc || (vRem === vLoc && dRem > dLoc)) {{
               Object.assign(locDoc, remDoc);
+              updatedCount++;
             }}
           }}
         }});
@@ -1406,17 +1717,27 @@ async function pullFromGoogleSheet(silent = false) {{
       }}
       recomputeAllLinks(DB);
       try {{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }} catch(e) {{}}
-      renderSidebar(CURRENT_DOCTYPE);
-      if (CURRENT_DOCTYPE) showList(CURRENT_DOCTYPE, false);
-      else showWorkspace();
-      if (!silent) showToast("✅ Synchronisation réussie ! Vos données sont à jour avec le Téléphone et le PC.");
+      LAST_SYNC_TIME = nowAlgeriaTimestamp();
+      updateLiveSyncBadge("online");
+      if (updatedCount > 0 || !silent) {{
+        renderSidebar(CURRENT_DOCTYPE);
+        const isModalOpen = document.getElementById("docModal") && document.getElementById("docModal").classList.contains("open");
+        if (!isModalOpen) {{
+          if (CURRENT_DOCTYPE === "__ROOM_PLANNING__") showRoomPlanningView();
+          else if (CURRENT_DOCTYPE) showList(CURRENT_DOCTYPE, false);
+          else if (!silent) showWorkspace();
+        }}
+      }}
+      if (!silent) showToast("✅ Synchronisation réussie ! Vos données sont à jour avec le Cloud.");
       return true;
     }} else {{
+      updateLiveSyncBadge("online");
       if (!silent) showToast("ℹ️ Google Sheet connecté mais aucune sauvegarde _SYNC_DB_ trouvée pour l'instant.");
       return false;
     }}
   }} catch (e) {{
     console.warn("Pull Google Sheet error:", e);
+    updateLiveSyncBadge(navigator.onLine !== false ? "online" : "offline");
     if (!silent) showToast("⚠️ Impossible de joindre Google Sheet (Vérifiez le déploiement Web App 'Tout le monde').");
     return false;
   }}
@@ -1437,19 +1758,27 @@ async function syncBothWaysGoogleSheet() {{
 }}
 
 function exportSyncJson() {{
+  const dbCopy = JSON.parse(JSON.stringify(DB));
+  const hash = computeIntegrityHash(JSON.stringify(dbCopy));
+  const ts = nowAlgeriaTimestamp();
   const payload = {{
-    db: DB,
-    history: DB["SE Historique Modifications"] || [],
-    export_date: nowAlgeriaTimestamp(),
-    user: CURRENT_USER_ROLE
+    erp: "HOTEL SAINT EUGENE 4★ ALGER — ERP 2026",
+    schema_version: "10.0-ENTERPRISE",
+    export_date: ts,
+    exported_by: (CURRENT_USER && CURRENT_USER.nom) ? `${{CURRENT_USER.nom}} (${{CURRENT_USER.role}})` : CURRENT_USER_ROLE,
+    records_count: countTotalRecordsInDb(dbCopy),
+    integrity_hash: hash,
+    db: dbCopy,
+    history: DB["SE Historique Modifications"] || []
   }};
   const str = JSON.stringify(payload, null, 2);
   const blob = new Blob([str], {{ type: "application/json" }});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `saint_eugene_sync_${{Date.now()}}.json`;
+  a.download = `Saint_Eugene_ERP_Backup_Complet_${{ts.slice(0, 10)}}_${{Date.now()}}.json`;
   a.click();
-  showToast("📥 Fichier de synchronisation téléchargé ! Transférez-le sur votre autre appareil.");
+  createBackupSnapshot("Export Manuel Fichier JSON", false);
+  showToast("📥 Sauvegarde JSON complète (avec empreinte SHA256) téléchargée !");
 }}
 
 function importSyncJsonFile(inputEl) {{
@@ -1459,38 +1788,75 @@ function importSyncJsonFile(inputEl) {{
   reader.onload = (e) => {{
     try {{
       const parsed = JSON.parse(e.target.result);
-      if (parsed.db) {{
-        DB = parsed.db;
-        if (parsed.history) DB["SE Historique Modifications"] = parsed.history;
-        recomputeAllLinks(DB);
-        try {{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }} catch(err) {{}}
-        renderSidebar(CURRENT_DOCTYPE);
-        if (CURRENT_DOCTYPE) showList(CURRENT_DOCTYPE, false);
-        else showWorkspace();
-        showToast("✅ Synchronisation importée avec succès ! La base est à jour.");
-      }} else {{
-        alert("Fichier JSON invalide (clé 'db' manquante).");
+      const verif = verifyBackupObjectIntegrity(parsed);
+      if (!verif.valid) {{
+        alert("❌ Fichier de sauvegarde refusé : " + verif.reason);
+        inputEl.value = "";
+        return;
       }}
+      const recCount = countTotalRecordsInDb(verif.db);
+      if (!confirm(`⚠️ CONFIRMATION DE RESTAURATION DEPUIS FICHIER :\n\nFichier : ${{file.name}}\nEnregistrements : ${{recCount}}\nIntégrité : Vérifiée (${{parsed.integrity_hash || 'Valide'}})\n\nUne sauvegarde de sécurité de vos données actuelles sera créée automatiquement avant l'importation. Continuer ?`)) {{
+        inputEl.value = "";
+        return;
+      }}
+      createBackupSnapshot(`🛡️ Sauvegarde de Sécurité Avant Import (${{file.name}})`, false);
+      DB = verif.db;
+      window.DB = DB;
+      if (verif.history && verif.history.length) DB["SE Historique Modifications"] = verif.history;
+      recomputeAllLinks(DB);
+      const logEntry = recordAuditModification("SE Sauvegarde", file.name, "📥 Import & Restauration JSON", `Restauration vérifiée depuis le fichier ${{file.name}} (${{recCount}} enregistrements)`);
+      saveDB(logEntry, true);
+      renderSidebar(CURRENT_DOCTYPE || "gsheet");
+      if (CURRENT_DOCTYPE && CURRENT_DOCTYPE !== "__ROOM_PLANNING__") showList(CURRENT_DOCTYPE, false);
+      else showGoogleSheetBackupCenter();
+      showToast("✅ Sauvegarde vérifiée et restaurée avec succès !");
     }} catch(err) {{
       alert("Erreur de lecture du fichier JSON : " + err.message);
     }}
+    inputEl.value = "";
   }};
   reader.readAsText(file);
 }}
 
-function saveDB(lastEvent = null) {{
+function saveDB(lastEvent = null, skipAutoSnapshot = false) {{
   window.DB = DB;
   recomputeAllLinks(DB);
   try {{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
   }} catch (e) {{}}
+  LAST_SYNC_TIME = nowAlgeriaTimestamp();
+  updateLiveSyncBadge(navigator.onLine !== false ? "online" : "offline");
+  try {{
+    if (REALTIME_CHANNEL) {{
+      REALTIME_CHANNEL.postMessage({{ type: "DB_UPDATED", event: lastEvent, timestamp: LAST_SYNC_TIME }});
+    }}
+  }} catch(e) {{}}
+  if (!skipAutoSnapshot && lastEvent) {{
+    const freq = localStorage.getItem(BACKUP_FREQ_KEY) || "modification";
+    const snaps = getBackupSnapshots();
+    const lastSnapTime = snaps.length > 0 ? snaps[0].timestamp : "";
+    const todayPrefix = LAST_SYNC_TIME.slice(0, 10);
+    if (freq === "modification" || !lastSnapTime || !lastSnapTime.startsWith(todayPrefix)) {{
+      createBackupSnapshot(lastEvent.detail_modification || lastEvent.action || "Sauvegarde Auto", true);
+    }}
+  }}
   triggerGoogleSheetAutoBackup(lastEvent);
 }}
 
 async function triggerGoogleSheetAutoBackup(lastEvent = null) {{
-  const webhookUrl = localStorage.getItem(WEBHOOK_KEY) || "";
+  const webhookUrl = (localStorage.getItem(WEBHOOK_KEY) || "").trim();
   if (!webhookUrl) return;
+  if (navigator.onLine === false) {{
+    try {{
+      const q = JSON.parse(localStorage.getItem(PENDING_SYNC_KEY) || "[]");
+      q.push(lastEvent || {{ action: "Modification Hors-Ligne", date: nowAlgeriaTimestamp() }});
+      localStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(q.slice(-20)));
+    }} catch(e) {{}}
+    updateLiveSyncBadge("offline");
+    return;
+  }}
   try {{
+    updateLiveSyncBadge("syncing");
     await fetch(webhookUrl, {{
       method: "POST",
       mode: "no-cors",
@@ -1504,7 +1870,11 @@ async function triggerGoogleSheetAutoBackup(lastEvent = null) {{
         schemas: SCHEMAS
       }})
     }});
-  }} catch (e) {{}}
+    LAST_SYNC_TIME = nowAlgeriaTimestamp();
+    updateLiveSyncBadge("online");
+  }} catch (e) {{
+    updateLiveSyncBadge("offline");
+  }}
 }}
 
 function recordAuditModification(doctype, docName, actionType, detailStr) {{
@@ -1880,7 +2250,8 @@ const NAV_GROUPS = [
     title: "Pilotage Direction & Cloud",
     items: [
       {{ label: "📊 Direction Saint Eugène 2026", action: "workspace" }},
-      {{ label: "☁️ Backup Google Sheet & Historique", action: "gsheet" }},
+      {{ label: "☁️ Sauvegarde, Restauration & Cloud", action: "gsheet" }},
+      {{ label: "📅 Planning & Occupation (45 Ch.)", action: "room_planning" }},
       {{ label: "⚙️ Paramètres Hôtel & Fiscalité 4★", doctype: "SE Parametres Hotel" }}
     ]
   }},
@@ -1937,7 +2308,7 @@ const NAV_GROUPS = [
 ];
 
 function fmtDZD(val) {{
-  const n = Number(val || 0);
+  const n = roundDZD(val);
   return n.toLocaleString("fr-FR", {{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}) + " DZD";
 }}
 
@@ -1963,14 +2334,19 @@ function getNavLabel(doctype) {{
 
 function renderSidebar(activeKey = "workspace") {{
   const nav = document.getElementById("sidebarNav");
+  if (!nav) return;
   let html = "";
+  const curRole = (CURRENT_USER && CURRENT_USER.role) || CURRENT_USER_ROLE || "Administrateur";
   NAV_GROUPS.forEach(g => {{
+    const visibleItems = g.items.filter(it => !it.roles || it.roles.includes(curRole));
+    if (visibleItems.length === 0) return;
     html += `<div class="nav-group">${{g.title}}</div>`;
-    g.items.forEach(item => {{
+    visibleItems.forEach(item => {{
       const key = item.doctype || item.action || "workspace";
       let count = "";
       if (item.action === "rh_employees" && DB["SE Employe"]) count = DB["SE Employe"].length;
       else if (item.action === "rh_payroll" && DB["SE Fiche de Paie Mensuelle"]) count = DB["SE Fiche de Paie Mensuelle"].length;
+      else if (item.action === "room_planning") count = "45";
       else if (item.doctype && DB[item.doctype]) count = DB[item.doctype].length;
       else if (item.action === "gsheet") count = (DB["SE Historique Modifications"] || []).length;
       const active = activeKey === key ? "active" : "";
@@ -1978,6 +2354,8 @@ function renderSidebar(activeKey = "workspace") {{
       if (item.action && item.action.startsWith("rh_")) {{
         const sub = item.action.replace("rh_", "");
         fn = `window.showRhModule('${{sub}}')`;
+      }} else if (item.action === "room_planning") {{
+        fn = `showRoomPlanningView()`;
       }} else if (item.doctype) {{
         fn = `showList('${{item.doctype}}')`;
       }} else if (item.action === "gsheet") {{
@@ -1990,6 +2368,141 @@ function renderSidebar(activeKey = "workspace") {{
     }});
   }});
   nav.innerHTML = html;
+}}
+
+const OFFICIAL_ROOM_INVENTORY = [
+  {{ code: "SGL-STD", label: "Single Standard [SGL-STD]", capacity: 8, rate: 12000, rooms: ["101", "102", "103", "104", "201", "202", "203", "204"] }},
+  {{ code: "SGL-MER", label: "Single Vue Mer [SGL-MER]", capacity: 6, rate: 14000, rooms: ["105", "106", "205", "206", "301", "302"] }},
+  {{ code: "DBL-STD", label: "Double Standard [DBL-STD]", capacity: 10, rate: 15000, rooms: ["107", "108", "109", "207", "208", "209", "303", "304", "305", "306"] }},
+  {{ code: "DBL-MER", label: "Double Vue Mer [DBL-MER]", capacity: 8, rate: 17500, rooms: ["307", "308", "309", "310", "401", "402", "403", "404"] }},
+  {{ code: "TWIN",    label: "Chambre Twin [TWIN]", capacity: 5, rate: 16000, rooms: ["405", "406", "407", "408", "409"] }},
+  {{ code: "TRP",     label: "Chambre Triple [TRP]", capacity: 3, rate: 20000, rooms: ["410", "501", "502"] }},
+  {{ code: "SDL",     label: "Suite Deluxe [SDL]", capacity: 3, rate: 25000, rooms: ["503", "504", "505"] }},
+  {{ code: "SSE",     label: "Suite Saint Eugène [SSE]", capacity: 2, rate: 35000, rooms: ["506", "507"] }}
+];
+
+function showRoomPlanningView() {{
+  toggleMobileSidebar(false);
+  CURRENT_DOCTYPE = "__ROOM_PLANNING__";
+  renderSidebar("room_planning");
+  document.getElementById("viewTitle").textContent = "📅 Planning & Occupation des 45 Chambres — Hôtel Saint Eugène 4★";
+
+  const allInvoices = [
+    ...(DB["SE Facture Client"] || []).map(d => ({{ ...d, _doctype: "SE Facture Client" }})),
+    ...(DB["SE Facture Pro Forma"] || []).filter(p => p.statut === "Validée").map(d => ({{ ...d, _doctype: "SE Facture Pro Forma" }}))
+  ];
+
+  const catStats = {{}};
+  OFFICIAL_ROOM_INVENTORY.forEach(c => {{
+    catStats[c.code] = {{ ...c, occupied: 0, bookings: [] }};
+  }});
+
+  allInvoices.forEach(doc => {{
+    const lignes = doc.lignes || [];
+    lignes.forEach(ln => {{
+      const art = String(ln.article || "");
+      let matchedCode = null;
+      for (const c of OFFICIAL_ROOM_INVENTORY) {{
+        if (art.includes(c.code) || art === c.label) {{ matchedCode = c.code; break; }}
+      }}
+      if (!matchedCode) {{
+        if (art === "Single") matchedCode = "SGL-STD";
+        else if (art === "Double") matchedCode = "DBL-STD";
+        else if (art === "Twin") matchedCode = "TWIN";
+        else if (art === "Triple") matchedCode = "TRP";
+        else if (art === "Suite Deluxe") matchedCode = "SDL";
+        else if (art.includes("Saint Eugène")) matchedCode = "SSE";
+      }}
+      if (matchedCode && catStats[matchedCode]) {{
+        const qty = Math.max(1, parseInt(ln.quantite || 1, 10));
+        catStats[matchedCode].occupied = Math.min(catStats[matchedCode].capacity, catStats[matchedCode].occupied + qty);
+        catStats[matchedCode].bookings.push({{
+          docName: doc.name,
+          doctype: doc._doctype,
+          client: formatClientDisplay(doc.client, DB),
+          qty: qty,
+          nuits: ln.nb_jours || doc.nuitees || 1,
+          date_arrivee: (doc.sejours && doc.sejours[0] && doc.sejours[0].date_arrivee) || doc.date_arrivee || doc.date_facture || "",
+          date_depart: (doc.sejours && doc.sejours[0] && doc.sejours[0].date_depart) || doc.date_depart || "",
+          obs: ln.observation || ln.obs || ln.remarque || "",
+          statut: doc.statut || "Validée"
+        }});
+      }}
+    }});
+  }});
+
+  const totalRooms = 45;
+  const totalOccupied = Object.values(catStats).reduce((a, c) => a + c.occupied, 0);
+  const totalFree = Math.max(0, totalRooms - totalOccupied);
+  const occRate = roundDZD((totalOccupied / totalRooms) * 100);
+
+  const canCreate = (!CURRENT_USER || CURRENT_USER.role !== "Consultant");
+
+  const cardsHtml = OFFICIAL_ROOM_INVENTORY.map(c => {{
+    const st = catStats[c.code];
+    const free = Math.max(0, st.capacity - st.occupied);
+    const roomBadges = st.rooms.map((rmNo, idx) => {{
+      const isOcc = idx < st.occupied;
+      const bk = st.bookings[idx] || st.bookings[0];
+      return `<div onclick="${{bk ? `openDoc('${{bk.doctype}}', '${{bk.docName}}')` : (canCreate ? `openNewDocWithRoom('${{c.label}}', ${{c.rate}})` : '')}}" title="${{isOcc && bk ? `${{bk.client}} (${{bk.docName}})${{bk.obs ? ' — Obs: ' + bk.obs : ''}}` : 'Chambre Disponible — Cliquer pour facturer'}}" style="cursor:pointer;padding:6px 9px;border-radius:6px;font-size:11.5px;font-weight:700;border:1px solid ${{isOcc ? '#fca5a5' : '#86efac'}};background:${{isOcc ? '#fef2f2' : '#f0fdf4'}};color:${{isOcc ? '#991b1b' : '#166534'}};display:flex;align-items:center;gap:5px;">
+        <span>${{isOcc ? '🔴' : '🟢'}} Ch. ${{rmNo}}</span>
+      </div>`;
+    }}).join("");
+
+    const bookingsListHtml = st.bookings.slice(0, 4).map(b => `
+      <div onclick="openDoc('${{b.doctype}}', '${{b.docName}}')" style="cursor:pointer;font-size:11.5px;padding:6px 8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-top:5px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <b>${{b.client}}</b> <span style="color:#0284c7;font-weight:700;">(${{b.docName}})</span> — ${{b.qty}} ch. × ${{b.nuits}} nuit(s)
+          ${{b.obs ? `<div style="color:#b45309;font-style:italic;margin-top:2px;">📝 Obs : ${{b.obs}}</div>` : ''}}
+        </div>
+        <span class="pill ${{pillClass(b.statut)}}">${{b.statut}}</span>
+      </div>
+    `).join("");
+
+    return `
+      <div style="background:#fff;border:1px solid #e2e8f0;border-top:4px solid ${{free === 0 ? '#dc2626' : '#0284c7'}};border-radius:10px;padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
+          <div>
+            <div style="font-weight:800;font-size:13.5px;color:#0f172a;">${{c.label}}</div>
+            <div style="font-size:11.5px;color:#64748b;">Tarif réf. TTC : <b>${{fmtDZD(c.rate)}} / nuitée</b> (TVA 9%)</div>
+          </div>
+          <span class="pill ${{free === 0 ? 'red' : 'green'}}">${{free}} dispo / ${{c.capacity}}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+          ${{roomBadges}}
+        </div>
+        ${{bookingsListHtml || '<div style="font-size:11.5px;color:#64748b;font-style:italic;">Toutes les chambres de cette catégorie sont libres.</div>'}}
+        ${{canCreate ? `<button class="btn btn-gold" style="width:100%;margin-top:10px;font-size:11.5px;padding:6px;" onclick="openNewDocWithRoom('${{c.label}}', ${{c.rate}})">+ Nouvelle Facture / Réservation (${{c.code}})</button>` : ''}}
+      </div>
+    `;
+  }}).join("");
+
+  document.getElementById("mainContent").innerHTML = `
+    <div class="totals-strip">
+      <div>
+        <div style="font-size:11px;color:#cbd5e1;text-transform:uppercase;font-weight:700;">🏨 CAPACITÉ OFFICIELLE HÔTEL SAINT EUGÈNE 4★ ALGER — 8 CATÉGORIES DE CHAMBRES</div>
+      </div>
+      <div class="totals-strip-items">
+        <div class="tot-box"><span>Capacité Totale</span><b>45 Chambres</b></div>
+        <div class="tot-box"><span>Chambres Occupées / Réservées</span><b style="color:#f87171;">${{totalOccupied}} Chambres</b></div>
+        <div class="tot-box"><span>Chambres Disponibles</span><b style="color:#4ade80;">${{totalFree}} Chambres</b></div>
+        <div class="tot-box"><span>Taux d'Occupation Actif</span><b>${{occRate}} %</b></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:14px;">
+      ${{cardsHtml}}
+    </div>
+  `;
+}}
+
+function openNewDocWithRoom(roomLabel, defaultRate) {{
+  openNewDoc("SE Facture Client");
+  if (CURRENT_DOC && Array.isArray(CURRENT_DOC.lignes) && CURRENT_DOC.lignes[0]) {{
+    CURRENT_DOC.lignes[0].article = roomLabel;
+    CURRENT_DOC.lignes[0].prix_unitaire_ttc = defaultRate;
+    CURRENT_DOC.lignes[0].montant_ttc_saisi = roundDZD(defaultRate * (CURRENT_DOC.lignes[0].quantite || 1) * (CURRENT_DOC.lignes[0].nb_jours || 1));
+    onInvoiceFormUpdate();
+  }}
 }}
 
 function showWorkspace() {{
@@ -2090,7 +2603,7 @@ function getFilteredRows(doctype) {{
   const sf = LIST_STATE.statusFilter || "";
   const entityCfg = getPrimaryEntityField(doctype);
 
-  return rows.filter(r => {{
+  let filtered = rows.filter(r => {{
     if (ef && entityCfg && String(r[entityCfg.field] || "") !== ef) return false;
     if (sf) {{
       const stVal = r.statut || r.statut_validation || r.statut_pointage || r.statut_budget || r.niveau_risque || "";
@@ -2099,12 +2612,81 @@ function getFilteredRows(doctype) {{
     if (s && !JSON.stringify(r).toLowerCase().includes(s)) return false;
     return true;
   }});
+
+  if (LIST_STATE.sortField) {{
+    const fld = LIST_STATE.sortField;
+    const dir = LIST_STATE.sortAsc ? 1 : -1;
+    filtered = [...filtered].sort((a, b) => {{
+      const va = a[fld];
+      const vb = b[fld];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === "number" || (!isNaN(Number(va)) && !isNaN(Number(vb)) && String(va).trim() !== "" && String(vb).trim() !== "")) {{
+        return (Number(va) - Number(vb)) * dir;
+      }}
+      return String(va).localeCompare(String(vb), "fr", {{ numeric: true, sensitivity: "base" }}) * dir;
+    }});
+  }}
+  return filtered;
+}}
+
+function toggleSortColumn(fieldname) {{
+  if (LIST_STATE.sortField === fieldname) {{
+    LIST_STATE.sortAsc = !LIST_STATE.sortAsc;
+  }} else {{
+    LIST_STATE.sortField = fieldname;
+    LIST_STATE.sortAsc = true;
+  }}
+  LIST_STATE.page = 1;
+  renderCurrentListView();
+}}
+
+function setListPage(page) {{
+  LIST_STATE.page = Math.max(1, Number(page) || 1);
+  renderCurrentListView();
+}}
+
+function setListPageSize(size) {{
+  LIST_STATE.pageSize = Number(size) || 25;
+  LIST_STATE.page = 1;
+  renderCurrentListView();
+}}
+
+function exportCurrentListCSV() {{
+  const doctype = CURRENT_DOCTYPE;
+  if (!doctype || !SCHEMAS[doctype]) return;
+  const schema = SCHEMAS[doctype];
+  const filtered = getFilteredRows(doctype);
+  const fields = schema.fields.filter(f => !["Section Break", "Column Break", "Table"].includes(f.fieldtype) && f.fieldname !== "mot_de_passe");
+  const headers = ["ID / Référence", ...fields.map(f => f.label), "Dernière Modification"];
+  const escapeCSV = (val) => {{
+    const s = String(val ?? "").replace(/"/g, '""');
+    return `"${{s}}"`;
+  }};
+  const lines = [headers.map(escapeCSV).join(";")];
+  filtered.forEach(r => {{
+    const rowVals = [r.name, ...fields.map(f => r[f.fieldname] ?? ""), r.date_modification || ""];
+    lines.push(rowVals.map(escapeCSV).join(";"));
+  }});
+  const csvContent = String.fromCharCode(0xFEFF) + lines.join(String.fromCharCode(13, 10));
+  const blob = new Blob([csvContent], {{ type: "text/csv;charset=utf-8;" }});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Export_${{doctype.split(" ").join("_")}}_${{new Date().toISOString().slice(0, 10)}}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`📥 Export CSV généré (${{filtered.length}} lignes)`);
 }}
 
 function onFilterChange(type, val) {{
   if (type === "search") LIST_STATE.search = val;
   if (type === "entity") LIST_STATE.entityFilter = val;
   if (type === "status") LIST_STATE.statusFilter = val;
+  LIST_STATE.page = 1;
   renderCurrentListView();
 }}
 
@@ -2125,13 +2707,12 @@ function showList(doctype, resetFilters = true) {{
     return;
   }}
   if (CURRENT_DOCTYPE !== doctype || resetFilters === true) {{
-    LIST_STATE = {{ search: "", entityFilter: "", statusFilter: "" }};
+    LIST_STATE = {{ search: "", entityFilter: "", statusFilter: "", sortField: "", sortAsc: true, page: 1, pageSize: 25 }};
   }}
   CURRENT_DOCTYPE = doctype;
   renderSidebar(doctype);
   renderCurrentListView();
 }}
-
 
 function renderCurrentListView() {{
   const doctype = CURRENT_DOCTYPE;
@@ -2143,7 +2724,6 @@ function renderCurrentListView() {{
 
   const listFields = schema.fields.filter(f => f.in_list_view && !["Section Break", "Column Break", "Table"].includes(f.fieldtype)).slice(0, 8);
 
-  // Construction des options de filtre rapide (ex: Client = SONATRACH, Statut = Payée/Échue)
   const entityCfg = getPrimaryEntityField(doctype);
   let entitySelectHtml = "";
   if (entityCfg) {{
@@ -2164,7 +2744,6 @@ function renderCurrentListView() {{
     </select>`;
   }}
 
-  // Calcul des totaux pour les colonnes numériques et le bandeau supérieur
   const numericFields = schema.fields.filter(f => ["Currency", "Int", "Percent"].includes(f.fieldtype) && !["Section Break", "Column Break", "Table"].includes(f.fieldtype));
   const totalsMap = {{}};
   numericFields.forEach(f => {{
@@ -2177,7 +2756,6 @@ function renderCurrentListView() {{
     }}
   }});
 
-  // Bandeau supérieur des Totaux (toujours affiché)
   const currencyFieldsForStrip = schema.fields.filter(f => f.fieldtype === "Currency").slice(0, 5);
   let stripHtml = "";
   if (currencyFieldsForStrip.length > 0) {{
@@ -2202,11 +2780,21 @@ function renderCurrentListView() {{
   const canDelete = (CURRENT_USER && CURRENT_USER.role === "Administrateur");
   const canCreate = (!CURRENT_USER || CURRENT_USER.role !== "Consultant") && (doctype !== "SE Utilisateur" || (CURRENT_USER && CURRENT_USER.role === "Administrateur")) && (doctype !== "SE Journal Audit");
 
-  let thHtml = `<th>Référence (ID)</th>` + listFields.map(f => `<th>${{f.label}}</th>`).join("") + `<th>Dernière Modif.</th>`;
+  const sortIcon = (fld) => LIST_STATE.sortField === fld ? (LIST_STATE.sortAsc ? " ▲" : " ▼") : " ⇅";
+  let thHtml = `<th style="cursor:pointer;user-select:none;" onclick="toggleSortColumn('name')">Référence (ID)<span style="font-size:10px;opacity:0.7;">${{sortIcon('name')}}</span></th>` +
+    listFields.map(f => `<th style="cursor:pointer;user-select:none;" onclick="toggleSortColumn('${{f.fieldname}}')">${{f.label}}<span style="font-size:10px;opacity:0.7;">${{sortIcon(f.fieldname)}}</span></th>`).join("") +
+    `<th style="cursor:pointer;user-select:none;" onclick="toggleSortColumn('date_modification')">Dernière Modif.<span style="font-size:10px;opacity:0.7;">${{sortIcon('date_modification')}}</span></th>`;
   if (canDelete) {{
     thHtml += `<th style="text-align:center;width:48px;">Action</th>`;
   }}
-  let trHtml = filtered.map(r => {{
+
+  const pageSize = Number(LIST_STATE.pageSize) || 25;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(Math.max(1, Number(LIST_STATE.page) || 1), totalPages);
+  const startIdx = (currentPage - 1) * pageSize;
+  const pageRows = filtered.slice(startIdx, startIdx + pageSize);
+
+  let trHtml = pageRows.map(r => {{
     let tds = `<td><b>${{r.name}}</b></td>`;
     listFields.forEach(f => {{
       let val = r[f.fieldname];
@@ -2220,24 +2808,22 @@ function renderCurrentListView() {{
         tds += `<td><span class="pill ${{pillClass(val)}}">${{val || "—"}}</span></td>`;
       }} else if (f.fieldname === "jours_retard") {{
         tds += `<td>${{Number(val) > 0 ? `<span class="pill red">+${{val}} j</span>` : `<span style="color:#94a3b8">0 j</span>`}}</td>`;
-      }} else {{
-        if (f.fieldname === "mot_de_passe") {{
+      }} else if (f.fieldname === "mot_de_passe") {{
         tds += `<td><span style="letter-spacing:2px;font-family:monospace;color:#64748b;">••••••••</span></td>`;
       }} else {{
         tds += `<td>${{val ?? "—"}}</td>`;
       }}
-      }}
     }});
     tds += `<td style="font-size:11px;color:#64748b;white-space:nowrap;">${{r.date_modification || "2026-11-03"}}</td>`;
+    const safeName = String(r.name || "").replace(/'/g, "\\'");
     if (canDelete) {{
       tds += `<td style="text-align:center;" onclick="event.stopPropagation();">
-        <button type="button" class="btn" style="padding:2px 6px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:4px;font-size:11px;cursor:pointer;" title="Supprimer cet élément" onclick="triggerDeleteDoc('${{doctype}}', '${{r.name.replace(/'/g, "\\\'")}}')">🗑️</button>
+        <button type="button" class="btn" style="padding:2px 6px;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:4px;font-size:11px;cursor:pointer;" title="Supprimer cet élément" onclick="triggerDeleteDoc('${{doctype}}', '${{safeName}}')">🗑️</button>
       </td>`;
     }}
-    return `<tr onclick="openDoc('${{doctype}}', '${{r.name.replace(/'/g, "\\\'")}}')">${{tds}}</tr>`;
+    return `<tr onclick="openDoc('${{doctype}}', '${{safeName}}')">${{tds}}</tr>`;
   }}).join("");
 
-  // Ligne TOTAL GÉNÉRAL en pied de tableau (<tfoot>)
   let tfootCells = `<td><b>TOTAL (${{filtered.length}} lignes)</b></td>`;
   listFields.forEach(f => {{
     if (f.fieldtype === "Currency") {{
@@ -2250,7 +2836,22 @@ function renderCurrentListView() {{
       tfootCells += `<td></td>`;
     }}
   }});
-  tfootCells += `<td></td><td></td>`;
+  tfootCells += `<td></td>${{canDelete ? "<td></td>" : ""}}`;
+
+  const paginationHtml = filtered.length > 10 ? `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:12px;color:#475569;flex-wrap:wrap;gap:10px;">
+      <div>Affichage <b>${{filtered.length ? startIdx + 1 : 0}}–${{Math.min(startIdx + pageSize, filtered.length)}}</b> sur <b>${{filtered.length}}</b> enregistrements</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span>Lignes/page :</span>
+        <select class="filter-select" style="min-width:70px;padding:4px 8px;" onchange="setListPageSize(this.value)">
+          ${{[10, 25, 50, 100, 500].map(sz => `<option value="${{sz}}" ${{pageSize === sz ? "selected" : ""}}>${{sz === 500 ? "Tout" : sz}}</option>`).join("")}}
+        </select>
+        <button class="btn" style="padding:4px 10px;" ${{currentPage <= 1 ? "disabled" : ""}} onclick="setListPage(${{currentPage - 1}})">◀ Préc.</button>
+        <span style="font-weight:700;color:#0f172a;">Page ${{currentPage}} / ${{totalPages}}</span>
+        <button class="btn" style="padding:4px 10px;" ${{currentPage >= totalPages ? "disabled" : ""}} onclick="setListPage(${{currentPage + 1}})">Suiv. ▶</button>
+      </div>
+    </div>
+  ` : "";
 
   document.getElementById("mainContent").innerHTML = `
     ${{stripHtml}}
@@ -2262,6 +2863,7 @@ function renderCurrentListView() {{
           ${{statusSelectHtml}}
         </div>
         <div class="toolbar-actions">
+          <button class="btn" onclick="exportCurrentListCSV()" title="Exporter la vue filtrée en CSV (Excel)">📥 Exporter CSV</button>
           <button class="btn btn-gold" onclick="printCurrentListStatement()">🖨️ Imprimer l'État (avec Totaux)</button>
           ${{canCreate ? `<button class="btn btn-primary" onclick="openNewDoc('${{doctype}}')">+ Nouveau</button>` : ''}}
         </div>
@@ -2269,10 +2871,11 @@ function renderCurrentListView() {{
       <div class="table-scroll">
         <table class="frappe-list">
           <thead><tr>${{thHtml}}</tr></thead>
-          <tbody>${{trHtml || `<tr><td colspan="${{listFields.length + 2}}" style="text-align:center;padding:24px;color:#64748b;">Aucun enregistrement correspondant au filtre</td></tr>`}}</tbody>
+          <tbody>${{trHtml || `<tr><td colspan="${{listFields.length + 3}}" style="text-align:center;padding:24px;color:#64748b;">Aucun enregistrement correspondant au filtre</td></tr>`}}</tbody>
           <tfoot><tr>${{tfootCells}}</tr></tfoot>
         </table>
       </div>
+      ${{paginationHtml}}
     </div>
   `;
 }}
@@ -2387,10 +2990,45 @@ function showGoogleSheetBackupCenter() {{
   toggleMobileSidebar(false);
   CURRENT_DOCTYPE = null;
   renderSidebar("gsheet");
-  document.getElementById("viewTitle").textContent = "☁️ Sauvegarde Google Sheet & Historique Complet des Modifications";
+  document.getElementById("viewTitle").textContent = "☁️ Centre de Sauvegarde Automatique, Restauration & Synchronisation Cloud";
 
   const hist = DB["SE Historique Modifications"] || [];
   const savedWebhook = localStorage.getItem(WEBHOOK_KEY) || "";
+  const snapshots = getBackupSnapshots();
+  const trashItems = DB["SE Corbeille"] || [];
+  const currentFreq = localStorage.getItem(BACKUP_FREQ_KEY) || "every_change";
+  const isAdmin = CURRENT_USER && CURRENT_USER.role === "Administrateur";
+
+  const snapshotsRowsHtml = snapshots.map(s => `
+    <tr>
+      <td><b>${{s.id}}</b></td>
+      <td style="white-space:nowrap;"><b>${{s.timestamp || s.created_at || "—"}}</b></td>
+      <td><span class="pill ${{s.type && s.type.includes('Manuelle') ? 'blue' : (s.type && s.type.includes('Sécurité') ? 'orange' : 'green')}}">${{s.type || "Automatique"}}</span></td>
+      <td>${{s.label || s.reason || "—"}}</td>
+      <td style="text-align:center;"><b>${{s.records_count || s.record_count || 0}}</b> docs</td>
+      <td style="white-space:nowrap;">${{s.size_kb || 0}} Ko</td>
+      <td style="font-family:monospace;font-size:11px;color:#475569;">${{s.integrity_hash || "—"}}</td>
+      <td>${{s.user || s.created_by || "Système"}}</td>
+      <td style="white-space:nowrap;">
+        ${{isAdmin ? `
+          <button class="btn btn-primary" style="padding:4px 10px;font-size:11px;" onclick="restoreFromSnapshot('${{s.id}}')">♻️ Restaurer ce Point</button>
+          <button class="btn" style="padding:4px 8px;font-size:11px;color:#991b1b;" onclick="deleteBackupSnapshot('${{s.id}}')">🗑️</button>
+        ` : `<span style="font-size:11px;color:#64748b;">Admin requis</span>`}}
+      </td>
+    </tr>
+  `).join("");
+
+  const trashRowsHtml = trashItems.map((t, idx) => `
+    <tr>
+      <td><b>${{t.deleted_at || "—"}}</b></td>
+      <td>${{t.original_doctype || "—"}}</td>
+      <td><b>${{(t.original_doc && t.original_doc.name) || "—"}}</b></td>
+      <td>${{t.deleted_by || "—"}}</td>
+      <td>
+        ${{isAdmin ? `<button class="btn btn-green" style="padding:4px 10px;font-size:11px;" onclick="restoreFromTrash(${{idx}})">♻️ Restaurer l'élément</button>` : "—"}}
+      </td>
+    </tr>
+  `).join("");
 
   const histRowsHtml = hist.map(h => `
     <tr>
@@ -2409,49 +3047,114 @@ function showGoogleSheetBackupCenter() {{
     <div class="alerts-panel" style="border-left:5px solid #16a34a;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
         <div>
-          <h3 style="margin:0 0 6px 0;font-size:15px;">☁️ Sauvegarde & Synchronisation Google Sheets (22 Feuilles Séparées + Historique Complet)</h3>
+          <h3 style="margin:0 0 6px 0;font-size:15px;">☁️ Sauvegarde & Synchronisation Temps Réel Multi-Appareils (24h/24 — Sans Serveur Local)</h3>
           <div style="font-size:12.5px;color:#475569;">
-            Lien Google Sheet configuré : <a href="${{GOOGLE_SHEET_URL}}" target="_blank" style="color:#15803d;font-weight:700;word-break:break-all;">${{GOOGLE_SHEET_URL}}</a>
+            Lien Google Sheet Cloud : <a href="${{GOOGLE_SHEET_URL}}" target="_blank" style="color:#15803d;font-weight:700;word-break:break-all;">${{GOOGLE_SHEET_URL}}</a>
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <a class="btn btn-green" href="${{GOOGLE_SHEET_URL}}" target="_blank">🔗 Ouvrir votre Google Sheet</a>
+          <button class="btn btn-green" onclick="createBackupSnapshot('Point de Sauvegarde Manuel', false); showGoogleSheetBackupCenter(); showToast('🛡️ Point de sauvegarde créé avec succès !');">➕ Créer un Point de Sauvegarde Maintenant</button>
+          <a class="btn" href="${{GOOGLE_SHEET_URL}}" target="_blank">🔗 Ouvrir Google Sheet</a>
           <button class="btn btn-gold" onclick="exportFullWorkbookXLSX()">📊 Télécharger Classeur 23 Feuilles (.xlsx)</button>
           <button class="btn btn-primary" onclick="printHistoryStatement()">🖨️ Imprimer l'Historique</button>
         </div>
       </div>
 
       <div style="margin-top:14px;padding:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:12px;">
-        <div style="font-size:12.5px;font-weight:700;color:#1e3a8a;margin-bottom:6px;">
-          📱 Synchronisation Multi-Appareils (Téléphone ↔ Ordinateur) :
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <button class="btn btn-primary" onclick="syncBothWaysGoogleSheet()">🔄 Synchroniser Téléphone ↔ PC (via Google Sheet)</button>
-          <button class="btn btn-gold" onclick="exportSyncJson()">📤 Exporter Données (Fichier JSON)</button>
-          <label class="btn" style="cursor:pointer;background:#fff;border-color:#cbd5e1;display:inline-flex;align-items:center;">
-            📥 Importer Données (JSON)
-            <input type="file" accept=".json" style="display:none;" onchange="importSyncJsonFile(this)">
-          </label>
-        </div>
-        <div style="font-size:11.5px;color:#1e40af;margin-top:8px;line-height:1.5;">
-          🌐 <b>Accès Direct Réseau Wi-Fi :</b> Si votre téléphone et ce PC sont connectés au même réseau Wi-Fi, ouvrez directement l'adresse <b><a href="http://192.168.1.28:8080" target="_blank" style="color:#1d4ed8;font-weight:700;">http://192.168.1.28:8080</a></b> sur le navigateur de votre téléphone ! Toutes vos actions seront directement et instantanément synchronisées sur votre PC.
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:12.5px;font-weight:700;color:#1e3a8a;margin-bottom:4px;">
+              🔄 Synchronisation Multi-Utilisateurs & Sauvegarde Automatique :
+            </div>
+            <div style="font-size:11.5px;color:#1e40af;">
+              URL Web Permanente (PC, Tablette, Mobile 24h/24) : <b><a href="https://arc-hicham.github.io/saint-eugene-erp-2026/" target="_blank" style="color:#1d4ed8;">https://arc-hicham.github.io/saint-eugene-erp-2026/</a></b>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <span style="font-size:12px;font-weight:600;color:#1e3a8a;">Fréquence Auto-Backup :</span>
+            <select class="filter-select" onchange="setBackupFrequency(this.value)" style="min-width:170px;">
+              <option value="every_change" ${{currentFreq === "every_change" ? "selected" : ""}}>⚡ À chaque modification (Temps réel)</option>
+              <option value="daily" ${{currentFreq === "daily" ? "selected" : ""}}>📅 Quotidienne (24h)</option>
+              <option value="weekly" ${{currentFreq === "weekly" ? "selected" : ""}}>🗓️ Hebdomadaire (7 jours)</option>
+              <option value="monthly" ${{currentFreq === "monthly" ? "selected" : ""}}>📆 Mensuelle (30 jours)</option>
+            </select>
+            <button class="btn btn-primary" onclick="syncBothWaysGoogleSheet()">🔄 Synchroniser Maintenant (Cloud ↔ Appareil)</button>
+            <button class="btn btn-gold" onclick="exportSyncJson()">📤 Exporter Backup (.json)</button>
+            ${{isAdmin ? `
+            <label class="btn" style="cursor:pointer;background:#fff;border-color:#cbd5e1;display:inline-flex;align-items:center;">
+              📥 Restaurer depuis Fichier (.json)
+              <input type="file" accept=".json" style="display:none;" onchange="importSyncJsonFile(this)">
+            </label>` : ""}}
+          </div>
         </div>
       </div>
 
-      <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;">
+      <div style="margin-top:10px;padding:12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;">
         <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;">
-          ⚡ Connexion Automatique Temps Réel (Google Apps Script Web App) :
+          ⚡ Connecteur Cloud Temps Réel (Google Apps Script Web App — Synchronisation Automatique Sans Serveur Local) :
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <input id="webhookInput" class="search-input" style="flex:1;min-width:240px;" placeholder="Collez ici l'URL Web App Google Script (https://script.google.com/macros/s/.../exec)" value="${{savedWebhook}}">
-          <button class="btn btn-primary" onclick="saveWebhookUrl()">💾 Activer & Synchroniser Maintenant</button>
-          <button class="btn" onclick="copyGoogleAppsScriptCode()">📋 Copier le Script Google Sheet (23 Feuilles)</button>
-        </div>
-        <div style="font-size:11.5px;color:#64748b;margin-top:6px;">
-          💡 <b>Astuce :</b> Cliquez sur <b>"📋 Copier le Script Google Sheet"</b>, ouvrez votre Google Sheet → <b>Extensions > Apps Script</b>, collez le script et déployez-le en <i>Application Web (Accès : Tout le monde)</i>. Chaque ajout de Facture ou Encaissement mettra à jour automatiquement les 23 feuilles séparées de votre Google Sheet avec la date et le détail exact des modifications !
+          <button class="btn btn-primary" onclick="saveWebhookUrl()">💾 Activer & Synchroniser</button>
+          <button class="btn" onclick="copyGoogleAppsScriptCode()">📋 Copier le Script Cloud Google Sheet</button>
         </div>
       </div>
     </div>
+
+    <div class="table-card" style="margin-bottom:18px;">
+      <div class="table-toolbar">
+        <div style="font-weight:700;font-size:14px;color:#0f172a;">
+          🛡️ Points de Restauration & Sauvegardes Automatiques Vérifiées (${{snapshots.length}} snapshots disponibles)
+        </div>
+        <div style="font-size:11.5px;color:#64748b;">
+          Chaque restauration crée automatiquement une sauvegarde de sécurité préalable et vérifie l'empreinte d'intégrité SHA-256.
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="frappe-list">
+          <thead>
+            <tr>
+              <th>ID Snapshot</th>
+              <th>Horodatage</th>
+              <th>Type</th>
+              <th>Motif / Événement</th>
+              <th style="text-align:center;">Enregistrements</th>
+              <th>Taille</th>
+              <th>Empreinte d'Intégrité</th>
+              <th>Auteur</th>
+              <th>Action Restauration</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${{snapshotsRowsHtml || '<tr><td colspan="9" style="text-align:center;padding:18px;">Aucun point de sauvegarde</td></tr>'}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    ${{trashItems.length > 0 ? `
+    <div class="table-card" style="margin-bottom:18px;border:1px solid #fecaca;">
+      <div class="table-toolbar" style="background:#fef2f2;">
+        <div style="font-weight:700;font-size:14px;color:#991b1b;">
+          🗑️ Corbeille de Sécurité — Éléments Supprimés Récupérables (${{trashItems.length}})
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="frappe-list">
+          <thead>
+            <tr>
+              <th>Date Suppression</th>
+              <th>Module</th>
+              <th>Référence Document</th>
+              <th>Supprimé Par</th>
+              <th>Restauration</th>
+            </tr>
+          </thead>
+          <tbody>${{trashRowsHtml}}</tbody>
+        </table>
+      </div>
+    </div>
+    ` : ""}}
 
     <div class="table-card">
       <div class="table-toolbar">
@@ -3162,9 +3865,156 @@ function onInvoiceFormUpdate() {{
   const dbSrc = (typeof APP_STATE !== "undefined" && APP_STATE.db) ? APP_STATE.db : (typeof DB !== "undefined" ? DB : {{}});
   const cfg = (dbSrc["SE Parametres Hotel"] && dbSrc["SE Parametres Hotel"][0]) || {{}};
   computeInvoiceDocClient(CURRENT_DOC, cfg);
-  document.getElementById("inv_stays_tbody").innerHTML = renderInvoiceStaysRows(CURRENT_DOC);
-  document.getElementById("inv_lines_tbody").innerHTML = renderInvoiceLinesRows(CURRENT_DOC);
-  document.getElementById("inv_totals_card").innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
+  const stEl = document.getElementById("inv_stays_tbody");
+  if (stEl) stEl.innerHTML = renderInvoiceStaysRows(CURRENT_DOC);
+  const lnEl = document.getElementById("inv_lines_tbody");
+  if (lnEl) lnEl.innerHTML = renderInvoiceLinesRows(CURRENT_DOC);
+  const totEl = document.getElementById("inv_totals_card");
+  if (totEl) totEl.innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
+}}
+
+function onInvoiceStayDateChange(idx, field, val) {{
+  if (!CURRENT_DOC || !CURRENT_DOC.sejours || !CURRENT_DOC.sejours[idx]) return;
+  const s = CURRENT_DOC.sejours[idx];
+  s[field] = val;
+  if (s.date_arrivee && s.date_depart) {{
+    const d1 = new Date(s.date_arrivee);
+    const d2 = new Date(s.date_depart);
+    const diff = Math.round((d2 - d1) / (1000 * 3600 * 24));
+    s.nuitees = diff > 0 ? diff : 1;
+    (CURRENT_DOC.lignes || []).forEach(ln => {{
+      if (Number(ln.sejour_no || 1) === Number(s.sejour_no || (idx + 1)) && getArticleCategory(ln.article) === "Hébergement") {{
+        ln.nb_jours = s.nuitees;
+        const pu = Number(ln.prix_unitaire_ttc || 0);
+        const qty = Number(ln.quantite || 1);
+        if (pu > 0) {{
+          ln.montant_ttc_saisi = roundDZD(pu * qty * s.nuitees);
+          ln.total_ligne_ttc = ln.montant_ttc_saisi;
+        }}
+      }}
+    }});
+  }}
+  onInvoiceFormUpdate();
+}}
+
+function onInvoiceStayFieldInput(idx, field, val) {{
+  if (!CURRENT_DOC || !CURRENT_DOC.sejours || !CURRENT_DOC.sejours[idx]) return;
+  const s = CURRENT_DOC.sejours[idx];
+  const n = Math.max(1, parseInt(val || 1, 10));
+  s[field] = n;
+  if (field === "nuitees") {{
+    if (s.date_arrivee) {{
+      const d1 = new Date(s.date_arrivee);
+      d1.setDate(d1.getDate() + n);
+      s.date_depart = d1.toISOString().slice(0, 10);
+    }}
+    (CURRENT_DOC.lignes || []).forEach(ln => {{
+      if (Number(ln.sejour_no || 1) === Number(s.sejour_no || (idx + 1)) && getArticleCategory(ln.article) === "Hébergement") {{
+        ln.nb_jours = n;
+        const pu = Number(ln.prix_unitaire_ttc || 0);
+        const qty = Number(ln.quantite || 1);
+        if (pu > 0) {{
+          ln.montant_ttc_saisi = roundDZD(pu * qty * n);
+          ln.total_ligne_ttc = ln.montant_ttc_saisi;
+        }}
+      }}
+    }});
+  }}
+  const cfg = (DB["SE Parametres Hotel"] && DB["SE Parametres Hotel"][0]) || {{}};
+  computeInvoiceDocClient(CURRENT_DOC, cfg);
+  (CURRENT_DOC.sejours || []).forEach((st, i) => {{
+    const txEl = document.getElementById(`inv_stay_taxe_${{i}}`);
+    if (txEl) txEl.textContent = fmtDZD(st.taxe_sejour || 0);
+    const ttEl = document.getElementById(`inv_stay_total_${{i}}`);
+    if (ttEl) ttEl.textContent = fmtDZD(st.total_ttc_sejour || 0);
+    const depEl = document.getElementById(`inv_stay_dep_${{i}}`);
+    if (depEl && field === "nuitees") depEl.value = st.date_depart || "";
+  }});
+  const lnEl = document.getElementById("inv_lines_tbody");
+  if (lnEl) lnEl.innerHTML = renderInvoiceLinesRows(CURRENT_DOC);
+  const totEl = document.getElementById("inv_totals_card");
+  if (totEl) totEl.innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
+}}
+
+function onInvoiceArticleChange(idx, val) {{
+  if (!CURRENT_DOC || !CURRENT_DOC.lignes || !CURRENT_DOC.lignes[idx]) return;
+  const ln = CURRENT_DOC.lignes[idx];
+  ln.article = val;
+  const cat = getArticleCategory(val);
+  ln.type_ligne = cat;
+  ln.taux_tva = cat === "Hébergement" ? 9 : 19;
+  const defaultRates = {{
+    "Single Standard [SGL-STD]": 12000,
+    "Single Vue Mer [SGL-MER]": 14000,
+    "Double Standard [DBL-STD]": 15000,
+    "Double Vue Mer [DBL-MER]": 18000,
+    "Chambre Twin [TWIN]": 16000,
+    "Chambre Triple [TRP]": 20000,
+    "Suite Deluxe [SDL]": 28000,
+    "Suite Saint Eugène [SSE]": 38000,
+    "Single": 12000,
+    "Double": 15000,
+    "Twin": 16000,
+    "Triple": 20000
+  }};
+  if (defaultRates[val]) {{
+    ln.prix_unitaire_ttc = defaultRates[val];
+  }}
+  const qty = Math.max(1, parseInt(ln.quantite || 1, 10));
+  const nuits = Math.max(1, parseInt(ln.nb_jours || 1, 10));
+  ln.montant_ttc_saisi = roundDZD((Number(ln.prix_unitaire_ttc) || 0) * qty * nuits);
+  ln.total_ligne_ttc = ln.montant_ttc_saisi;
+  onInvoiceFormUpdate();
+}}
+
+function onInvoiceLineCalcInput(idx, mode, val) {{
+  if (!CURRENT_DOC || !CURRENT_DOC.lignes || !CURRENT_DOC.lignes[idx]) return;
+  const ln = CURRENT_DOC.lignes[idx];
+  const numVal = parseFloat(val);
+  const qty = Math.max(1, parseInt(mode === "qty" ? (numVal || 1) : (ln.quantite || 1), 10));
+  const nuits = Math.max(1, parseInt(mode === "nuits" ? (numVal || 1) : (ln.nb_jours || 1), 10));
+  ln.quantite = qty;
+  ln.nb_jours = nuits;
+
+  if (mode === "pu") {{
+    const pu = isNaN(numVal) ? 0 : numVal;
+    ln.prix_unitaire_ttc = pu;
+    ln.montant_ttc_saisi = roundDZD(pu * qty * nuits);
+    ln.total_ligne_ttc = ln.montant_ttc_saisi;
+    const ttcInput = document.getElementById(`inv_ttc_saisi_${{idx}}`);
+    if (ttcInput) ttcInput.value = ln.montant_ttc_saisi;
+  }} else if (mode === "qty" || mode === "nuits") {{
+    const pu = Number(ln.prix_unitaire_ttc || 0);
+    ln.montant_ttc_saisi = roundDZD(pu * qty * nuits);
+    ln.total_ligne_ttc = ln.montant_ttc_saisi;
+    const ttcInput = document.getElementById(`inv_ttc_saisi_${{idx}}`);
+    if (ttcInput) ttcInput.value = ln.montant_ttc_saisi;
+  }} else if (mode === "total_ttc") {{
+    const tot = isNaN(numVal) ? 0 : numVal;
+    ln.montant_ttc_saisi = tot;
+    ln.total_ligne_ttc = tot;
+    ln.prix_unitaire_ttc = (qty * nuits > 0) ? roundDZD(tot / (qty * nuits)) : tot;
+    const puInput = document.getElementById(`inv_pu_${{idx}}`);
+    if (puInput) puInput.value = ln.prix_unitaire_ttc;
+  }}
+
+  const cfg = (DB["SE Parametres Hotel"] && DB["SE Parametres Hotel"][0]) || {{}};
+  computeInvoiceDocClient(CURRENT_DOC, cfg);
+
+  (CURRENT_DOC.lignes || []).forEach((l, i) => {{
+    const htEl = document.getElementById(`inv_ht_${{i}}`);
+    if (htEl) htEl.textContent = fmtDZD(l.montant_ht || 0);
+    const tvaEl = document.getElementById(`inv_tva_${{i}}`);
+    if (tvaEl) tvaEl.textContent = `${{l.taux_tva || 9}}%`;
+  }});
+  (CURRENT_DOC.sejours || []).forEach((st, i) => {{
+    const txEl = document.getElementById(`inv_stay_taxe_${{i}}`);
+    if (txEl) txEl.textContent = fmtDZD(st.taxe_sejour || 0);
+    const ttEl = document.getElementById(`inv_stay_total_${{i}}`);
+    if (ttEl) ttEl.textContent = fmtDZD(st.total_ttc_sejour || 0);
+  }});
+  const totEl = document.getElementById("inv_totals_card");
+  if (totEl) totEl.innerHTML = renderInvoiceTotalsCard(CURRENT_DOC);
 }}
 
 function onInvoiceClientChange(clientKey) {{
@@ -3453,11 +4303,17 @@ function renderDocModal(doctype, doc, isNew) {{
   document.getElementById("modalTitle").textContent = `${{isNew ? "➕ Nouveau" : doc.name}} — ${{getNavLabel(doctype)}}`;
 
   let bannerHtml = "";
+  if (!isNew && doc.date_modification) {{
+    bannerHtml += `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #16a34a;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11.5px;color:#334155;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+      <span>🕒 <b>Dernière modification :</b> ${{doc.date_modification}} par <b>${{doc.modifie_par || CURRENT_USER_ROLE}}</b> (v${{doc._version || 1}})</span>
+      <span>📝 ${{doc.detail_modification || "Enregistrement sauvegardé"}}</span>
+    </div>`;
+  }}
   if (!canEdit) {{
     if (CURRENT_USER.role === "Consultant") {{
-      bannerHtml = `<div style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>👁️</span> <div><b>Profil Consultant (Lecture Seule) :</b> Vous pouvez consulter tous les détails et imprimer ce document, mais les modifications et suppressions sont désactivées.</div></div>`;
+      bannerHtml += `<div style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>👁️</span> <div><b>Profil Consultant (Lecture Seule) :</b> Vous pouvez consulter tous les détails et imprimer ce document, mais les modifications et suppressions sont désactivées.</div></div>`;
     }} else if (CURRENT_USER.role === "Utilisateur Normal") {{
-      bannerHtml = `<div style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>ℹ️</span> <div><b>Mode Consultation :</b> Ce document a été créé par <b>${{doc.cree_par_nom || doc.cree_par || 'un autre collaborateur'}}</b>. En tant qu'Utilisateur Normal, vous pouvez consulter toutes les informations mais seul son créateur ou un Administrateur peut le modifier.</div></div>`;
+      bannerHtml += `<div style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;padding:10px 14px;border-radius:6px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span>ℹ️</span> <div><b>Mode Consultation :</b> Ce document a été créé par <b>${{doc.cree_par_nom || doc.cree_par || 'un autre collaborateur'}}</b>. En tant qu'Utilisateur Normal, vous pouvez consulter toutes les informations mais seul son créateur ou un Administrateur peut le modifier.</div></div>`;
     }}
   }}
 
@@ -3478,7 +4334,15 @@ function renderDocModal(doctype, doc, isNew) {{
       const targets = DB[f.options];
       inputEl = `<select id="fld_${{f.fieldname}}" ${{ro}} onchange="onFieldChange('${{f.fieldname}}', this.value)">
         <option value="">— Sélectionner —</option>
-        ${{targets.map(t => `<option value="${{t.name}}" ${{t.name === String(val) ? "selected" : ""}}>${{t.name}} ${{t.nom_complet ? " - " + t.nom_complet : ""}}</option>`).join("")}}
+        ${{targets.map(t => {{
+          let extra = "";
+          if (f.options === "SE Facture Client") {{
+            extra = ` — ${{t.client || ""}} (Reste: ${{fmtDZD(t.reste_a_encaisser)}})`;
+          }} else if (t.nom_complet) {{
+            extra = ` - ${{t.nom_complet}}`;
+          }}
+          return `<option value="${{t.name}}" ${{t.name === String(val) ? "selected" : ""}}>${{t.name}}${{extra}}</option>`;
+        }}).join("")}}
       </select>`;
     }} else if (f.fieldtype === "Small Text") {{
       inputEl = `<textarea id="fld_${{f.fieldname}}" rows="2" ${{ro}} oninput="onFieldChange('${{f.fieldname}}', this.value)">${{val}}</textarea>`;
@@ -3495,13 +4359,13 @@ function renderDocModal(doctype, doc, isNew) {{
   formHtml += `</div>`;
   document.getElementById("modalBody").innerHTML = formHtml;
 
-  const printable = ["SE Facture Client", "SE Caisse Mensuelle", "SE Fiche de Paie Mensuelle", "SE Declaration TVA"].includes(doctype);
+  const safeDocName = String(doc.name || "").replace(/'/g, "\\'");
   let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">`;
-  if (!isNew && CURRENT_USER.role === "Administrateur") {{
-    ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🗑️ Supprimer</button>`;
+  if (!isNew && CURRENT_USER.role === "Administrateur" && doctype !== "SE Parametres Hotel") {{
+    ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${{doctype}}', '${{safeDocName}}')">🗑️ Supprimer</button>`;
   }}
-  if (!isNew && printable && typeof openPrintPreview === "function") {{
-    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🖨️ Imprimer / Aperçu PDF Officiel SCF</button> `;
+  if (!isNew && typeof openPrintPreview === "function") {{
+    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview('${{doctype}}', '${{safeDocName}}')">🖨️ Imprimer / Aperçu PDF</button> `;
   }}
   ftrHtml += `</div><div>
     <button class="btn" onclick="closeModal()">Fermer</button>
@@ -3510,7 +4374,6 @@ function renderDocModal(doctype, doc, isNew) {{
   document.getElementById("modalFooter").innerHTML = ftrHtml;
   document.getElementById("docModal").classList.add("open");
 }}
-
 
 async function saveInvoiceDoc() {{
   const bcInput = document.getElementById("inv_bon_commande");
@@ -3546,85 +4409,6 @@ function convertProformaToInvoice() {{
     
     renderInvoiceModal("SE Facture Client", newInvoice, true);
   }}
-}}
-
-function renderDocModal(doctype, doc, isNew) {{
-  CURRENT_DOCTYPE = doctype;
-  CURRENT_DOC = doc;
-  CURRENT_IS_NEW = !!isNew;
-  if (doctype === "SE Facture Client" || doctype === "SE Facture Pro Forma") {{
-    renderInvoiceModal(doctype, doc, isNew);
-    return;
-  }}
-  const schema = SCHEMAS[doctype];
-  document.getElementById("modalTitle").textContent = `${{isNew ? "➕ Nouveau" : doc.name}} — ${{getNavLabel(doctype)}}`;
-
-  let formHtml = "";
-  if (!isNew && doc.date_modification) {{
-    formHtml += `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #16a34a;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11.5px;color:#334155;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">
-      <span>🕒 <b>Dernière modification :</b> ${{doc.date_modification}} par <b>${{doc.modifie_par || CURRENT_USER_ROLE}}</b></span>
-      <span>📝 ${{doc.detail_modification || "Enregistrement sauvegardé"}}</span>
-    </div>`;
-  }}
-
-  formHtml += `<div class="form-grid">`;
-  schema.fields.forEach(f => {{
-    if (["Section Break", "Column Break", "Table"].includes(f.fieldtype) || f.fieldname === "naming_series" || f.fieldname === "amended_from") return;
-    const val = doc[f.fieldname] ?? "";
-    const ro = f.read_only ? "readonly" : "";
-    const full = f.fieldtype === "Small Text" ? "full" : "";
-
-    let inputEl = "";
-    if (f.fieldtype === "Select") {{
-      const opts = (f.options || "").split("\\n");
-      inputEl = `<select id="fld_${{f.fieldname}}" ${{ro ? "disabled" : ""}} onchange="onFieldChange('${{f.fieldname}}', this.value)">
-        ${{opts.map(o => `<option value="${{o}}" ${{o === String(val) ? "selected" : ""}}>${{o}}</option>`).join("")}}
-      </select>`;
-    }} else if (f.fieldtype === "Link" && DB[f.options]) {{
-      const targets = DB[f.options];
-      inputEl = `<select id="fld_${{f.fieldname}}" ${{ro ? "disabled" : ""}} onchange="onFieldChange('${{f.fieldname}}', this.value)">
-        <option value="">— Sélectionner —</option>
-        ${{targets.map(t => {{
-          let extra = "";
-          if (f.options === "SE Facture Client") {{
-            extra = ` — ${{t.client || ""}} (Reste: ${{fmtDZD(t.reste_a_encaisser)}})`;
-          }} else if (t.nom_complet) {{
-            extra = ` - ${{t.nom_complet}}`;
-          }}
-          return `<option value="${{t.name}}" ${{t.name === String(val) ? "selected" : ""}}>${{t.name}}${{extra}}</option>`;
-        }}).join("")}}
-      </select>`;
-    }} else if (f.fieldtype === "Small Text") {{
-      inputEl = `<textarea id="fld_${{f.fieldname}}" rows="2" ${{ro}} oninput="onFieldChange('${{f.fieldname}}', this.value)">${{val}}</textarea>`;
-    }} else {{
-      const type = ["Currency", "Percent", "Int"].includes(f.fieldtype) ? "number" : (f.fieldtype === "Date" ? "date" : "text");
-      inputEl = `<input type="${{type}}" step="any" id="fld_${{f.fieldname}}" value="${{val}}" ${{ro}} oninput="onFieldChange('${{f.fieldname}}', this.value)">`;
-    }}
-
-    formHtml += `<div class="form-group ${{full}}">
-      <label>${{f.label}} ${{f.read_only ? "🔒" : ""}}</label>
-      ${{inputEl}}
-    </div>`;
-  }});
-  formHtml += `</div>`;
-  document.getElementById("modalBody").innerHTML = formHtml;
-
-  let ftrHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;">`;
-  if (!isNew) {{
-    ftrHtml += `<button class="btn btn-gold" onclick="openPrintPreview()">🖨️ Imprimer PDF</button>`;
-  }}
-  if (doctype === "SE Facture Client" && !isNew && Number(doc.reste_a_encaisser) > 0) {{
-    ftrHtml += `<button class="btn" onclick="quickReceiptFromInvoice()">💰 Encaisser cette Facture</button>`;
-  }}
-  if (!isNew && doctype !== "SE Parametres Hotel") {{
-    ftrHtml += `<button type="button" class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-weight:600;padding:6px 12px;margin-right:6px;" onclick="triggerDeleteDoc('${{doctype}}', '${{doc.name.replace(/'/g, "\\'")}}')">🗑️ Supprimer</button>`;
-  }}
-  ftrHtml += `</div><div class="modal-ftr-right">
-    <button class="btn" onclick="closeModal()">Annuler</button>
-    <button class="btn btn-primary" onclick="saveCurrentDoc()">💾 Enregistrer & Sauvegarder</button>
-  </div>`;
-  document.getElementById("modalFooter").innerHTML = ftrHtml;
-  document.getElementById("docModal").classList.add("open");
 }}
 
 function updateInputOnScreen(fieldname, val) {{
@@ -3755,6 +4539,12 @@ function saveCurrentDoc() {{
 
   const rows = DB[CURRENT_DOCTYPE] || (DB[CURRENT_DOCTYPE] = []);
   const idx = rows.findIndex(r => r.name === CURRENT_DOC.name);
+  if (!CURRENT_IS_NEW && idx >= 0 && rows[idx]._version && CURRENT_ORIGINAL_DOC && rows[idx]._version > (CURRENT_ORIGINAL_DOC._version || 0)) {{
+    if (!confirm(`⚠️ Conflit de modification simultanée détecté : Ce document a été modifié entre-temps par ${{rows[idx].modifie_par || 'un autre utilisateur'}} (${{rows[idx].date_modification}}). Voulez-vous remplacer ces modifications par les vôtres ?`)) {{
+      return;
+    }}
+  }}
+  CURRENT_DOC._version = (idx >= 0 ? (Number(rows[idx]._version) || 0) : 0) + 1;
   if (idx >= 0) rows[idx] = CURRENT_DOC;
   else rows.unshift(CURRENT_DOC);
 
@@ -3893,6 +4683,17 @@ async function executeDeleteDoc() {{
   closeModal();
 
   const rows = DB[dt] || [];
+  const deletedDoc = rows.find(r => r.name === name);
+  if (deletedDoc) {{
+    if (!DB["SE Corbeille"]) DB["SE Corbeille"] = [];
+    DB["SE Corbeille"].unshift({{
+      deleted_at: nowAlgeriaTimestamp(),
+      deleted_by: CURRENT_USER ? `${{CURRENT_USER.nom}} (${{CURRENT_USER.role}})` : "Administrateur",
+      original_doctype: dt,
+      original_doc: JSON.parse(JSON.stringify(deletedDoc))
+    }});
+    if (DB["SE Corbeille"].length > 200) DB["SE Corbeille"] = DB["SE Corbeille"].slice(0, 200);
+  }}
   DB[dt] = rows.filter(r => r.name !== name);
   if (typeof APP_STATE !== "undefined" && APP_STATE.db && APP_STATE.db[dt]) {{
     APP_STATE.db[dt] = APP_STATE.db[dt].filter(r => r.name !== name);
@@ -4110,18 +4911,24 @@ function closeModal() {{
 }}
 
 populateUsersSelect();
-// Auto-reconnexion si la session est déjà déverrouillée dans l'onglet
+// Auto-reconnexion sécurisée si la session est déjà déverrouillée dans l'onglet (sans exposer le mot de passe dans le champ)
 (async () => {{
   try {{
     const saved = sessionStorage.getItem(SESSION_KEY);
     if (saved) {{
       const {{ pwd, role }} = JSON.parse(saved);
-      document.getElementById("loginPassword").value = pwd;
-      document.getElementById("loginRole").value = role;
-      await handleUnlock(null);
+      const sel = document.getElementById("loginRole");
+      if (sel && role) sel.value = role;
+      const pwdInput = document.getElementById("loginPassword");
+      if (pwdInput) {{
+        pwdInput.value = pwd;
+        await handleUnlock(null);
+        pwdInput.value = "";
+      }}
     }}
   }} catch (e) {{}}
 }})();
+
 </script>
 </body>
 </html>

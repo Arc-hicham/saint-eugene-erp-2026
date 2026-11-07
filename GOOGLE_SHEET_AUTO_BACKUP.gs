@@ -58,22 +58,50 @@ function doPost(e) {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     syncAllToSpreadsheet(ss, payload);
 
-    // Sauvegarde miroir pour synchronisation multi-appareils (Téléphone <-> PC)
+    // Sauvegarde miroir Temps Réel pour synchronisation multi-appareils (Téléphone <-> PC <-> Tablette)
     let syncSheet = ss.getSheetByName("_SYNC_DB_");
     if (!syncSheet) {
       syncSheet = ss.insertSheet("_SYNC_DB_");
       try { syncSheet.hideSheet(); } catch(err) {}
     }
+    let prevVersion = 1;
+    try {
+      const existingRaw = syncSheet.getRange(1, 1).getValue();
+      if (existingRaw) {
+        const parsedPrev = JSON.parse(existingRaw);
+        prevVersion = Number(parsedPrev.sync_version || 1) + 1;
+      }
+    } catch(err) {}
+
+    const nowIso = new Date().toISOString();
     const syncData = JSON.stringify({
+      sync_version: prevVersion,
       db: payload.db || {},
       history: payload.history || [],
       last_event: payload.last_event || null,
-      timestamp: new Date().toISOString()
+      timestamp: nowIso
     });
     syncSheet.getRange(1, 1).setValue(syncData);
 
-    return ContentService.createTextOutput(JSON.stringify({ status: "ok", timestamp: new Date().toISOString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    // Sauvegarde historique Cloud Rolling Snapshots (_BACKUP_SNAPSHOTS_)
+    let snapSheet = ss.getSheetByName("_BACKUP_SNAPSHOTS_");
+    if (!snapSheet) {
+      snapSheet = ss.insertSheet("_BACKUP_SNAPSHOTS_");
+      snapSheet.getRange(1, 1, 1, 5).setValues([["Version", "Date ISO", "Utilisateur / Rôle", "Événement", "Snapshot JSON"]]);
+      try { snapSheet.hideSheet(); } catch(err) {}
+    }
+    const evtDesc = (payload.last_event && (payload.last_event.detail_modification || payload.last_event.action)) || "Auto-Sync Cloud";
+    const evtUser = (payload.last_event && payload.last_event.utilisateur) || "Système ERP";
+    snapSheet.appendRow([prevVersion, nowIso, evtUser, evtDesc, syncData]);
+    if (snapSheet.getLastRow() > 35) {
+      snapSheet.deleteRow(2);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "ok",
+      sync_version: prevVersion,
+      timestamp: nowIso
+    })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", message: String(err) }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -93,8 +121,10 @@ function doGet(e) {
     }
     return ContentService.createTextOutput(JSON.stringify({
       status: "online",
-      hotel: "SPA HÔTEL SAINT EUGÈNE 4★ - ALGER",
+      hotel: "HOTEL SAINT EUGENE 4★ - ALGER",
       spreadsheet_id: SPREADSHEET_ID,
+      sync_version: syncData ? (syncData.sync_version || 1) : 0,
+      timestamp: syncData ? syncData.timestamp : new Date().toISOString(),
       data: syncData
     })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {

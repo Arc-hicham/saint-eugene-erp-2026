@@ -114,8 +114,9 @@
       else list.unshift(doc);
     }
 
-    // 2. Sauvegarde vers le serveur local launch_now.py si disponible
-    if(typeof fetch === "function"){
+    // 2. Sauvegarde vers le serveur local launch_now.py uniquement si exécuté en local
+    const isLocalHost = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+    if(isLocalHost && typeof fetch === "function"){
       try {
         const res = await fetch("/api/save", {
           method: "POST",
@@ -136,11 +137,18 @@
       }
     }
 
-    // 3. Sauvegarde portail web chiffré index.html
+    // 3. Sauvegarde portail web chiffré index.html + Traçabilité Audit
+    let logEntry = null;
+    if(typeof window.recordAuditModification === "function"){
+      try {
+        const act = isNew ? "➕ Création RH" : "✏️ Mise à jour RH";
+        logEntry = window.recordAuditModification(doctype, doc.name, act, `${act} : ${doc.nom_complet || doc.employe_nom || doc.name}`);
+      } catch(e){}
+    }
     if(typeof window.saveDB === "function"){
-      try { window.saveDB(); } catch(e){}
+      try { window.saveDB(logEntry); } catch(e){}
     } else if(typeof saveDB === "function"){
-      try { saveDB(); } catch(e){}
+      try { saveDB(logEntry); } catch(e){}
     }
 
     // 4. Rafraîchissement des compteurs de la barre latérale
